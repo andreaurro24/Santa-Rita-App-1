@@ -89,7 +89,7 @@ humana (DT-00-7).
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
-| DT-01-1 | Aprobación humana explícita del desvío de R5 (GDP del último periodo ≥ 14 días + caída > 8 kg en 30 días) | Media | Verificación 004 r2 | Revisión humana |
+| DT-01-1 | Aprobación humana explícita del desvío de R5 (GDP del último periodo ≥ 14 días + caída > 8 kg en 30 días) | Media | Verificación 004 r2 | **Resuelta el 2026-09-28:** aprobada por el humano |
 | DT-01-2 | Se puede cambiar el peso de un pesaje de una jornada cerrada por API directa (la interfaz no lo permite) | Baja | Verificación 004 r2 | 4 |
 | DT-01-3 | La ficha marca "Pierde peso" junto a una GDP del último periodo positiva sin explicar por qué (la alerta vino de la caída de 30 días) | Baja | Verificación 004 r2 | 4 |
 | DT-01-4 | Un UPDATE directo coherente de finca y potrero no deja movimiento (solo la función `mover_animales` lo registra) | Baja | Verificación 006 | 4 |

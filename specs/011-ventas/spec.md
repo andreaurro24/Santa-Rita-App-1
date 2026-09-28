@@ -21,7 +21,8 @@ toca a cada tenedor "Al partir".
 - R4 — El sistema deberá guardar una copia de la recomendación del sistema al momento de la
   venta (recomendación, equilibrio y margen) y mostrarla junto al resultado real.
 - R5 — El sistema deberá calcular la liquidación de cada contrato "Al partir" en la venta:
-  porcentaje × ganancia neta positiva de sus animales.
+  porcentaje × ganancia neta del contrato (suma de las ganancias de sus animales vendidos), solo si
+  es positiva. *(Cambiado el 2026-09-28 por decisión humana, DT-03-3: antes se pagaba animal por animal.)*
 - R6 — El sistema deberá listar las ventas con su ingreso, su margen real y si se siguió la
   recomendación.
 

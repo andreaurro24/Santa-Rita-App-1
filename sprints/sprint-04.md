@@ -47,6 +47,8 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 | 2026-09-28 | 012 · corrección r1 | Alto 2: paquete inicial de 531 a 433 kB (127 KB comprimido), sin aviso de Vite | Cliente propio con `@supabase/auth-js` y `@supabase/postgrest-js` en vez de `createClient`, que traía almacenamiento, tiempo real y funciones sin usar. **Desvío:** añade dos dependencias directas (misma versión 2.117.2 que ya estaba instalada) sin preguntar antes; lo confirma el humano |
 | 2026-09-28 | Medios y Bajos de 010, 011 y 013 | Pronóstico con límite de 6 s; pasto por potrero del lote; "Escaso" en vez de "rojo"; animal vendido marcado y sin "Registrar peso"; CSV en Windows-1252, número de línea real, filas `;;;;` ignoradas y aviso de columnas desconocidas; plurales ("1 res") | Corregidos tras la aprobación, entran en la ronda 2 de la 012 |
 | 2026-09-28 | Bajos de la 012 r2 | Plurales de días en `/lotes` y de animales sin pesar; la ficha de un animal vendido muestra su estado y no ofrece "Mover"; spec 012 actualizada con el desvío de R3 | — |
+| 2026-09-28 | Decisiones humanas | DT-01-1 aprobada (14 días); DT-04-1 se mantienen las dependencias; DT-03-9 se mantiene "Vender" sin meta, con una razón que lo dice; DT-03-3 la parte del tenedor pasa a calcularse por contrato (`partesTenedores` en `decision.js`, usada por la recomendación y la liquidación) | Cambio de regla de negocio: pasa por el verificador |
+| 2026-09-28 | Despliegue | Push de `main` a GitHub | El conector de Vercel no tiene permiso sobre el equipo del usuario (403): la conexión la hace el humano con `DEPLOY.md` |
 | 2026-09-28 | Prueba propia inestable | `al-partir.spec.js`: la visita rechazada ya no depende de qué contrato devuelve la base ni de su fecha de inicio | — |
 
 ## 3. Verificación
@@ -80,7 +82,7 @@ Con este sprint terminan los cinco sprints del plan; lo que falta depende de acc
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
-| DT-04-1 | **Decisión humana:** confirmar las dependencias directas `@supabase/auth-js` y `@supabase/postgrest-js` (o volver a `createClient` y aceptar 531 kB) | Media | 012 r1 | Humano |
+| DT-04-1 | **Decisión humana:** confirmar las dependencias directas `@supabase/auth-js` y `@supabase/postgrest-js` (o volver a `createClient` y aceptar 531 kB) | Media | 012 r1 | **Resuelta el 2026-09-28:** se mantienen |
 | DT-04-2 | Los tres paquetes de Supabase deben actualizarse juntos; el cliente propio no envía `X-Client-Info` (telemetría) | Baja | 012 r2 | 5 |
 | DT-04-3 | `formatPct` y `formatNumero` redondean a 1 decimal (un contrato al 33,25 % se ve 33,3 %) | Baja | 012 r2 | 5 |
 | DT-04-4 | KPI de registro digital da 100 % por construcción; "último pesaje" por lote toma el animal pesado más recientemente | Baja | 012 r1 | 5 |
@@ -101,5 +103,6 @@ Con este sprint terminan los cinco sprints del plan; lo que falta depende de acc
   - datos.gov.co (TRM) a veces devuelve 503; la app usa el respaldo, pero la prueba de consola lo registra.
 
 ### Para el siguiente sprint
-- No hay sprint 5 planeado. Antes del piloto: acciones humanas DT-00-1, DT-00-3, DT-00-4,
-  decisiones DT-01-1, DT-03-3, DT-03-9 y DT-04-1, y las specs 003 y 005.
+- No hay sprint 5 planeado. Antes del piloto: acciones humanas DT-00-1 (conectar Vercel),
+  DT-00-3 y DT-00-4, y las specs 003 y 005. Las decisiones DT-01-1, DT-03-3, DT-03-9 y DT-04-1
+  quedaron resueltas el 2026-09-28.

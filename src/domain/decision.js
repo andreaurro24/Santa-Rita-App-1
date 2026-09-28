@@ -18,25 +18,42 @@ export function gastoDiarioLote(costosLote, hoy) {
   return recientes.reduce((s, c) => s + c.montoCop, 0) / DIAS_GASTO_RECIENTE;
 }
 
+// D8/D11 (decisión del 2026-09-28, DT-03-3): el tenedor recibe su porcentaje de la ganancia neta
+// del CONTRATO (la suma de las ganancias de sus animales vendidos), solo si esa suma es positiva.
+// Un animal que pierde descuenta de lo que ganaron los demás del mismo contrato.
+// items: [{ contratoId, porcentaje, ganancia }] → Map contratoId → { animales, ganancia, monto }.
+export function partesTenedores(items) {
+  const porContrato = new Map();
+  for (const { contratoId, porcentaje, ganancia } of items) {
+    if (!contratoId || !porcentaje) continue;
+    const l = porContrato.get(contratoId) ?? { contratoId, porcentaje, animales: 0, ganancia: 0, monto: 0 };
+    l.animales += 1;
+    l.ganancia += ganancia;
+    porContrato.set(contratoId, l);
+  }
+  for (const l of porContrato.values()) l.monto = (Math.max(0, l.ganancia) * l.porcentaje) / 100;
+  return porContrato;
+}
+
 // Resultado económico de vender ya (dias = 0) o dentro de `dias`, al precio dado.
 function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal }) {
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
-  let participacion = 0;
+  const ganancias = [];
   for (const a of vendibles) {
     const peso = pesoBase.get(a.id) + (gdpTotal(a.pesos) ?? 0) * dias;
     const vendibleKg = peso * (1 - destarePct / 100);
     const ingresoA = vendibleKg * precioKg;
     const costoA = costoBase.get(a.id) + gastoDiarioPorAnimal * dias;
-    const gananciaA = ingresoA - costoA;
-    // D11: el tenedor recibe su porcentaje de la ganancia neta del animal, solo si es positiva.
-    const participacionA = a.porcentajeTenedor ? (Math.max(0, gananciaA) * a.porcentajeTenedor) / 100 : 0;
+    ganancias.push({ contratoId: a.contratoId, porcentaje: a.porcentajeTenedor, ganancia: ingresoA - costoA });
     pesoVendible += vendibleKg;
     ingreso += ingresoA;
     costo += costoA;
-    participacion += participacionA;
   }
+  // D11: la parte de los tenedores se calcula por contrato (partesTenedores).
+  let participacion = 0;
+  for (const l of partesTenedores(ganancias).values()) participacion += l.monto;
   return {
     pesoVendible,
     ingreso,
@@ -150,7 +167,10 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     );
   } else {
     recomendacion = 'VENDER';
+    // R5 (decisión del 2026-09-28, DT-03-9): se vende aunque no se haya llegado a la meta pactada,
+    // porque esperar ya no sube el margen; se dice explícitamente que la meta no se alcanzó.
     razones.unshift(`Esperar ya no paga: lo que cuesta mantener el lote supera lo que gana en peso. El margen de hoy es ${pesos(hoyR.margenNeto)}.`);
+    if (avancePct != null) razones.push(`El lote no llegó a la meta pactada (va en el ${Math.round(avancePct)} %): confirma con el comprador que acepta ese peso.`);
   }
 
   return {
@@ -175,26 +195,18 @@ export function resultadoVenta(animales, { precioKg, destarePct = 0 }) {
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
-  let participacion = 0;
-  const porContrato = new Map();
+  const ganancias = [];
   for (const a of animales) {
     const vendibleKg = a.pesoKg * (1 - destarePct / 100);
     const ingresoA = vendibleKg * precioKg;
-    const gananciaA = ingresoA - a.costoCop;
-    const parte = a.contratoId && a.porcentajeTenedor ? (Math.max(0, gananciaA) * a.porcentajeTenedor) / 100 : 0;
+    ganancias.push({ contratoId: a.contratoId, porcentaje: a.porcentajeTenedor, ganancia: ingresoA - a.costoCop });
     pesoVendible += vendibleKg;
     ingreso += ingresoA;
     costo += a.costoCop;
-    participacion += parte;
-    if (a.contratoId) {
-      const l = porContrato.get(a.contratoId) ?? { contratoId: a.contratoId, animales: 0, ganancia: 0, monto: 0 };
-      l.animales += 1;
-      l.ganancia += gananciaA;
-      l.monto += parte;
-      porContrato.set(a.contratoId, l);
-    }
   }
-  return { pesoVendible, ingreso, costo, participacion, margenNeto: ingreso - costo - participacion, liquidaciones: [...porContrato.values()] };
+  const liquidaciones = [...partesTenedores(ganancias).values()].map(({ contratoId, animales: n, ganancia, monto }) => ({ contratoId, animales: n, ganancia, monto }));
+  const participacion = liquidaciones.reduce((s, l) => s + l.monto, 0);
+  return { pesoVendible, ingreso, costo, participacion, margenNeto: ingreso - costo - participacion, liquidaciones };
 }
 
 // R6: se siguió la recomendación si el sistema decía vender (o vender antes) y se vendió.

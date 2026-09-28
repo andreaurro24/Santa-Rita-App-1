@@ -77,13 +77,13 @@ tenedores, el pasto y el clima; que registre la venta real y vea si siguió la r
 |---|---|---|---|---|
 | DT-03-1 | Con un vientre en el lote, `/lotes` y `/recomendacion` dan fecha de meta distinta; "peso promedio" y "avance" no coinciden entre pantallas (`lotes.js` frente a `decision.js`) | Media | Verificación 010 r2 | 5 |
 | DT-03-2 | Una GDP medida en un solo día (250 → 256 kg) dispara el peso estimado de hoy | Media | Verificación 010 r2 | 5 |
-| DT-03-3 | **Decisión humana:** liquidación del tenedor por animal (regla D11 de la 010) o sobre la ganancia neta del contrato (D8) | Media | Verificación 011 | Humano |
+| DT-03-3 | **Decisión humana:** liquidación del tenedor por animal (regla D11 de la 010) o sobre la ganancia neta del contrato (D8) | Media | Verificación 011 | **Resuelta el 2026-09-28:** por contrato (ver bitácora del Sprint 04) |
 | DT-03-4 | Gastos del día de la venta o posteriores a una venta con fecha pasada se pierden o se cuentan dos veces | Media | Verificación 011 | 5 |
 | DT-03-5 | Margen esperado y real con bases distintas (último pesaje frente a peso estimado) | Media | Verificación 011 | 5 |
 | DT-03-6 | `venta_animales` y `ventas` aceptan escrituras directas (vientre vendido, peso editado, venta borrada) | Media | Verificación 011 | 5 |
 | DT-03-7 | La casilla para incluir un animal en la venta mide 20×20 px en el celular | Media | Verificación 011 | 5 |
 | DT-03-8 | `SIN_DATOS` cuenta como "No siguió la recomendación"; la ternera recibe aviso pero no confirmación | Baja | Verificación 011 | 5 |
-| DT-03-9 | **Decisión humana:** "Vender" cuando esperar ya no paga aunque no se llegó a la meta. El verificador propone una etiqueta propia ("no llegó a la meta pactada") escrita en R5 | Media | Verificación 010 | Humano |
+| DT-03-9 | **Decisión humana:** "Vender" cuando esperar ya no paga aunque no se llegó a la meta. El verificador propone una etiqueta propia ("no llegó a la meta pactada") escrita en R5 | Media | Verificación 010 | **Resuelta el 2026-09-28:** se mantiene la regla; la razón dice que no se llegó a la meta |
 | DT-03-10 | Código muerto: `decision.js:4`, parámetro `compacto` en `AnalisisVenta.jsx` | Baja | Verificación 010 r2 | 5 |
 
 Corregidos después de aprobar (ver la bitácora del Sprint 04):

@@ -42,6 +42,7 @@ desde el celular y sin perder el hilo, y convertir esos datos en la ganancia dia
 - Archivos: `src/pages/Pesaje.jsx`, `src/data/pesajes.js`, `src/domain/gdp.js`, migración.
 
 ## Desvíos durante la implementación (2026-09-28)
+- **Aprobado por el humano el 2026-09-28 (DT-01-1):** la GDP del último periodo usa al menos 14 días.
 - **R5, GDP reciente (corregido tras la verificación ronda 1):** en vez de comparar "los dos últimos pesajes", el último periodo
   compara el último pesaje contra el más reciente de **al menos 14 días antes**
   (`DIAS_MINIMOS_PERIODO`). La báscula tiene ±3 kg de error, y con la regla literal 54 de las

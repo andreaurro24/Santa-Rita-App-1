@@ -16,8 +16,10 @@ esa pregunta con números explicables.
   total de los animales activos / peso vendible total, con peso vendible = peso actual × (1 −
   destare).
 - R2 — El sistema deberá calcular el margen neto para Santa Rita (D11): ingreso − costo
-  acumulado − participación de los tenedores. La participación de cada animal "Al partir" es
-  su porcentaje sobre la ganancia neta de ese animal, solo si es positiva.
+  acumulado − participación de los tenedores. La participación de cada contrato "Al partir" es
+  su porcentaje sobre la ganancia neta del contrato (la suma de las ganancias de sus animales,
+  donde la pérdida de uno descuenta de los demás), solo si es positiva. *(Cambiado el
+  2026-09-28 por decisión humana, DT-03-3: antes se calculaba animal por animal.)*
 - R3 — El sistema deberá mostrar escenarios de vender hoy, en 2, en 4 y en 8 semanas. Cada uno
   usa el peso proyectado con la GDP de cada animal y le suma el gasto diario promedio del lote
   en los últimos 90 días por los días de espera.
@@ -28,6 +30,9 @@ esa pregunta con números explicables.
   - `VENDER_ANTICIPADO`: margen positivo y riesgo de pasto, es decir, pasto en rojo o menos
     de 2 mm de lluvia pronosticados en 7 días.
   - `ESPERAR`: el margen crece en los escenarios siguientes y no hay riesgo.
+  - `VENDER` (sin meta): margen positivo, sin riesgo, y esperar ya no sube el margen, aunque el
+    lote no haya llegado a la meta pactada. La razón dice que la meta no se alcanzó y pide
+    confirmar el peso con el comprador. *(Confirmado el 2026-09-28 por decisión humana, DT-03-9.)*
   - `NO_VENDER`: margen negativo hoy.
   - `SIN_DATOS`: falta el precio de mercado o el peso.
 - R6 — Mientras el clima esté con datos de respaldo (sin conexión), el sistema no deberá usar

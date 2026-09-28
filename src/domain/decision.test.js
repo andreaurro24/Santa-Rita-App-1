@@ -46,16 +46,22 @@ describe('analizarLoteV2 · cifras (R1–R4)', () => {
   });
 
   it('descuenta la participación del tenedor: su % de la ganancia neta positiva (D11)', () => {
-    const animales = [animal('a', { porcentajeTenedor: 50 }), animal('b')];
+    const animales = [animal('a', { contratoId: 'C1', porcentajeTenedor: 50 }), animal('b')];
     const r = analizarLoteV2(base({ animales }));
     // ganancia de a: 2.400.000 − 600.000 = 1.800.000 → tenedor 900.000
     expect(r.hoy.participacion).toBe(900_000);
     expect(r.hoy.margenNeto).toBe(3_600_000 - 900_000);
   });
 
-  it('sin participación si la ganancia del animal es negativa', () => {
-    const animales = [animal('a', { porcentajeTenedor: 50, costoCompra: 5_000_000 }), animal('b')];
+  it('sin participación si la ganancia del contrato es negativa', () => {
+    const animales = [animal('a', { contratoId: 'C1', porcentajeTenedor: 50, costoCompra: 5_000_000 }), animal('b')];
     expect(analizarLoteV2(base({ animales })).hoy.participacion).toBe(0);
+  });
+
+  it('D11 por contrato: la pérdida de un animal descuenta de la ganancia de otro del mismo contrato', () => {
+    // a gana 1.800.000; b pierde 2.400.000 − 3.000.000 = −600.000 → contrato 1.200.000 → tenedor 600.000
+    const animales = [animal('a', { contratoId: 'C1', porcentajeTenedor: 50 }), animal('b', { contratoId: 'C1', porcentajeTenedor: 50, costoCompra: 3_000_000 })];
+    expect(analizarLoteV2(base({ animales })).hoy.participacion).toBe(600_000);
   });
 
   it('escenarios: peso + GDP × días, y costo + gasto diario × días (R3)', () => {
@@ -148,14 +154,20 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
     const r = resultadoVenta(vendidos, { precioKg: 8_000, destarePct: 0 });
     expect(r.ingreso).toBe(6_800_000);
     expect(r.costo).toBe(4_500_000);
-    // tenedor: 50 % de (2.400.000 − 1.000.000); el tercero gana −400.000 → 0
-    expect(r.participacion).toBe(700_000);
-    expect(r.margenNeto).toBe(1_600_000);
+    // D11 por contrato: C1 gana 1.400.000 − 400.000 = 1.000.000 → tenedor 50 % = 500.000
+    expect(r.participacion).toBe(500_000);
+    expect(r.margenNeto).toBe(1_800_000);
   });
 
   it('liquida por contrato con la ganancia y el monto a pagar', () => {
     const r = resultadoVenta(vendidos, { precioKg: 8_000 });
-    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, monto: 700_000 }]);
+    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, monto: 500_000 }]);
+  });
+
+  it('un contrato con ganancia neta negativa no paga nada al tenedor', () => {
+    const r = resultadoVenta([vendidos[2]], { precioKg: 8_000 });
+    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 1, ganancia: -400_000, monto: 0 }]);
+    expect(r.participacion).toBe(0);
   });
 
   it('el destare reduce el ingreso', () => {
