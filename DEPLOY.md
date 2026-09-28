@@ -14,8 +14,11 @@ El repositorio del equipo es `andreaurro24/Santa-Rita-App-1`.
 
 **Configuración actual (2026-09-28):** Vercel (plan Hobby) solo importa repositorios de la cuenta
 propia, así que el proyecto se despliega desde el fork `andresfsanchez74/Santa-Rita-App-1`. El
-fork debe estar al día con `main` del repositorio del equipo (por ejemplo, con **Sync fork** en
-GitHub) para que Vercel publique los cambios.
+fork se mantiene al día con `main` del repositorio del equipo gracias al workflow
+`.github/workflows/sincronizar-fork.yml`, que corre cada 15 minutos (y a mano desde la pestaña
+Actions del fork); Vercel publica cada vez que el fork avanza. No hagas commits directo en el fork:
+dejaría de ser un espejo y la sincronización fallaría. Si un commit cambia un archivo de
+`.github/workflows`, la sincronización automática no puede copiarlo: usa **Sync fork** en GitHub.
 
 - Producción: https://santa-rita-app-1.vercel.app
 - Proyecto en Vercel: `santa-rita-app-1` (equipo `andres-sanchez-s-projects2`)

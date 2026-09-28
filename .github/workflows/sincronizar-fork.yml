@@ -1,0 +1,34 @@
+# Mantiene el fork que despliega Vercel (andresfsanchez74/Santa-Rita-App-1) al día con el
+# repositorio del equipo (andreaurro24/Santa-Rita-App-1). Ver DEPLOY.md.
+#
+# El archivo vive en `main` de los dos repositorios para que el fork siga siendo un espejo exacto;
+# en el repositorio del equipo el job no corre (condición `if`).
+# `gh repo sync` sin --force solo avanza el fork: si alguien hizo commits directo en el fork, falla
+# en vez de borrarlos, y hay que arreglarlo a mano.
+# Limitación: GITHUB_TOKEN no puede escribir archivos de .github/workflows. Si un commit del equipo
+# cambia un workflow, esta sincronización falla hasta que alguien haga push al fork con su cuenta
+# (o use "Sync fork" en GitHub).
+name: Sincronizar fork
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sincronizar-fork
+  cancel-in-progress: false
+
+jobs:
+  sincronizar:
+    if: github.repository == 'andresfsanchez74/Santa-Rita-App-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Traer main del repositorio del equipo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh repo sync "$GITHUB_REPOSITORY" --source andreaurro24/Santa-Rita-App-1 --branch main
