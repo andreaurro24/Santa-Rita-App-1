@@ -1,42 +1,50 @@
-# Cómo poner el MVP en línea (1 minuto, sin consola)
+# Despliegue (Vercel + Supabase)
 
-Este entorno donde se construyó el proyecto no tiene salida a internet hacia los
-servicios de hosting (Vercel, Netlify, GitHub, etc.), así que el despliegue en vivo
-lo tienes que disparar tú — pero es literalmente arrastrar una carpeta:
+La app es un sitio estático (Vite) que habla directo con Supabase. Toda la seguridad de los
+datos está en las políticas RLS de la base de datos, así que el sitio solo necesita la URL y la
+llave **publicable**.
 
-## Opción más rápida: Netlify Drop (sin cuenta, sin comandos)
-
-1. Abre **https://app.netlify.com/drop** en tu navegador.
-2. Arrastra la carpeta **`dist/`** (ya viene compilada y lista, incluida en
-   `santa-rita-mvp-dist.zip`) directamente sobre la página.
-3. En segundos te da una URL pública (`algo.netlify.app`) — esa es tu link en vivo
-   para el video de demostración (H6) o para compartir con el profesor/Miguel Ángel.
-4. Si quieres editarla luego (nombre de sitio, dominio propio), te ofrece crear una
-   cuenta gratis para "reclamar" el sitio.
-
-## Alternativa: Vercel (un comando, con tu cuenta)
-
-Si prefieres tener el proyecto conectado a tu cuenta de Vercel para actualizaciones
-futuras:
+## 1. Subir el código a GitHub
 
 ```bash
-npm install -g vercel
-cd santa-rita-mvp
-npm install
-vercel --prod
+git push origin main
 ```
 
-Te pedirá iniciar sesión (con GitHub, GitLab o email) la primera vez, y luego queda
-desplegado con un dominio `tuproyecto.vercel.app`.
+El repositorio del equipo es `andreaurro24/Santa-Rita-App-1`.
 
-## Alternativa: GitHub Pages
+## 2. Crear el proyecto en Vercel
 
-1. Sube la carpeta `santa-rita-mvp/` a un repositorio de GitHub.
-2. En Settings → Pages, o usando `npm install -D gh-pages` + un script de deploy,
-   publica el contenido de `dist/`.
-3. La app usa `HashRouter` (rutas tipo `#/animales`), así que funciona en GitHub
-   Pages sin necesidad de configurar redirecciones — cualquier ruta refresca bien.
+1. En https://vercel.com/new importa el repositorio. Vercel detecta Vite solo:
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+2. En **Settings → Environment Variables** agrega estas dos variables, para Production y Preview:
+   - `VITE_SUPABASE_URL`: la URL del proyecto Supabase.
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`: la llave publicable (`sb_publishable_…`).
+3. Despliega. Cada push a `main` vuelve a desplegar.
 
-Cualquiera de las tres te da una URL funcionando con los mismos datos de
-demostración y las mismas integraciones en vivo (clima y TRM) que probaste
-localmente.
+La app usa rutas con `#` (HashRouter), así que no necesita reglas de reescritura.
+
+**Nunca** pongas la llave `service_role` ni contraseñas en Vercel: el cliente no las necesita.
+
+## 3. Supabase antes de usarlo con datos reales
+
+1. Crea un proyecto de **producción** aparte del de desarrollo (`santa-rita-dev`) y aplica las
+   migraciones de `supabase/migrations/` en orden.
+2. En **Authentication → Sign In / Providers**, desactiva el registro público (*Allow new users
+   to sign up*) y activa la protección de contraseñas filtradas.
+3. Crea el usuario de Miguel en **Authentication → Users → Add user** y dale su perfil:
+   ```sql
+   insert into public.perfiles (id, nombre, rol) values ('<uuid>', 'Miguel Ángel Lacouture', 'dueno');
+   ```
+4. En **Authentication → URL Configuration** agrega la URL de Vercel como *Site URL*.
+5. No corras `npm run db:seed` contra producción: el script solo acepta el proyecto de
+   desarrollo.
+
+## 4. Comprobar
+
+- Sin sesión, cualquier ruta lleva al login.
+- Con la cuenta de Miguel se ven el hato y el panel.
+- En `dist/` no deben aparecer `service_role` ni contraseñas:
+  ```bash
+  grep -r service_role dist
+  ```

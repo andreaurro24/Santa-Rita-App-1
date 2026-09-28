@@ -1,76 +1,70 @@
-# Finca Santa Rita — MVP de trazabilidad y apoyo a la decisión de venta
+# Finca Santa Rita: trazabilidad del ganado y decisión de venta
 
-MVP funcional desarrollado para el proyecto **"End-to-End IT Automation & Operational
-Improvement Project — Finca Santa Rita"** (Gerencia de TI, Universidad de La Sabana,
-2026-2). Implementa el alcance definido en el Capítulo 5.3.1 del Project Charter:
+App web del proyecto **"End-to-End IT Automation & Operational Improvement Project — Finca
+Santa Rita"** (Gerencia de TI, Universidad de La Sabana, 2026-2). Digitaliza el hato de ceba y
+cría (identificación, pesos, sanidad, ubicación y costos) y convierte esos datos en una
+recomendación de venta explicable.
 
-- Registro digital individual del animal (marca de finca, número interno, chapeta ICA/Sinigán).
-- Historial de peso por animal (carga manual, sin hardware de pesaje).
-- Registro de vacunas y tratamientos por animal, con alertas de vacunación pendiente.
-- Trazabilidad del esquema **"Al partir"** (tenedor y condiciones pactadas).
-- Consulta centralizada de variables externas: **clima en vivo (Open-Meteo)**, **TRM en
-  vivo (datos.gov.co)** y **precio del kilo en pie** (referencia editable, Fedegán/SIPSA
-  no exponen API pública formal).
-- Cálculo de punto de equilibrio por lote y motor de recomendación de venta basado en reglas.
-- Reporte resumen imprimible/exportable a PDF como apoyo a la decisión de venta.
+El plan del producto, las reglas de negocio y los sprints están en [docs/plan.md](docs/plan.md);
+el contrato de cada funcionalidad, en [specs/](specs/README.md).
 
-## Stack técnico
+## Qué hace
 
-React 19 + Vite + React Router + Tailwind CSS 4 + Recharts + lucide-react. Sin backend:
-los datos viven en `localStorage` del navegador, sembrados con un set de ejemplo de
-~140 reses generado de forma determinística (`scripts/generate-seed.mjs`).
+- **Hato:** ficha de cada animal (hierro, número interno, chapeta ICA), altas, importación del
+  censo desde CSV y alerta de pérdida de peso.
+- **Pesaje en el corral:** jornada por lote desde el celular, con ganancia diaria de peso (GDP)
+  por animal y por lote.
+- **Lotes y ubicación:** ciclos de ceba con la fecha proyectada para llegar a la meta, fincas,
+  potreros y movimientos con su historial.
+- **"Al partir":** tenedores, contratos, asignación de animales y visitas de verificación.
+- **Costos:** gastos por lote o por animal, repartidos según el lote en que estaba cada animal
+  en cada fecha.
+- **Decisión de venta:** punto de equilibrio real, margen neto para Santa Rita (descontando a
+  los tenedores), escenarios de vender hoy o en 2, 4 u 8 semanas, pasto y clima. Incluye un
+  reporte imprimible.
+- **Ventas:** registro de la venta real, comparación con la recomendación y liquidación de los
+  tenedores.
+- **Indicadores:** los KPI del proyecto frente a la línea base AS-IS.
+- **Datos externos:** clima (Open-Meteo) y TRM (datos.gov.co) en vivo; precio del kilo en pie
+  registrado desde los boletines de Fedegán/SIPSA.
 
-## Cómo correrlo localmente
+## Stack
 
-```bash
-npm install
-npm run dev       # http://localhost:5173
-```
+React 19 · Vite 8 · React Router 7 · Tailwind CSS 4 · TanStack Query · Recharts ·
+Supabase (Auth, Postgres con RLS y funciones SQL) · Vitest · Playwright.
 
-Build de producción:
+## Cómo correrlo
 
-```bash
-npm run build      # genera dist/
-npm run preview    # sirve el build localmente para probarlo
-```
+1. `npm install`.
+2. Copia `.env.example` a `.env.local` con la URL y la llave **publicable** del proyecto
+   Supabase. Para las pruebas, crea también `.env.test` con el usuario de prueba.
+3. Aplica las migraciones de `supabase/migrations/` en orden (SQL Editor o Supabase CLI) y crea
+   un perfil para cada usuario:
+   ```sql
+   insert into public.perfiles (id, nombre, rol) values ('<uuid del usuario en Auth>', 'Miguel Ángel Lacouture', 'dueno');
+   ```
+4. `npm run db:seed` carga los datos de ejemplo (140 reses) en el proyecto de **desarrollo**.
+5. `npm run dev` abre la app en http://localhost:5173.
 
-## Acceso de demostración
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción en `dist/` |
+| `npm run lint` | oxlint |
+| `npm test` | Pruebas unitarias (Vitest) |
+| `npm run test:e2e` | Pruebas de extremo a extremo (Playwright; `E2E_PORT` cambia el puerto) |
+| `npm run db:seed` | Recarga los datos de ejemplo (`-- --sql` genera `supabase/seed.sql`) |
 
-| Rol | Usuario | Contraseña |
-|---|---|---|
-| Dueño / decisión de venta (Miguel Ángel Lacouture) | `miguel` | `santarita2026` |
-| Administrador operativo | `admin` | `finca2026` |
+## Cómo se trabaja
 
-El login es una simulación sin backend (pensada para el MVP académico); las
-credenciales están a la vista en la propia pantalla de login.
+Desarrollo guiado por specs ([CLAUDE.md](CLAUDE.md)):
 
-## Notas sobre las integraciones externas
+1. Se escribe la spec y un humano la aprueba.
+2. Se implementa.
+3. El subagente [`verificador`](.claude/agents/verificador.md) la revisa de forma independiente
+   y deja su reporte en `reports/verificacion/`.
+4. Se cierra el sprint con retroalimentación, deuda e información importante (`sprints/`).
 
-- **Clima**: se consulta en vivo contra la API pública de [Open-Meteo](https://open-meteo.com)
-  (sin API key) para las coordenadas de Badillo, Cesar. Si no hay conexión, se muestra
-  un valor de respaldo etiquetado como tal.
-- **TRM**: se consulta en vivo contra el portal de Datos Abiertos de Colombia
-  (datos.gov.co / Socrata), también sin API key.
-- **Precio del kilo en pie**: el Capítulo 4 del proyecto documenta que Fedegán/SIPSA no
-  tienen una API pública formal. Por eso este dato se modela como una serie de
-  referencia pre-cargada con valores publicados en sus boletines, editable desde el
-  módulo "Mercado y clima" — igual que hoy se hace manualmente, pero centralizado.
+## Despliegue
 
-## Estructura del proyecto
-
-```
-src/
-  api/          integraciones externas (clima, TRM)
-  components/   piezas de UI reutilizables (charts, layout, badges)
-  context/      estado global (auth, datos del hato) con persistencia en localStorage
-  data/         datos semilla (usuarios demo, precios de referencia, animales)
-  pages/        una página por módulo del MVP
-  utils/        lógica de negocio (punto de equilibrio) y formateo
-scripts/
-  generate-seed.mjs   genera src/data/seedAnimals.json (determinístico, reproducible)
-```
-
-## Fuera de alcance de este MVP (Cap. 5.3.2 del proyecto)
-
-Automatización de hardware de pesaje, integración institucional en tiempo real con
-ICA/SINIGAN, modelo predictivo de machine learning, y expansión a múltiples fincas.
+Ver [DEPLOY.md](DEPLOY.md).

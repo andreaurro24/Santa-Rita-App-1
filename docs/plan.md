@@ -183,13 +183,13 @@ La implementación del sistema de diseño se hace con la skill `frontend-design`
 Sin fechas por ahora; se ordenan por dependencia. Un sprint termina cuando todas sus specs
 están `hecha` (con veredicto `APROBADO` del verificador y visto bueno humano).
 
-| Sprint | Objetivo | Módulos | Specs |
-|---|---|---|---|
-| **0 · Fundaciones** | Datos compartidos, login real, diseño nuevo y el harness de pruebas funcionando. | M1 + base de todo | 001 Supabase, auth y esquema · 002 Sistema de diseño y layout adaptable |
-| **1 · Trazabilidad** | Registrar y consultar el hato completo desde el celular. | M2, M3, M4, M5, M6 | por definir |
-| **2 · Terceros y costos** | Saber dónde está cada animal y cuánto cuesta. | M7, M8 | por definir |
-| **3 · Decisión de venta** | Recomendación basada en el costo real y cierre del ciclo. | M9, M10, M11 | por definir |
-| **4 · Reportes y piloto** | Reportes, KPIs, importación del censo, verificación completa y ciclo piloto con Miguel. | M12, M13 | por definir |
+| Sprint | Objetivo | Módulos | Specs | Estado |
+|---|---|---|---|---|
+| **0 · Fundaciones** | Datos compartidos, login real, diseño nuevo y harness de pruebas. | M1 + base | 001 Supabase, auth y esquema · 002 Sistema de diseño | Cerrado (001 bloqueada solo por el despliegue, DT-00-1) |
+| **1 · Trazabilidad** | Pesar el lote desde el celular, GDP, lotes, ubicación. | M3, M5, M6 (M2 y M4 sin spec) | 004 Pesajes y GDP · 006 Lotes y ubicación · 003 y 005 sin escribir | Cerrado |
+| **2 · Terceros y costos** | Costo real de cada animal; control de "Al partir". | M7, M8 | 007 Al partir · 008 Costos | En verificación |
+| **3 · Decisión de venta** | Recomendación con costo real y cierre del ciclo. | M9, M10, M11 | 009 Pasto y destare · 010 Recomendación v2 · 011 Ventas | En verificación |
+| **4 · Reportes y piloto** | Indicadores, importación del censo, formato y rendimiento. | M12, M13 | 012 Indicadores y formato · 013 Importar censo | En verificación |
 
 ## 11. Fuera de alcance
 
@@ -210,3 +210,8 @@ están `hecha` (con veredicto `APROBADO` del verificador y visto bueno humano).
 - 2026-09-27: Se trabaja con datos de ejemplo hasta tener el censo real.
 - 2026-09-27: Desarrollo guiado por specs (SDD ligero) con un subagente verificador independiente; sin bucles automáticos.
 - 2026-09-27: Cría propia incluida como tipo de lote; costos por lote repartidos entre sus animales; "Al partir" como % de la ganancia neta; venta por kilo con destare configurable.
+- 2026-09-28: Perfiles creados a mano (sin trigger automático) y cierre de sesión local al dispositivo.
+- 2026-09-28: Alerta de pérdida de peso: GDP del último periodo (≥ 14 días) negativa o caída > 8 kg en 30 días. Pendiente de aprobación humana (desvío de R5 de la 004).
+- 2026-09-28: Reparto de costos histórico (según el lote en que estaba cada animal en la fecha del gasto, reconstruido desde `movimientos`).
+- 2026-09-28: D2 cubre vientres y terneras con confirmación; la base de datos impide vender vientres.
+- 2026-09-28: Recomendación v2 con costo real, parte del tenedor, escenarios a 2/4/8 semanas, pasto y clima; se retiró el motor v1.
