@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analizarLoteV2, gastoDiarioLote } from './decision';
+import { analizarLoteV2, gastoDiarioLote, resultadoVenta, siguioRecomendacion } from './decision';
 
 // Lote de números redondos para calcular a mano:
 // 2 novillos de 300 kg, compra $600.000 c/u, meta 350 kg, GDP 1 kg/día (270 → 300 en 30 días).
@@ -134,5 +134,38 @@ describe('gastoDiarioLote', () => {
   it('solo cuenta los últimos 90 días y nunca gastos futuros', () => {
     const c = (montoCop, fecha) => ({ montoCop, fecha });
     expect(gastoDiarioLote([c(90_000, '2026-09-01'), c(1_000_000, '2026-06-01'), c(5_000, '2026-10-05')], HOY)).toBe(1_000);
+  });
+});
+
+describe('resultadoVenta (spec 011 · R5, R6)', () => {
+  const vendidos = [
+    { pesoKg: 350, costoCop: 1_500_000, contratoId: null, porcentajeTenedor: null },
+    { pesoKg: 300, costoCop: 1_000_000, contratoId: 'C1', porcentajeTenedor: 50 },
+    { pesoKg: 200, costoCop: 2_000_000, contratoId: 'C1', porcentajeTenedor: 50 }, // pierde: no paga al tenedor
+  ];
+
+  it('ingreso con destare, costo, participación y margen neto', () => {
+    const r = resultadoVenta(vendidos, { precioKg: 8_000, destarePct: 0 });
+    expect(r.ingreso).toBe(6_800_000);
+    expect(r.costo).toBe(4_500_000);
+    // tenedor: 50 % de (2.400.000 − 1.000.000); el tercero gana −400.000 → 0
+    expect(r.participacion).toBe(700_000);
+    expect(r.margenNeto).toBe(1_600_000);
+  });
+
+  it('liquida por contrato con la ganancia y el monto a pagar', () => {
+    const r = resultadoVenta(vendidos, { precioKg: 8_000 });
+    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, monto: 700_000 }]);
+  });
+
+  it('el destare reduce el ingreso', () => {
+    expect(resultadoVenta([vendidos[0]], { precioKg: 8_000, destarePct: 5 }).ingreso).toBe(2_660_000);
+  });
+
+  it('siguió la recomendación si decía vender', () => {
+    expect(siguioRecomendacion('VENDER')).toBe(true);
+    expect(siguioRecomendacion('VENDER_ANTICIPADO')).toBe(true);
+    expect(siguioRecomendacion('ESPERAR')).toBe(false);
+    expect(siguioRecomendacion(null)).toBeNull();
   });
 });

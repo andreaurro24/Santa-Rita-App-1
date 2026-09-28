@@ -13,6 +13,7 @@ import { LotesLista, LoteDetalle } from './pages/Lotes';
 import Fincas from './pages/Fincas';
 import Costos from './pages/Costos';
 import { AlPartirLista, ContratoDetalle } from './pages/AlPartir';
+import { VentasLista, NuevaVenta, VentaDetalle } from './pages/Ventas';
 
 export default function App() {
   return (
@@ -35,6 +36,9 @@ export default function App() {
         <Route path="lotes/:loteId" element={<LoteDetalle />} />
         <Route path="fincas" element={<Fincas />} />
         <Route path="costos" element={<Costos />} />
+        <Route path="ventas" element={<VentasLista />} />
+        <Route path="ventas/nueva" element={<NuevaVenta />} />
+        <Route path="ventas/:ventaId" element={<VentaDetalle />} />
         <Route path="al-partir" element={<AlPartirLista />} />
         <Route path="al-partir/:contratoId" element={<ContratoDetalle />} />
         <Route path="mercado" element={<Market />} />

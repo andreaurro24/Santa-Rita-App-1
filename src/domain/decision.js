@@ -144,3 +144,37 @@ export function analizarLoteV2({ animales, costos, precioKg, destarePct = 0, met
     riesgoPasto,
   };
 }
+
+// Spec 011 · R5, R6: resultado real de una venta y liquidación de cada contrato "Al partir".
+// animales: [{ pesoKg, costoCop, contratoId, porcentajeTenedor }] (copias guardadas en la venta).
+export function resultadoVenta(animales, { precioKg, destarePct = 0 }) {
+  let pesoVendible = 0;
+  let ingreso = 0;
+  let costo = 0;
+  let participacion = 0;
+  const porContrato = new Map();
+  for (const a of animales) {
+    const vendibleKg = a.pesoKg * (1 - destarePct / 100);
+    const ingresoA = vendibleKg * precioKg;
+    const gananciaA = ingresoA - a.costoCop;
+    const parte = a.contratoId && a.porcentajeTenedor ? (Math.max(0, gananciaA) * a.porcentajeTenedor) / 100 : 0;
+    pesoVendible += vendibleKg;
+    ingreso += ingresoA;
+    costo += a.costoCop;
+    participacion += parte;
+    if (a.contratoId) {
+      const l = porContrato.get(a.contratoId) ?? { contratoId: a.contratoId, animales: 0, ganancia: 0, monto: 0 };
+      l.animales += 1;
+      l.ganancia += gananciaA;
+      l.monto += parte;
+      porContrato.set(a.contratoId, l);
+    }
+  }
+  return { pesoVendible, ingreso, costo, participacion, margenNeto: ingreso - costo - participacion, liquidaciones: [...porContrato.values()] };
+}
+
+// R6: se siguió la recomendación si el sistema decía vender (o vender antes) y se vendió.
+export function siguioRecomendacion(recomendacion) {
+  if (!recomendacion) return null;
+  return recomendacion === 'VENDER' || recomendacion === 'VENDER_ANTICIPADO';
+}
