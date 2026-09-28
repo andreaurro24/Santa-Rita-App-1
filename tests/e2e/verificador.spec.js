@@ -219,7 +219,7 @@ test('VRF pesaje: doble clic en Guardar crea un solo pesaje', async ({ page }) =
   await page.getByRole('button', { name: 'Registrar peso' }).click();
   await page.getByLabel('Peso (kg)').fill(String(PESO_DOBLE_CLIC));
   await page.getByRole('button', { name: 'Guardar' }).dblclick();
-  await expect(page.getByText(`${PESO_DOBLE_CLIC} kg`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`${String(PESO_DOBLE_CLIC).replace('.', ',')} kg`, { exact: true })).toBeVisible(); // es-CO (spec 012 R2)
   await page.waitForTimeout(1500);
   const supabase = await clientePrueba();
   const { data: a } = await supabase.from('animales').select('id').eq('numero_interno', ANIMAL_PESO).single();
@@ -465,7 +465,7 @@ test('VRF peso actual: con dos pesajes el mismo día vale el último registrado'
   expect([r1.error, r2.error]).toEqual([null, null]);
   await iniciarSesion(page);
   await abrirAnimal(page, ANIMAL_EMPATE);
-  await expect(page.getByText(`${PESOS_EMPATE[1]} kg`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`${String(PESOS_EMPATE[1]).replace('.', ',')} kg`, { exact: true })).toBeVisible(); // es-CO (spec 012 R2)
 });
 
 test('VRF sanidad: descripción vacía, fecha futura y registro válido persistente', async ({ page }) => {

@@ -173,7 +173,8 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   r.ui.descripcionEnBlanco = await alerta();
   await hoja.getByLabel('Descripción').fill(`${P} validación`);
-  for (const monto of ['0', '-5', 'abc', '1000,50', '$1.000', '1,000,000']) {
+  // Ronda 2: "$1.000" ahora se acepta (se quita el signo) y "1000,50" dice "pesos enteros"; se quitan de aquí.
+  for (const monto of ['0', '-5', 'abc', '1,000,000']) {
     await hoja.getByLabel('Monto (COP)').fill(monto);
     await hoja.getByRole('button', { name: 'Guardar' }).click();
     await page.waitForTimeout(300);
@@ -192,10 +193,11 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   await hoja.getByLabel('Descripción').fill(`${P} punto decimal`);
   await hoja.getByLabel('Monto (COP)').fill('12.5');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
-  await expect(hoja).toHaveCount(0).catch(() => {});
+  await page.waitForTimeout(800);
+  r.ui.montoConPuntoDecimalMensaje = (await hoja.count()) ? await alerta() : 'GUARDADO';
   r.ui.montoConPuntoDecimal = (await supabase.from('costos').select('monto_cop').eq('descripcion', `${P} punto decimal`)).data.map((x) => x.monto_cop);
   // Un monto enorme (error de ceros de más): ¿pide confirmación o avisa?
-  await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
+  if (!(await hoja.count())) await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
   await hoja.getByLabel('Descripción').fill(`${P} enorme`);
   await hoja.getByLabel('Monto (COP)').fill('99999999999999999999');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
@@ -239,7 +241,7 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   registrar('validaciones', r);
   expect(r.ui.vacio).toMatch(/Describe el gasto/);
   expect(r.ui.descripcionEnBlanco).toMatch(/Describe el gasto/);
-  for (const m of ['0', '-5', 'abc', '1000,50']) expect(r.ui[`monto ${m}`]).toMatch(/mayor que cero/);
+  for (const m of ['0', '-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).toMatch(/mayor que cero/);
   expect(r.ui.fechaFutura).toMatch(/futura/);
   expect(r.bd.montoCero).toMatch(/^23514/);
   expect(r.bd.montoNegativo).toMatch(/^23514/);
@@ -264,7 +266,7 @@ test('VRF 008 R3/R4 y la simplificación declarada: mover animales entre lotes y
   const x2 = await crearAnimal(supabase, 'X2', loteX);
   const x3 = await crearAnimal(supabase, 'X3', loteX);
   const y1 = await crearAnimal(supabase, 'Y1', loteY);
-  const y2 = await crearAnimal(supabase, 'Y2', loteY);
+  await crearAnimal(supabase, 'Y2', loteY);
   // Gastos de hace 30 días: X $900.000 (300.000 c/u), Y $200.000 (100.000 c/u), y $50.000 directo a X1.
   await supabase.from('costos').insert([
     { lote_id: loteX, categoria: 'suplemento', descripcion: `${P} sup X`, monto_cop: 900_000, fecha: haceDias(30) },

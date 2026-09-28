@@ -75,7 +75,8 @@ test.describe('celular 375×812 en el corral', () => {
     const campo = page.getByLabel(/^Peso de .+ \(kg\)$/);
     const guardar = page.getByRole('button', { name: 'Guardar peso' });
     const numero = async () => (await campo.evaluate((el) => el.closest('label').textContent)).match(/Peso de (.+) \(kg\)/)[1];
-    const ultimo = async () => Number((await page.getByText(/^Último peso:/).innerText()).match(/([\d.]+) kg/)[1]);
+    // Spec 012 R2 (premisa nueva): cifras es-CO, "1.234,5 kg".
+    const ultimo = async () => Number((await page.getByText(/^Último peso:/).innerText()).match(/([\d.,]+) kg/)[1].replace(/\./g, '').replace(',', '.'));
     const pesoEnJornada = async (num) => {
       const { data: a } = await supabase.from('animales').select('id').eq('numero_interno', num).single();
       const { data } = await supabase.from('pesajes').select('peso_kg, fecha').eq('jornada_id', jornadaId).eq('animal_id', a.id);
@@ -210,7 +211,7 @@ test.describe('celular 375×812 en el corral', () => {
     expect(r.segundoToque.filasBD).toBe(1);
     expect(r.sinRed.valorConservado).toBe(coma(p6));
     expect(r.retomaSaltado).toBe(true);
-    expect(r.historial).toContain(`promedio ${promedio} kg`);
+    expect(r.historial).toContain(`promedio ${coma(promedio)} kg`);
     expect(r.historial).toContain('Cerrada');
   });
 });

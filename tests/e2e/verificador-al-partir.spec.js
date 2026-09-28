@@ -303,8 +303,8 @@ test.describe('celular 375×812', () => {
     // R5/R6: visita. U1 pesado (−20 % frente a 250), U2 "no encontrado", U3 sin tocar.
     await page.getByRole('button', { name: 'Registrar visita' }).tap();
     hoja = page.getByRole('dialog', { name: 'Registrar visita de verificación' });
-    await hoja.getByRole('button', { name: 'Guardar visita' }).tap();
-    r.visitaVacia = await alertaDe(hoja);
+    // Ronda 2 (premisa nueva, R6): con la hoja vacía, guardar deja a todos como "no encontrado"; aquí solo se lee el aviso.
+    r.visitaVacia = (await hoja.getByText(/sin peso quedar/).innerText().catch(() => 'SIN AVISO')).trim();
     await hoja.getByLabel(`Peso de ${animales[0].numero} (kg)`).fill('abc');
     await hoja.getByRole('button', { name: 'Guardar visita' }).tap();
     r.visitaPesoTexto = await alertaDe(hoja);
@@ -319,8 +319,10 @@ test.describe('celular 375×812', () => {
     await hoja.getByRole('button', { name: 'Guardar visita' }).tap();
     await page.waitForTimeout(1200);
     r.visitaConMenos20 = (await hoja.count()) ? `pidió algo: ${await alertaDe(hoja)}` : 'guardada sin pedir confirmación';
+    if (await hoja.count()) await hoja.getByRole('button', { name: 'Guardar visita' }).tap(); // ronda 2: confirma el −20 %
     await expect(hoja).toHaveCount(0);
     const visitas = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Visitas de verificación' }) });
+    await expect(visitas).toContainText('pesados', { timeout: 10_000 }).catch(() => {}); // la lista se refresca tras cerrar la hoja
     r.visitaEnContrato = (await visitas.innerText()).replace(/\s+/g, ' ');
     const { data: vs } = await supabase.from('visitas_verificacion').select('id, revisiones:visita_animales ( animal_id, encontrado )').eq('contrato_id', contratoId);
     r.visitaBD = vs.map((v) => v.revisiones.map((x) => `${animales.find((a) => a.id === x.animal_id)?.numero}:${x.encontrado}`));
@@ -369,9 +371,9 @@ test.describe('celular 375×812', () => {
     expect(r.contrato['pct -5']).toMatch(/entre 0 y 100/);
     expect(r.contrato.precioNegativo).toMatch(/negativo/);
     expect(r.movimientosTrasAsignar).toBe(3);
-    expect(r.visitaVacia).toMatch(/al menos un peso/);
+    expect(r.visitaVacia).toMatch(/3 animales sin peso quedarán como no encontrados/);
     expect(r.visitaFechaFutura).toMatch(/futura/);
-    expect(r.visitaEnContrato).toMatch(/1 pesados, 1 no encontrados/);
+    expect(r.visitaEnContrato).toMatch(/1 pesados, 2 no encontrados/); // ronda 2: U3 sin marcar = no encontrado (R6)
     expect(r.fichaU1.peso).toBeGreaterThan(0);
     expect(r.terminado.botonAsignar).toBe(0);
     expect(r.lista.desborde.scrollWidth).toBe(375);
