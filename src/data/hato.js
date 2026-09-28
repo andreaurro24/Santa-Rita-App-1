@@ -158,3 +158,39 @@ export function useAddSanidad() {
     if (error) throw error;
   });
 }
+
+// Spec 013 · R4: importa animales uno por uno con registrar_animal (cada uno con su pesaje de
+// ingreso, todo o nada por animal). Devuelve cuántos se crearon y los errores por número interno.
+export function useImportarAnimales() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ animales, onProgreso }) => {
+      const finca = await fincaPropiaId();
+      let creados = 0;
+      const fallidos = [];
+      for (const a of animales) {
+        const { error } = await supabase.rpc('registrar_animal', {
+          datos: {
+            numero_interno: a.numeroInterno,
+            chapeta_ica: a.chapetaICA,
+            sexo: a.sexo,
+            categoria: a.categoria,
+            origen: 'compra',
+            fecha_ingreso: a.fechaIngreso,
+            peso_ingreso_kg: a.pesoIngreso,
+            peso_objetivo_kg: a.pesoObjetivo,
+            costo_compra_cop: a.costoCompra,
+            lote_id: a.loteId,
+            finca_id: finca,
+            contrato_id: null,
+          },
+        });
+        if (error) fallidos.push({ numeroInterno: a.numeroInterno, error });
+        else creados += 1;
+        onProgreso?.(creados + fallidos.length);
+      }
+      return { creados, fallidos };
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: HATO_KEY }),
+  });
+}

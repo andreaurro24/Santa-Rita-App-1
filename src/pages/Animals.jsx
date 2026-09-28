@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, ChevronRight, TrendingDown } from 'lucide-react';
+import { Search, Plus, ChevronRight, TrendingDown, Upload } from 'lucide-react';
 import { useHato, useAddAnimal, useContratosVigentes } from '../data/hato';
 import { useAuth } from '../context/AuthContext';
 import { ConDatos } from '../components/EstadoCarga';
@@ -46,9 +46,18 @@ function HatoContenido({ animales, lotes }) {
           <p className="text-sm text-gray-500">{animales.length} reses registradas, con su identificación, peso y sanidad.</p>
         </div>
         {puedeRegistrar && (
-          <Button icono={Plus} onClick={() => setShowForm(true)}>
-            Registrar animal
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/animales/importar"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-4 text-base font-semibold text-brand-800 ring-1 ring-inset ring-borde-control hover:bg-gray-50 md:min-h-10 md:text-sm"
+            >
+              <Upload size={18} aria-hidden="true" />
+              Importar censo
+            </Link>
+            <Button icono={Plus} onClick={() => setShowForm(true)}>
+              Registrar animal
+            </Button>
+          </div>
         )}
       </div>
 

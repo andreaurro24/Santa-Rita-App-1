@@ -14,6 +14,7 @@ import Fincas from './pages/Fincas';
 import Costos from './pages/Costos';
 import { AlPartirLista, ContratoDetalle } from './pages/AlPartir';
 import { VentasLista, NuevaVenta, VentaDetalle } from './pages/Ventas';
+import ImportarCenso from './pages/ImportarCenso';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="animales" element={<Animals />} />
+        <Route path="animales/importar" element={<ImportarCenso />} />
         <Route path="animales/:id" element={<AnimalDetail />} />
         <Route path="pesaje" element={<PesajeInicio />} />
         <Route path="pesaje/:jornadaId" element={<PesajeJornada />} />
