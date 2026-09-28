@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Sprout, SlidersHorizontal, Plus, Pencil } from 'lucide-react';
 import { useFincas } from '../data/fincas';
 import { useCondicionPasto, useRegistrarPasto, useParametros, useGuardarParametros } from '../data/pasto';
-import { ultimoPorFinca } from '../domain/pasto';
+import { ETIQUETA_PASTO, ultimoPorFinca } from '../domain/pasto';
 import { mensajeError } from '../lib/errores';
-import { formatFecha, hoyISO, formatPct } from '../utils/format';
+import { formatFecha, hoyISO, formatPct, numeroParaCampo } from '../utils/format';
 import { ConDatos } from './EstadoCarga';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -15,9 +15,9 @@ import Modal from './ui/Modal';
 import { Field, Input, Select, FormError } from './ui/Field';
 
 const NIVEL = {
-  verde: { estado: 'verde', label: 'Bien' },
-  amarillo: { estado: 'ambar', label: 'Regular' },
-  rojo: { estado: 'rojo', label: 'Escaso' },
+  verde: { estado: 'verde', label: ETIQUETA_PASTO.verde },
+  amarillo: { estado: 'ambar', label: ETIQUETA_PASTO.amarillo },
+  rojo: { estado: 'rojo', label: ETIQUETA_PASTO.rojo },
 };
 
 // Spec 009 · R1, R2: último estado del pasto de cada finca.
@@ -179,7 +179,7 @@ export function ParametrosVenta() {
 
 function DestareForm({ actual, onClose }) {
   const guardar = useGuardarParametros();
-  const [valor, setValor] = useState(String(actual));
+  const [valor, setValor] = useState(numeroParaCampo(actual));
   const [error, setError] = useState('');
   function handleSubmit(e) {
     e.preventDefault();

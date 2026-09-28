@@ -9,6 +9,7 @@ import Badge from '../components/ui/Badge';
 import { Field, Input, FormError } from '../components/ui/Field';
 import Modal from '../components/ui/Modal';
 import { mensajeError } from '../lib/errores';
+import { formatNumero, cantidad } from '../utils/format';
 
 // Spec 006 · R5: fincas (propia y de tenedores) con sus potreros y cuántos animales tiene cada uno.
 export default function Fincas() {
@@ -47,22 +48,22 @@ function FincaCard({ finca, animales }) {
       accion={<Badge tono={finca.tipo === 'propia' ? 'potrero' : 'cuero'}>{finca.tipo === 'propia' ? 'Propia' : 'Tenedor'}</Badge>}
     >
       <p className="mb-3 text-sm text-gray-600">
-        {animales.length} reses activas{finca.municipio ? `, ${finca.municipio}` : ''}
+        {cantidad(animales.length, 'res activa', 'reses activas')}{finca.municipio ? `, ${finca.municipio}` : ''}
       </p>
       <ul className="mb-3 divide-y divide-gray-100">
         {finca.potreros.map((p) => (
           <li key={p.id} className="flex min-h-12 items-center justify-between gap-2 text-sm">
             <span className="font-medium text-gray-800">
               {p.nombre}
-              {p.areaHa != null && <span className="font-normal text-gray-500"> ({p.areaHa} ha)</span>}
+              {p.areaHa != null && <span className="font-normal text-gray-500"> ({formatNumero(p.areaHa)} ha)</span>}
             </span>
-            <span className="text-gray-600">{animales.filter((a) => a.potreroId === p.id).length} reses</span>
+            <span className="text-gray-600">{cantidad(animales.filter((a) => a.potreroId === p.id).length, 'res', 'reses')}</span>
           </li>
         ))}
         {finca.potreros.length > 0 && sinPotrero > 0 && (
           <li className="flex min-h-12 items-center justify-between gap-2 text-sm text-gray-500">
             <span>Sin potrero asignado</span>
-            <span>{sinPotrero} reses</span>
+            <span>{cantidad(sinPotrero, 'res', 'reses')}</span>
           </li>
         )}
       </ul>

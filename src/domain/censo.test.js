@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLANTILLA_CSV, leerFecha, leerNumero, parsearCSV, validarFilas } from './censo';
+import { PLANTILLA_CSV, decodificarArchivo, leerFecha, leerNumero, parsearCSV, validarFilas } from './censo';
 
 const ENC = 'numero_interno;chapeta_ica;sexo;categoria;lote;fecha_ingreso;peso_ingreso_kg;peso_objetivo_kg;costo_compra_cop';
 const ctx = {
@@ -21,6 +21,19 @@ describe('parsearCSV (R1)', () => {
     expect(error).toBeNull();
     expect(filas[0].datos.chapetaICA).toBe('COL, 1');
     expect(filas[0].datos.costoCompra).toBe('');
+  });
+
+  it('numera por la línea real del archivo, salta filas vacías de Excel y avisa columnas desconocidas', () => {
+    const fila = '0303;COL-1;Macho;novillo;LOTE-2026-A;01/09/2026;200;340;1';
+    const { filas, ignoradas } = parsearCSV(`${ENC};costo_compra\n\n${fila}\n;;;;;;;;\n${fila.replace('0303', '0304')}\n`);
+    expect(filas.map((f) => f.linea)).toEqual([3, 5]);
+    expect(ignoradas).toEqual(['costo_compra']);
+  });
+
+  it('lee un archivo de Excel en Windows-1252 sin dañar la eñe', () => {
+    const bytes = new Uint8Array([0x41, 0xf1, 0x6f]); // "Año" en Latin-1
+    expect(decodificarArchivo(bytes)).toBe('Año');
+    expect(decodificarArchivo(new TextEncoder().encode('Año'))).toBe('Año');
   });
 
   it('avisa si faltan columnas o no hay datos', () => {

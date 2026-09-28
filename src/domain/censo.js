@@ -48,25 +48,44 @@ const normalizar = (s) =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_|_$/g, '');
 
-// R1: devuelve { filas: [{ linea, datos }], error } con las claves de COLUMNAS.
+// R1: devuelve { filas: [{ linea, datos }], ignoradas, error } con las claves de COLUMNAS.
+// `linea` es el número de línea real del archivo (verificación 013: se corría tras una línea en
+// blanco). Se saltan las líneas vacías y las de solo separadores (";;;;" que deja Excel).
+// `ignoradas`: columnas del archivo que no están en la plantilla, para avisarlas (verificación 013).
 export function parsearCSV(texto) {
   const limpio = texto.replace(/^﻿/, '').replace(/\r\n?/g, '\n');
-  const lineas = limpio.split('\n').filter((l) => l.trim() !== '');
-  if (lineas.length < 2) return { filas: [], error: 'El archivo no tiene filas de datos debajo de los encabezados.' };
-  const sep = (lineas[0].match(/;/g) ?? []).length >= (lineas[0].match(/,/g) ?? []).length ? ';' : ',';
-  const encabezados = partirLinea(lineas[0], sep).map(normalizar);
+  const lineas = limpio
+    .split('\n')
+    .map((contenido, i) => ({ contenido, numero: i + 1 }))
+    .filter((l) => !/^[\s;,"]*$/.test(l.contenido));
+  if (lineas.length < 2) return { filas: [], ignoradas: [], error: 'El archivo no tiene filas de datos debajo de los encabezados.' };
+  const primera = lineas[0].contenido;
+  const sep = (primera.match(/;/g) ?? []).length >= (primera.match(/,/g) ?? []).length ? ';' : ',';
+  const encabezados = partirLinea(primera, sep).map(normalizar);
   const faltan = COLUMNAS.filter((c) => c.obligatoria && !encabezados.includes(c.encabezado)).map((c) => c.encabezado);
-  if (faltan.length) return { filas: [], error: `Faltan columnas: ${faltan.join(', ')}. Descarga la plantilla para ver el formato.` };
-  const filas = lineas.slice(1).map((linea, i) => {
-    const valores = partirLinea(linea, sep);
+  if (faltan.length) return { filas: [], ignoradas: [], error: `Faltan columnas: ${faltan.join(', ')}. Descarga la plantilla para ver el formato.` };
+  const conocidas = new Set(COLUMNAS.map((c) => c.encabezado));
+  const ignoradas = encabezados.filter((e) => e && !conocidas.has(e));
+  const filas = lineas.slice(1).map(({ contenido, numero }) => {
+    const valores = partirLinea(contenido, sep);
     const datos = {};
     for (const c of COLUMNAS) {
       const idx = encabezados.indexOf(c.encabezado);
       datos[c.clave] = idx === -1 ? '' : (valores[idx] ?? '');
     }
-    return { linea: i + 2, datos };
+    return { linea: numero, datos };
   });
-  return { filas, error: null };
+  return { filas, ignoradas, error: null };
+}
+
+// El "CSV" que guarda Excel en español viene en Windows-1252 (Latin-1), no en UTF-8: si el
+// archivo no es UTF-8 válido se lee como Windows-1252 para no dañar tildes ni eñes (verificación 013).
+export function decodificarArchivo(bytes) {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
 }
 
 // "15/09/2026" o "2026-09-15" → "2026-09-15"; null si no es una fecha real.

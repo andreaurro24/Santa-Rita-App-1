@@ -13,7 +13,7 @@ import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { pierdePeso } from '../domain/gdp';
 import { vientresHaciaCeba } from '../domain/lotes';
-import { formatFecha, hoyISO, formatKg } from '../utils/format';
+import { formatFecha, hoyISO, formatKg, cantidad } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 export default function Animals() {
@@ -43,7 +43,7 @@ function HatoContenido({ animales, lotes }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Trazabilidad del hato</h1>
-          <p className="text-sm text-gray-500">{animales.length} reses registradas, con su identificación, peso y sanidad.</p>
+          <p className="text-sm text-gray-500">{cantidad(animales.length, 'res registrada', 'reses registradas')}, con su identificación, peso y sanidad.</p>
         </div>
         {puedeRegistrar && (
           <div className="flex flex-wrap gap-2">
@@ -104,6 +104,7 @@ function HatoContenido({ animales, lotes }) {
                       </Badge>
                     )}
                     {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                    {a.estado !== 'Activo' && <Badge>{a.estado}</Badge>}
                   </div>
                   <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
                 </Link>
@@ -141,6 +142,7 @@ function HatoContenido({ animales, lotes }) {
                       ) : (
                         <Badge>Propio</Badge>
                       )}
+                      {a.estado !== 'Activo' && <Badge>{a.estado}</Badge>}
                     </td>
                     <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">
                       {pierdePeso(a) && <TrendingDown size={16} className="mr-1 inline text-peligro" aria-label="Pierde peso" />}

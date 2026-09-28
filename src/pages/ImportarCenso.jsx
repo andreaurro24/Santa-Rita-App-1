@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Download, Upload, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useHato, useImportarAnimales } from '../data/hato';
 import { useLotes } from '../data/lotes';
-import { COLUMNAS, PLANTILLA_CSV, parsearCSV, validarFilas } from '../domain/censo';
+import { COLUMNAS, PLANTILLA_CSV, decodificarArchivo, parsearCSV, validarFilas } from '../domain/censo';
 import { ConDatos } from '../components/EstadoCarga';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { FormError } from '../components/ui/Field';
 import { mensajeError } from '../lib/errores';
-import { hoyISO } from '../utils/format';
+import { cantidad, hoyISO } from '../utils/format';
 
 // Spec 013 · importar el censo desde un CSV, con vista previa y validación por fila.
 export default function ImportarCenso() {
@@ -36,13 +36,15 @@ function ImportarContenido({ animales, lotes }) {
   const [error, setError] = useState('');
   const [progreso, setProgreso] = useState(0);
   const [final, setFinal] = useState(null);
+  const [ignoradas, setIgnoradas] = useState([]);
 
   async function leer(file) {
     setFinal(null);
     setArchivo(file?.name ?? null);
     if (!file) return setResultados(null);
-    const texto = await file.text();
-    const { filas, error: errorArchivo } = parsearCSV(texto);
+    const texto = decodificarArchivo(new Uint8Array(await file.arrayBuffer()));
+    const { filas, ignoradas: columnasIgnoradas, error: errorArchivo } = parsearCSV(texto);
+    setIgnoradas(columnasIgnoradas);
     if (errorArchivo) {
       setResultados(null);
       return setError(errorArchivo);
@@ -107,7 +109,7 @@ function ImportarContenido({ animales, lotes }) {
         <Card titulo="3. Revisa e importa">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <Badge tono="ok" icono={CheckCircle2}>
-              {validas.length} filas válidas
+              {cantidad(validas.length, 'fila válida', 'filas válidas')}
             </Badge>
             {conErrores.length > 0 && (
               <Badge tono="peligro" icono={AlertTriangle}>
@@ -115,6 +117,11 @@ function ImportarContenido({ animales, lotes }) {
               </Badge>
             )}
           </div>
+          {ignoradas.length > 0 && (
+            <p className="mb-4 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
+              Estas columnas no están en la plantilla y no se importarán: {ignoradas.join(', ')}. Revisa que el nombre sea el de la plantilla.
+            </p>
+          )}
           {conErrores.length > 0 && (
             <ul className="mb-4 divide-y divide-gray-100 text-sm">
               {conErrores.map((r) => (
@@ -134,7 +141,7 @@ function ImportarContenido({ animales, lotes }) {
               <Button icono={Upload} disabled={importar.isPending} onClick={importarValidas}>
                 {importar.isPending ? `Importando ${progreso} de ${validas.length}…` : `Importar ${validas.length} ${validas.length === 1 ? 'animal' : 'animales'}`}
               </Button>
-              {conErrores.length > 0 && <p className="text-sm text-gray-600">Se omitirán las {conErrores.length} filas con errores (R3).</p>}
+              {conErrores.length > 0 && <p className="text-sm text-gray-600">{conErrores.length === 1 ? 'Se omitirá la fila con errores (R3).' : `Se omitirán las ${conErrores.length} filas con errores (R3).`}</p>}
             </div>
           ) : (
             <p className="text-sm text-gray-700">Ninguna fila es válida. Corrige el archivo y vuelve a cargarlo.</p>

@@ -27,6 +27,13 @@ describe('pastoMasCritico', () => {
     expect(pastoMasCritico(estados, '2026-09-30', ['C']).nivel).toBe('verde');
   });
 
+  it('el rojo de un potrero donde no está el lote no le aplica; el de la finca entera sí', () => {
+    const estados = [e('A', '2026-09-20', 'rojo', null, 'P2'), e('A', '2026-09-20', 'verde', null, 'P1')];
+    expect(pastoMasCritico(estados, '2026-09-30', ['A'], ['P1']).nivel).toBe('verde');
+    expect(pastoMasCritico([...estados, e('A', '2026-09-21', 'amarillo')], '2026-09-30', ['A'], ['P1']).nivel).toBe('amarillo');
+    expect(pastoMasCritico(estados, '2026-09-30', ['A']).nivel).toBe('rojo');
+  });
+
   it('null sin estados vigentes', () => {
     expect(pastoMasCritico([], '2026-09-30')).toBeNull();
   });

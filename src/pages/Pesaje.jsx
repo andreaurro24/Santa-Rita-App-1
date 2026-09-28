@@ -13,7 +13,7 @@ import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { variacionSospechosa } from '../domain/gdp';
-import { formatFecha, hoyISO, formatKg, formatPct } from '../utils/format';
+import { formatFecha, hoyISO, formatKg, formatPct, cantidad } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 // Spec 004 · R1, R8: elegir el lote y abrir (o retomar) una jornada; ver las anteriores.
@@ -52,7 +52,7 @@ function InicioContenido({ lotes }) {
             <Select value={loteId} onChange={(e) => setLoteId(e.target.value)}>
               {conActivos.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.nombre} ({l.animales.filter((a) => a.estado === 'Activo').length} reses)
+                  {l.nombre} ({cantidad(l.animales.filter((a) => a.estado === 'Activo').length, 'res', 'reses')})
                 </option>
               ))}
             </Select>

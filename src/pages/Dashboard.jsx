@@ -12,7 +12,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
 import { pierdePeso } from '../domain/gdp';
-import { formatFecha, diasHasta, hoyISO } from '../utils/format';
+import { formatFecha, diasHasta, hoyISO, cantidad } from '../utils/format';
 
 export default function Dashboard() {
   const hato = useHato();
@@ -120,7 +120,7 @@ function DashboardContenido({ animales, lotes, precioActual }) {
                   className="flex min-h-12 items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:border-brand-300 hover:bg-brand-50"
                 >
                   <span className="font-medium text-gray-800">{l.nombre}</span>
-                  <span className="shrink-0 text-gray-500">{l.animales.filter((a) => a.estado === 'Activo').length} reses</span>
+                  <span className="shrink-0 text-gray-500">{cantidad(l.animales.filter((a) => a.estado === 'Activo').length, 'res', 'reses')}</span>
                 </Link>
               </li>
             ))}

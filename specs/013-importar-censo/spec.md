@@ -1,6 +1,6 @@
 # Spec 013 — Importar el censo desde CSV
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 4
 - Módulos del plan: M13
 

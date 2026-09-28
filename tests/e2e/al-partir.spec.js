@@ -95,10 +95,13 @@ test('R7: un contrato terminado no acepta animales (interfaz y base de datos)', 
 
 test('la visita rechaza animales que no son del contrato', async () => {
   const supabase = await clientePrueba();
-  const { data: contratos } = await supabase.from('contratos_al_partir').select('id').eq('estado', 'vigente').limit(1);
+  // Cualquier contrato vigente sirve; se compara el conteo de visitas antes y después (otras pruebas crean visitas).
+  const { data: contratos } = await supabase.from('contratos_al_partir').select('id').eq('estado', 'vigente').order('created_at').limit(1);
   const { data: a } = await supabase.from('animales').select('id').is('contrato_id', null).limit(1).single();
-  const r = await supabase.rpc('registrar_visita', { contrato: contratos[0].id, fecha: '2026-09-01', notas: null, revisiones: [{ animal_id: a.id, peso_kg: 300 }] });
+  const contar = async () => (await supabase.from('visitas_verificacion').select('id', { count: 'exact', head: true }).eq('contrato_id', contratos[0].id)).count;
+  const antes = await contar();
+  const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+  const r = await supabase.rpc('registrar_visita', { contrato: contratos[0].id, fecha: hoy, notas: null, revisiones: [{ animal_id: a.id, peso_kg: 300 }] });
   expect(r.error?.message).toMatch(/^animal_fuera_del_contrato/);
-  const { count } = await supabase.from('visitas_verificacion').select('id', { count: 'exact', head: true }).eq('contrato_id', contratos[0].id);
-  expect(count).toBe(0);
+  expect(await contar()).toBe(antes);
 });

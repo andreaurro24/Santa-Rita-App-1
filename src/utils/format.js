@@ -49,3 +49,8 @@ export function formatPct(n) {
 export function numeroParaCampo(n) {
   return n == null ? '' : String(n).replace('.', ',');
 }
+
+// "1 res", "2 reses": cantidad con el sustantivo en singular o plural (verificaciones 011–013).
+export function cantidad(n, singular, plural) {
+  return `${formatNumero(n)} ${n === 1 ? singular : plural}`;
+}

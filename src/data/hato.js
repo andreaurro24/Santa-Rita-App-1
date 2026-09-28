@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { formatPct } from '../utils/format';
 
 // Spec 001 · R4/R8: el hato se lee de Supabase y se entrega a las páginas con la MISMA forma
 // que tenía en el MVP con localStorage (camelCase, pesos y sanidad embebidos), para mantener
@@ -93,7 +94,7 @@ export function useContratosVigentes() {
         id: c.id,
         porcentaje: Number(c.porcentaje_ganancia),
         fincaId: c.tenedor?.finca_id ?? null,
-        etiqueta: `${c.tenedor?.nombre} – ${c.tenedor?.finca?.nombre ?? 'sin finca'} (${Number(c.porcentaje_ganancia)} %)`,
+        etiqueta: `${c.tenedor?.nombre} – ${c.tenedor?.finca?.nombre ?? 'sin finca'} (${formatPct(c.porcentaje_ganancia)})`,
       }));
     },
   });

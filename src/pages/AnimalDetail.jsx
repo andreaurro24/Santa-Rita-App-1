@@ -114,7 +114,8 @@ function FichaAnimal({ animales, reparto }) {
           titulo="Historial de peso"
           icono={Scale}
           accion={
-            puedeRegistrar && (
+            // Un animal vendido o muerto ya no se pesa (verificación 011).
+            puedeRegistrar && animal.estado === 'Activo' && (
               <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setShowPesoForm(true)}>
                 Registrar peso
               </Button>

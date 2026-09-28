@@ -30,8 +30,11 @@ export function useAnalisisLote(datos, loteId, precioManual) {
     if (!lote) return null;
     const hoy = hoyISO();
     const animales = hato.data.animales.filter((a) => a.loteId === loteId);
-    const fincas = [...new Set(animales.filter((a) => a.estado === 'Activo').map((a) => a.fincaId).filter(Boolean))];
-    const pastoCritico = pastoMasCritico(pasto.data, hoy, fincas);
+    const activos = animales.filter((a) => a.estado === 'Activo');
+    const fincas = [...new Set(activos.map((a) => a.fincaId).filter(Boolean))];
+    // Si algún animal no tiene potrero, cualquier potrero de su finca le puede aplicar.
+    const potreros = activos.every((a) => a.potreroId) ? [...new Set(activos.map((a) => a.potreroId))] : null;
+    const pastoCritico = pastoMasCritico(pasto.data, hoy, fincas, potreros);
     const precioKg = Number(precioManual) || precios.data.precioActual?.precioCOP || null;
     return {
       lote,

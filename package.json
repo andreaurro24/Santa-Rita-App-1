@@ -13,6 +13,8 @@
     "db:seed": "node scripts/seed-supabase.mjs"
   },
   "dependencies": {
+    "@supabase/auth-js": "2.117.2",
+    "@supabase/postgrest-js": "2.117.2",
     "@supabase/supabase-js": "2.117.2",
     "@tanstack/react-query": "5.104.0",
     "lucide-react": "^1.46.0",

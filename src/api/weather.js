@@ -51,7 +51,11 @@ export async function fetchClimaFinca({ signal } = {}) {
   url.searchParams.set('forecast_days', '7');
 
   try {
-    const res = await fetch(url.toString(), { signal });
+    // Si Open-Meteo no responde en 6 s se usa el respaldo: la recomendación no puede quedarse
+    // cargando (verificación 010 r2). AbortSignal.any/timeout existen en los navegadores actuales.
+    const limite = AbortSignal.timeout?.(6000);
+    const senal = signal && limite && AbortSignal.any ? AbortSignal.any([signal, limite]) : (limite ?? signal);
+    const res = await fetch(url.toString(), { signal: senal });
     if (!res.ok) throw new Error(`Open-Meteo respondió ${res.status}`);
     const data = await res.json();
 

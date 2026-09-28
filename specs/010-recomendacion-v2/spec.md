@@ -1,6 +1,6 @@
 # Spec 010 — Recomendación de venta v2: costo real, participación del tenedor y escenarios
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 3
 - Módulos del plan: M10
 

@@ -2,6 +2,7 @@ import { formatCOP } from '../domain/breakeven';
 import { formatFecha, formatKg, formatPct, formatNumero } from '../utils/format';
 import RecomendacionBadge from './RecomendacionBadge';
 import Stat from './ui/Stat';
+import { ETIQUETA_PASTO } from '../domain/pasto';
 
 const pesos = (n) => (n == null ? '—' : `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`);
 const kg = (n) => formatKg(Math.round(n));
@@ -108,7 +109,7 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
           ))}
           <li className="flex gap-2 text-sm text-gray-600">
             <span className="mt-2 size-1.5 shrink-0 rounded-full bg-gray-400" aria-hidden="true" />
-            Pasto: {pasto ? `${pasto.nivel} (registrado el ${formatFecha(pasto.fecha)})` : 'sin registro en los últimos 30 días'}. Lluvia:{' '}
+            Pasto: {pasto ? `${ETIQUETA_PASTO[pasto.nivel].toLowerCase()} (registrado el ${formatFecha(pasto.fecha)})` : 'sin registro en los últimos 30 días'}. Lluvia:{' '}
             {clima ? (clima.isFallback ? 'sin conexión' : `${formatNumero(clima.resumenLluvia7d)} mm en 7 días`) : 'consultando'}.
           </li>
         </ul>

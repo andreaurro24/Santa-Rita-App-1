@@ -2,6 +2,8 @@
 import { diasEntre } from './gdp';
 
 export const DIAS_VIGENCIA_PASTO = 30;
+// Cómo se le dice a cada nivel en pantalla, igual en /mercado y en la recomendación.
+export const ETIQUETA_PASTO = { verde: 'Bien', amarillo: 'Regular', rojo: 'Escaso' };
 const SEVERIDAD = { verde: 0, amarillo: 1, rojo: 2 };
 
 const masReciente = (a, b) => b.fecha.localeCompare(a.fecha) || (b.creado ?? '').localeCompare(a.creado ?? '');
@@ -34,10 +36,13 @@ export function ultimoPorFinca(estados, hoy) {
 }
 
 // Para la recomendación: el nivel más crítico entre los estados vigentes, o null.
-export function pastoMasCritico(estados, hoy, fincaIds = null) {
+// `potreroIds`: potreros donde está el lote; el estado de otro potrero no le aplica
+// (verificación 010 r2). El estado de la finca entera (sin potrero) sí le aplica siempre.
+export function pastoMasCritico(estados, hoy, fincaIds = null, potreroIds = null) {
   let peor = null;
   for (const e of ultimoPorArea(estados, hoy)) {
     if (e.desactualizado || (fincaIds && !fincaIds.includes(e.fincaId))) continue;
+    if (potreroIds && e.potreroId && !potreroIds.includes(e.potreroId)) continue;
     if (!peor || SEVERIDAD[e.nivel] > SEVERIDAD[peor.nivel]) peor = e;
   }
   return peor;

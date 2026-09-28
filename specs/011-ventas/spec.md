@@ -1,6 +1,6 @@
 # Spec 011 — Venta real y cierre del ciclo
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 3
 - Módulos del plan: M11
 

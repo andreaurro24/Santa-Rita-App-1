@@ -4,6 +4,7 @@
 import { pesoActual, formatCOP } from './breakeven';
 import { gdpTotal, diasEntre, pesoEstimadoHoy } from './gdp';
 import { costoAcumuladoAnimal, repartirCostos } from './costos';
+import { formatNumero, formatPct } from '../utils/format';
 
 export const ESCENARIOS_SEMANAS = [0, 2, 4, 8];
 export const SENSIBILIDAD = [-0.1, -0.05, 0.05, 0.1];
@@ -96,7 +97,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
   const mejorFuturo = futuros.reduce((m, e) => (e.margenNeto > m.margenNeto ? e : m), futuros[0]);
 
   razones.push(
-    `Punto de equilibrio real: ${pesos(hoyR.equilibrioKg)}/kg, con compra, gastos y ${destarePct} % de destare. El precio de hoy es ${pesos(precioKg)}/kg.`,
+    `Punto de equilibrio real: ${pesos(hoyR.equilibrioKg)}/kg, con compra, gastos y ${formatPct(destarePct)} de destare. El precio de hoy es ${pesos(precioKg)}/kg.`,
   );
   if (hoyR.participacion > 0) razones.push(`La parte de los tenedores "Al partir" hoy sería ${pesos(hoyR.participacion)}.`);
   if (clima && clima.isFallback) razones.push('El pronóstico está sin conexión: no se usó la lluvia para recomendar.'); // R6
@@ -134,7 +135,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     razones.unshift(
       pasto === 'rojo'
         ? `El pasto está en rojo: se recomienda anticipar la venta mientras el margen es positivo (${pesos(hoyR.margenNeto)}).`
-        : `Casi no se pronostica lluvia (${String(clima.resumenLluvia7d).replace('.', ',')} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
+        : `Casi no se pronostica lluvia (${formatNumero(clima.resumenLluvia7d)} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
     );
     // D4: decir cuánto se deja de ganar al anticipar.
     if (mejorFuturo.margenNeto > hoyR.margenNeto) {

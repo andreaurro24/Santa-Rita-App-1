@@ -16,7 +16,7 @@ import Chapeta from '../components/ui/Chapeta';
 import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
-import { formatFecha, hoyISO, formatKg, formatPct, numeroParaCampo } from '../utils/format';
+import { formatFecha, hoyISO, formatKg, formatPct, numeroParaCampo, cantidad } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 const pesos = (n) => (n == null ? '—' : `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`);
@@ -70,7 +70,7 @@ export function VentasLista() {
                         <Seguimiento recomendacion={v.recomendacion} />
                       </div>
                       <p className="mb-3 text-sm text-gray-600">
-                        {formatFecha(v.fecha)}, a {v.comprador}. {v.animales.length} reses a {pesos(v.precioKg)}/kg.
+                        {formatFecha(v.fecha)}, a {v.comprador}. {cantidad(v.animales.length, 'res', 'reses')} a {pesos(v.precioKg)}/kg.
                       </p>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         <Stat label="Ingreso" value={pesos(r.ingreso)} />
@@ -105,7 +105,7 @@ function NuevaVentaContenido({ datos }) {
     fecha: hoyISO(),
     comprador: '',
     precioKg: String(datos.precios.data.precioActual?.precioCOP ?? ''),
-    destarePct: String(datos.parametros.data.destarePct),
+    destarePct: numeroParaCampo(datos.parametros.data.destarePct),
     notas: '',
   });
   const set = (c, v) => setForm((f) => ({ ...f, [c]: v }));
@@ -235,7 +235,7 @@ function NuevaVentaContenido({ datos }) {
         )}
 
         <Card titulo={`Animales (${incluidos.length} de ${vendibles.length})`}>
-          {vientres > 0 && <p className="mb-2 text-sm text-gray-600">{vientres} vientres no aparecen: no se venden.</p>}
+          {vientres > 0 && <p className="mb-2 text-sm text-gray-600">{vientres === 1 ? '1 vientre no aparece: no se vende.' : `${vientres} vientres no aparecen: no se venden.`}</p>}
           {terneras > 0 && (
             <p role="status" className="mb-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
               Incluye {terneras} {terneras === 1 ? 'ternera' : 'terneras'}. Verifica que no tengan potencial reproductivo antes de venderlas.
@@ -347,7 +347,7 @@ function DetalleVenta({ venta: v }) {
             {r.liquidaciones.map((l) => (
               <li key={l.contratoId} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                 <span className="font-medium text-gray-900">
-                  {tenedorDe(l.contratoId)}: {l.animales} reses, ganancia neta {pesos(l.ganancia)}
+                  {tenedorDe(l.contratoId)}: {cantidad(l.animales, 'res', 'reses')}, ganancia neta {pesos(l.ganancia)}
                 </span>
                 <span className="cifra text-base font-bold text-earth-700">Pagar {pesos(l.monto)}</span>
               </li>

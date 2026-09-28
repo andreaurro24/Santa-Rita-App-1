@@ -50,9 +50,9 @@ está mal escrito: reescríbelo.
 | [007 — "Al partir": tenedores, contratos y visitas](007-al-partir/spec.md) | hecha | 2 |
 | [008 — Insumos y costos](008-costos/spec.md) | hecha | 2 |
 | [009 — Estado del pasto y parámetros de venta](009-pasto-parametros/spec.md) | hecha | 3 |
-| [010 — Recomendación de venta v2](010-recomendacion-v2/spec.md) | en-verificacion (ronda 2) | 3 |
-| [011 — Venta real y cierre del ciclo](011-ventas/spec.md) | en-verificacion | 3 |
-| [012 — Indicadores, formato de cifras y rendimiento](012-kpis-reportes/spec.md) | en-verificacion | 4 |
-| [013 — Importar el censo desde CSV](013-importar-censo/spec.md) | en-verificacion | 4 |
+| [010 — Recomendación de venta v2](010-recomendacion-v2/spec.md) | hecha | 3 |
+| [011 — Venta real y cierre del ciclo](011-ventas/spec.md) | hecha | 3 |
+| [012 — Indicadores, formato de cifras y rendimiento](012-kpis-reportes/spec.md) | en-verificacion (ronda 2) | 4 |
+| [013 — Importar el censo desde CSV](013-importar-censo/spec.md) | hecha | 4 |
 
 Las specs 003 (gestión del hato) y 005 (sanidad) no existen como archivo: el control de permisos de Claude Code bloqueó su creación. Quedan pendientes de revisión humana.
