@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight } from 'lucide-react';
+import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight, Receipt } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
 import { useMovimientos } from '../data/fincas';
+import { useCostos } from '../data/costos';
+import { CATEGORIAS_COSTO, costoAcumuladoAnimal } from '../domain/costos';
 import MoverAnimales from '../components/MoverAnimales';
 import { ConDatos } from '../components/EstadoCarga';
 import { mensajeError } from '../lib/errores';
@@ -22,10 +24,11 @@ import { formatFecha, diasHasta, hoyISO, formatoGdp } from '../utils/format';
 
 export default function AnimalDetail() {
   const hato = useHato();
-  return <ConDatos queries={hato}>{() => <FichaAnimal animales={hato.data.animales} />}</ConDatos>;
+  const costos = useCostos();
+  return <ConDatos queries={[hato, costos]}>{() => <FichaAnimal animales={hato.data.animales} costos={costos.data} />}</ConDatos>;
 }
 
-function FichaAnimal({ animales }) {
+function FichaAnimal({ animales, costos }) {
   const { id } = useParams();
   const { user } = useAuth();
   const animal = animales.find((a) => a.id === id);
@@ -127,6 +130,8 @@ function FichaAnimal({ animales }) {
         </Card>
       </div>
 
+      <CostoAnimal animal={animal} animales={animales} costos={costos} />
+
       <Card
         titulo="Ubicación"
         icono={MapPin}
@@ -184,6 +189,33 @@ function FichaAnimal({ animales }) {
       </Card>
       {moviendo && <MoverAnimales animales={[animal]} onClose={() => setMoviendo(false)} />}
     </div>
+  );
+}
+
+// Spec 008 · R4: costo acumulado del animal (compra + gastos directos + su parte del lote).
+function CostoAnimal({ animal, animales, costos }) {
+  const delLote = animales.filter((a) => a.loteId === animal.loteId);
+  const c = costoAcumuladoAnimal(animal, costos.filter((x) => x.loteId === animal.loteId), delLote);
+  const pesos = (n) => `$${formatCOP(Math.round(n))}`;
+  return (
+    <Card titulo="Costo acumulado" icono={Receipt}>
+      <div className="mb-3 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <Stat label="Total" value={pesos(c.total)} />
+        <Stat label="Compra" value={animal.costoCompra != null ? pesos(c.compra) : 'Cría propia'} />
+        <Stat label="Gastos directos" value={pesos(c.directos)} />
+        <Stat label="Parte de los gastos del lote" value={pesos(c.deLote)} />
+      </div>
+      {c.gastos > 0 ? (
+        <p className="text-sm text-gray-600">
+          {Object.entries(c.porCategoria)
+            .map(([cat, monto]) => `${CATEGORIAS_COSTO[cat]}: ${pesos(monto)}`)
+            .join('; ')}
+          .
+        </p>
+      ) : (
+        <p className="text-sm text-gray-500">Todavía no hay gastos registrados para este animal ni su lote.</p>
+      )}
+    </Card>
   );
 }
 

@@ -11,6 +11,7 @@ import Report from './pages/Report';
 import { PesajeInicio, PesajeJornada } from './pages/Pesaje';
 import { LotesLista, LoteDetalle } from './pages/Lotes';
 import Fincas from './pages/Fincas';
+import Costos from './pages/Costos';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="lotes" element={<LotesLista />} />
         <Route path="lotes/:loteId" element={<LoteDetalle />} />
         <Route path="fincas" element={<Fincas />} />
+        <Route path="costos" element={<Costos />} />
         <Route path="mercado" element={<Market />} />
         <Route path="recomendacion" element={<SaleRecommendation />} />
         <Route path="reporte" element={<Report />} />

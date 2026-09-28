@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, MoveRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, MoveRight, CheckCircle2, Receipt } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useLotes, useGuardarLote } from '../data/lotes';
 import { resumenLote } from '../domain/lotes';
+import { useCostos } from '../data/costos';
+import { resumenCostosLote } from '../domain/costos';
+import { formatCOP } from '../domain/breakeven';
 import { pesoActual } from '../domain/breakeven';
 import { ConDatos } from '../components/EstadoCarga';
 import MoverAnimales from '../components/MoverAnimales';
@@ -169,6 +172,8 @@ function DetalleContenido({ lote }) {
         </div>
       </Card>
 
+      <CostosLote lote={lote} />
+
       <Card
         titulo={`Animales (${activos.length})`}
         accion={
@@ -204,6 +209,29 @@ function DetalleContenido({ lote }) {
         />
       )}
     </div>
+  );
+}
+
+// Spec 008 · R5: resumen de costos del lote.
+function CostosLote({ lote }) {
+  const costos = useCostos();
+  if (!costos.data) return null;
+  const r = resumenCostosLote(lote.animales, costos.data.filter((c) => c.loteId === lote.id));
+  return (
+    <Card
+      titulo="Costos"
+      icono={Receipt}
+      accion={
+        <Link to={`/costos?lote=${lote.id}`} className="inline-flex min-h-12 items-center text-sm font-medium text-brand-700 hover:underline md:min-h-0">
+          Ver gastos
+        </Link>
+      }
+    >
+      <div className="grid grid-cols-2 gap-4">
+        <Stat label="Gastado en el lote" value={`$${formatCOP(Math.round(r.total))}`} />
+        <Stat label="Costo acumulado promedio por res" value={r.promedioPorAnimal != null ? `$${formatCOP(Math.round(r.promedioPorAnimal))}` : '—'} />
+      </div>
+    </Card>
   );
 }
 

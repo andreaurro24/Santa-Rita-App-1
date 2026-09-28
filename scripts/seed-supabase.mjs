@@ -15,8 +15,23 @@ import { PRECIO_KILO_EN_PIE_HISTORICO } from '../src/data/seedMercado.js';
 
 const PROYECTO_DEV = 'eiszvbwwpqcqognkcfew';
 
-// Orden de borrado (hijos primero); el de inserción es el inverso.
-const TABLAS = ['pesajes', 'eventos_sanitarios', 'animales', 'contratos_al_partir', 'tenedores', 'lotes', 'potreros', 'fincas', 'precios_mercado'];
+// Orden de borrado (hijos primero); el de inserción es el inverso. Incluye las tablas que la
+// semilla no llena (jornadas, movimientos, costos…): hay que vaciarlas porque apuntan a lotes,
+// fincas y animales, y sin eso la recarga falla por las llaves foráneas.
+const TABLAS = [
+  'costos',
+  'movimientos',
+  'pesajes',
+  'jornadas_pesaje',
+  'eventos_sanitarios',
+  'animales',
+  'contratos_al_partir',
+  'tenedores',
+  'lotes',
+  'potreros',
+  'fincas',
+  'precios_mercado',
+];
 
 // UUID determinístico (formato v5) para que las filas se enlacen sin consultar ids.
 function uuid(clave) {
@@ -147,7 +162,7 @@ function aSQL(filas) {
   const partes = ['-- Generado por scripts/seed-supabase.mjs --sql. No editar a mano.', 'begin;'];
   for (const t of TABLAS) partes.push(`delete from public.${t};`);
   for (const t of [...TABLAS].reverse()) {
-    const rows = filas[t];
+    const rows = filas[t] ?? [];
     if (!rows.length) continue;
     const cols = Object.keys(rows[0]);
     partes.push(
@@ -181,7 +196,7 @@ async function aplicar(filas) {
     if (error) throw new Error(`Borrando ${t}: ${error.message}`);
   }
   for (const t of [...TABLAS].reverse()) {
-    const rows = filas[t];
+    const rows = filas[t] ?? [];
     for (let i = 0; i < rows.length; i += 500) {
       const { error } = await supabase.from(t).insert(rows.slice(i, i + 500));
       if (error) throw new Error(`Insertando ${t}: ${error.message}`);
