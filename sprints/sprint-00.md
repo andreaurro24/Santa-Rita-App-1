@@ -1,6 +1,6 @@
 # Sprint 00 — Fundaciones
 
-- Estado: en-ejecucion
+- Estado: cerrado
 - Inicio: 2026-09-27 · Cierre: —
 - Aprobación del plan: [x] Andrés Sánchez el 2026-09-27 (spec 001; la 002 se aprobó en el chat el mismo día)
 
@@ -67,20 +67,61 @@ verificar automáticamente.
 
 ## 4. Cierre
 
+**Cerrado el 2026-09-28 con una excepción:** la spec 002 está `hecha` (APROBADO en la ronda 2).
+La spec 001 quedó `BLOQUEADO` solo por R11/T9 (despliegue en Vercel): el push al repositorio del
+equipo lo bloqueó el control de permisos de Claude Code y lo tiene que hacer el usuario. R1–R10
+de la 001 cumplen (ronda 2). El sprint se cierra para no frenar el trabajo; T9 pasa a la deuda
+como acción del usuario (DT-00-1).
+
 ### Retroalimentación
-- Funcionó:
-- No funcionó:
-- Cambiar en el siguiente sprint:
+- **Funcionó:**
+  - El verificador como agente separado encontró problemas reales que las pruebas del
+    implementador no cubrían: el login sin perfil volvía al formulario sin mensaje, la chapeta
+    duplicada en minúsculas se aceptaba y la ficha se desbordaba en el celular.
+  - Las 2 rondas máximas obligan a corregir de raíz.
+  - Trabajar la spec siguiente en un git worktree mientras el verificador revisa `main`
+    duplicó el ritmo.
+- **No funcionó:**
+  - Correr dos suites E2E a la vez contra la misma base de datos: la recarga de la semilla de
+    una rompía la otra.
+  - El límite de inicios de sesión de Supabase Auth tumbó la suite con más de 50 pruebas.
+  - Un trigger con `AND` sin cortocircuito (migración 0300) y un espacio al final de las
+    etiquetas: bugs propios que costaron una ronda.
+- **Cambiar en el siguiente sprint:**
+  - Nunca correr suites en paralelo contra la base de datos.
+  - Reutilizar la sesión en las pruebas (ya hecho en `helpers.js`).
+  - Cada migración nueva debe sumar su tabla a `npm run db:seed`.
+  - Pensar en celular primero: cada formulario nuevo nace como hoja inferior.
 
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
+| DT-00-1 | Despliegue en Vercel (T9/R11 de la 001): hacer push de `main` a `andreaurro24/Santa-Rita-App-1`, importar el repo en Vercel y configurar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` | Alta (bloquea el cierre de la 001) | 001 T9 | Acción del usuario |
+| DT-00-2 | Separador decimal inconsistente: punto en kg y %, coma en GDP; en es-CO debería ser coma | Baja | Verificación 002 | 4 |
+| DT-00-3 | En Supabase Auth, desactivar el registro público y activar la protección contra contraseñas filtradas (Dashboard → Authentication) | Baja (mitigado: sin perfil no hay acceso) | Verificaciones 001 | Acción del usuario |
+| DT-00-4 | Crear el usuario real de Miguel en Auth y su fila en `perfiles` (rol `dueno`) | Media | Plan | Acción del usuario, antes del piloto |
+| DT-00-5 | Bundle de 940 kB: separar por rutas (`import()` dinámico) | Baja | Build | 4 |
+| DT-00-6 | Foco que se pierde al cerrar una hoja cuyo botón de apertura se deshabilita (por ejemplo, tras mover animales) | Baja | Verificación 002 r2 | 4 |
+| DT-00-7 | Escribir las specs 003 (gestión del hato) y 005 (sanidad): su creación la bloqueó el control de permisos | Media | Sprint 01 | Revisión humana |
 
 ### Información importante
-- Decisiones:
-- Recursos creados (sin secretos):
-- Comandos nuevos:
-- Gotchas:
+- **Decisiones:**
+  - No hay trigger de perfil: los perfiles se crean a mano.
+  - La semilla entra con el usuario de prueba, sin `service_role`.
+  - El cierre de sesión es local al dispositivo.
+  - Se usa TanStack Query.
+  - Identidad visual "Hierro y sabana", con ajustes de color para evitar los patrones genéricos.
+- **Recursos creados (sin secretos):**
+  - Proyecto Supabase `santa-rita-dev` (ref `eiszvbwwpqcqognkcfew`, org GuardIA, us-east-1, plan gratuito).
+  - Usuario de prueba `verificador@santarita.test`, con rol `dueno`; su contraseña está en `.env.test`, fuera del repo.
+- **Comandos nuevos:**
+  - `npm test` (Vitest) y `npm run test:e2e` (Playwright; acepta `E2E_PORT`).
+  - `npm run db:seed` (con `-- --sql` genera `supabase/seed.sql`).
+- **Gotchas:**
+  - En plpgsql, `AND` no garantiza cortocircuito: usa IF anidados.
+  - En Tailwind v4, el CSS sin capa les gana a las utilidades: usa `@layer components`.
+  - Una etiqueta con espacio al final rompe `getByLabel` con `$`.
+  - El plan gratuito de Supabase pausa el proyecto tras 7 días sin actividad.
 
 ### Para el siguiente sprint
-- 
+- Construir sobre la capa de datos de `src/data/` y el sistema `ui/`; no crear estilos sueltos.
