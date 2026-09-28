@@ -20,6 +20,9 @@ import { medirDesborde } from './verificador-medidas';
 // Contrato J (50 %): T1 (J1 gana) vendido hoy; luego T2 (J2 pierde) con fecha de hace 5 días (anterior).
 // Contrato S (50 %): U2 (pierde) y U1 (gana) vendidos el mismo día, en ese orden de registro.
 // Contrato Z (0 %) en el lote V (Z1 gana, Z2 pierde), dos ventas.
+// Ronda 2 (commit e549801): se liquida en ORDEN DE REGISTRO (created_at). La ficha del contrato muestra la
+// "Liquidación acumulada". Contrato K (50 %) en el lote W, sin ventas: su ficha no muestra la tarjeta, y
+// sirve para intentar una venta con fecha futura (debe rechazarse).
 
 const DIR = 'test-results/vrf-d8a';
 mkdirSync(DIR, { recursive: true });
@@ -60,6 +63,7 @@ async function limpiar() {
 
 let ids;
 let destareOriginal;
+let fichaHNegativa; // texto de la tarjeta del contrato H cuando solo se ha vendido la pérdida (prueba 2)
 test.beforeAll(async () => {
   test.setTimeout(240_000);
   const supabase = await clientePrueba();
@@ -93,7 +97,7 @@ test.beforeAll(async () => {
   const GANA = 600_000;
   const PIERDE = 3_000_000;
   const L = {};
-  for (const s of ['P1', 'P2', 'P3', 'R', 'T1', 'T2', 'U1', 'U2', 'V']) L[s] = await lote(s);
+  for (const s of ['P1', 'P2', 'P3', 'R', 'T1', 'T2', 'U1', 'U2', 'V', 'W']) L[s] = await lote(s);
   const a = {};
   a.G1 = await animal('G1', L.P1, GANA);
   a.G2 = await animal('G2', L.P2, PIERDE);
@@ -106,15 +110,18 @@ test.beforeAll(async () => {
   a.S2 = await animal('S2', L.U2, PIERDE);
   a.Z1 = await animal('Z1', L.V, GANA);
   a.Z2 = await animal('Z2', L.V, PIERDE);
-  await contrato('G', 50, [a.G1, a.G2, a.G4]);
-  await contrato('H', 50, [a.H1, a.H2]);
-  await contrato('J', 50, [a.J1, a.J2]);
-  await contrato('S', 50, [a.S1, a.S2]);
-  await contrato('Z', 0, [a.Z1, a.Z2]);
+  a.K1 = await animal('K1', L.W, GANA);
+  const C = {};
+  C.G = await contrato('G', 50, [a.G1, a.G2, a.G4]);
+  C.H = await contrato('H', 50, [a.H1, a.H2]);
+  C.J = await contrato('J', 50, [a.J1, a.J2]);
+  C.S = await contrato('S', 50, [a.S1, a.S2]);
+  C.Z = await contrato('Z', 0, [a.Z1, a.Z2]);
+  C.K = await contrato('K', 50, [a.K1]);
   // El reporte usa el último boletín: uno de hoy a $8.000.
   const pr = await supabase.from('precios_mercado').insert({ fecha: hoyBogota(), precio_kg_cop: 8000, fuente: `${P} boletín` });
   if (pr.error) throw pr.error;
-  ids = { L, a };
+  ids = { L, a, C };
 });
 test.afterAll(async () => {
   await limpiar();
@@ -175,6 +182,8 @@ async function venderUI(page, lote, { fecha = hoyBogota(), desmarcar = [], nombr
   const secRes = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) });
   const ls = await lineas(secRes);
   const vista = { tenedores: trasEtiqueta(ls, 'A los tenedores'), margen: trasEtiqueta(ls, 'Margen neto') };
+  // Ronda 2 (Bajo 4): aviso bajo "A los tenedores" cuando se descuenta lo acumulado.
+  const aviso = ls.includes('Con lo acumulado y lo ya pagado del contrato');
   await page.getByLabel('Comprador').fill(`${P} Comprador ${nombre ?? lote}`);
   await page.screenshot({ path: `${DIR}/asistente-${nombre ?? lote}.png`, fullPage: true });
   await page.getByRole('button', { name: 'Guardar venta' }).click();
@@ -183,7 +192,7 @@ async function venderUI(page, lote, { fecha = hoyBogota(), desmarcar = [], nombr
   await page.waitForTimeout(500);
   const detalle = await leerDetalle(page);
   await page.screenshot({ path: `${DIR}/detalle-${nombre ?? lote}.png`, fullPage: true });
-  return { vista, ventaId, detalle };
+  return { vista, aviso, ventaId, detalle };
 }
 
 async function detallePorId(page, ventaId) {
@@ -236,6 +245,9 @@ test('VRF D8A · contrato en tres lotes: ganancia primero, pérdida después (sa
 
   expect.soft(r.recP3Antes.tenedores).toBe(900_000);
   expect.soft(r.ventaP1.vista).toEqual({ tenedores: 900_000, margen: 900_000 });
+  expect.soft(r.ventaP1.aviso, 'P1 es la primera venta de G: sin aviso').toBe(false);
+  expect.soft(r.ventaP2.aviso, 'P2 descuenta lo pagado en P1: con aviso').toBe(true);
+  expect.soft(r.ventaP3.aviso, 'P3 descuenta el saldo: con aviso').toBe(true);
   expect.soft(r.ventaP1.detalle.liq).toEqual([`${P} tenedor G: 1 res, ganancia neta $1.800.000 Pagar $900.000`]);
   expect.soft(r.ventaP2.vista).toEqual({ tenedores: 0, margen: -600_000 });
   expect.soft(r.ventaP2.detalle.liq).toEqual([
@@ -261,6 +273,9 @@ test('VRF D8A · venta parcial de un lote: la pérdida primero, la ganancia desp
   const r = {};
   r.recRAntes = await leerRecomendacion(page, 'R');
   r.venta1 = await venderUI(page, 'R', { fecha: haceDias(10), desmarcar: ['H2'], nombre: 'R1' });
+  r.fichaH = await leerFicha(page, 'H');
+  fichaHNegativa = (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Liquidación acumulada' }) }).innerText()).replace(/\s+/g, ' ');
+  r.fichaHTexto = fichaHNegativa;
   r.recR = await leerRecomendacion(page, 'R');
   r.repR = await leerReporte(page, 'R');
   r.venta2 = await venderUI(page, 'R', { nombre: 'R2' });
@@ -268,6 +283,7 @@ test('VRF D8A · venta parcial de un lote: la pérdida primero, la ganancia desp
   registrar('consola y red', errores);
   // Juntos: 1.200.000 → 600.000.
   expect.soft(r.recRAntes.tenedores).toBe(600_000);
+  expect.soft(r.fichaH).toMatchObject({ ganancia: -600_000, pagado: 0, saldo: 0 });
   expect.soft(r.venta1.vista.tenedores).toBe(0);
   expect.soft(r.venta1.detalle.liq).toEqual([`${P} tenedor H: 1 res, ganancia neta −$600.000 Pagar $0`]);
   expect.soft(r.recR).toEqual({ tenedores: 600_000, margen: 1_200_000 });
@@ -377,8 +393,9 @@ test.describe('celular 375×812', () => {
 });
 
 // Venta con fecha pasada ANTERIOR a otra ya registrada del mismo contrato.
-// Se documenta lo que pasa con la liquidación ya mostrada (y posiblemente ya pagada) de la venta posterior.
-test('VRF D8A · venta con fecha pasada anterior a otra ya registrada: la liquidación de la posterior cambia', async ({ page }) => {
+// Ronda 2 (011 R5 reescrita): se liquida en orden de registro. T1 (registrada primero, hoy) paga 900.000 y no
+// cambia nunca; T2 (registrada después con fecha de hace 5 días, pierde) paga 0 y deja 300.000 a favor.
+test('VRF D8A · venta con fecha pasada registrada después: no cambia la liquidación ya hecha y deja saldo a favor', async ({ page }) => {
   test.setTimeout(240_000);
   const errores = [];
   vigilar(page, errores);
@@ -388,15 +405,165 @@ test('VRF D8A · venta con fecha pasada anterior a otra ya registrada: la liquid
   r.ventaT1 = await venderUI(page, 'T1'); // gana, hoy: paga 900.000
   r.ventaT2 = await venderUI(page, 'T2', { fecha: haceDias(5) }); // pierde, con fecha anterior
   r.detalleT1Despues = await detallePorId(page, r.ventaT1.ventaId);
+  r.detalleT2Recargado = await detallePorId(page, r.ventaT2.ventaId);
   const lista = await leerLista(page);
   r.lista = { T1: lista.T1, T2: lista.T2 };
   registrar('contrato J (fecha pasada)', r);
   registrar('consola y red', errores);
   expect.soft(r.ventaT1.detalle.liq).toEqual([`${P} tenedor J: 1 res, ganancia neta $1.800.000 Pagar $900.000`]);
-  // Lo coherente con "lo ya pagado": T1 ya se liquidó por 900.000; con la pérdida, al contrato le tocan 600.000,
-  // así que deberían quedar 300.000 a favor de Santa Rita en algún lado. Se documenta lo que muestra la app.
-  const todo = JSON.stringify([r.detalleT1Despues.liq, r.ventaT2.detalle.liq]);
-  expect.soft(todo, 'el saldo a favor de 300.000 debe aparecer en alguna liquidación').toMatch(/Saldo a favor de Santa Rita: \$300\.000/);
-  expect.soft(r.detalleT1Despues.liq, 'la liquidación ya mostrada de T1 no debería cambiar').toEqual(r.ventaT1.detalle.liq);
+  expect.soft(r.detalleT1Despues.liq, 'la liquidación ya mostrada de T1 no cambia').toEqual(r.ventaT1.detalle.liq);
+  expect.soft(r.detalleT1Despues.margen, 'margen real de T1 sin cambios').toBe(r.ventaT1.detalle.margen);
+  expect.soft(r.detalleT1Despues.margenEsperado).toBe(r.detalleT1Despues.margen);
+  // El asistente de T2 muestra lo mismo que queda guardado (Bajo 3 de la ronda 1).
+  expect.soft(r.ventaT2.vista).toEqual({ tenedores: 0, margen: -600_000 });
+  expect.soft(r.ventaT2.aviso).toBe(true);
+  expect.soft(r.ventaT2.detalle.liq).toEqual([
+    `${P} tenedor J: 1 res, ganancia neta −$600.000 Acumulada del contrato $1.200.000; ya se le pagaron $900.000. Saldo a favor de Santa Rita: $300.000 (se descuenta de las próximas ventas del contrato o se cobra al cerrarlo). Pagar $0`,
+  ]);
+  expect.soft(r.ventaT2.detalle.margenEsperado, 'la copia de la recomendación coincide con el asistente').toBe(-600_000);
+  expect.soft(r.detalleT2Recargado).toEqual(r.ventaT2.detalle);
+  expect.soft(r.lista).toEqual({ T1: { tenedores: 900_000, margen: 900_000 }, T2: { tenedores: 0, margen: -600_000 } });
   expect.soft(errores).toEqual([]);
+});
+
+// Ronda 2 (Medio 2): la tarjeta "Liquidación acumulada" de la ficha del contrato cuadra con las ventas.
+async function leerFicha(page, letra) {
+  await page.goto(`/#/al-partir/${ids.C[letra]}`);
+  await expect(page.getByRole('heading', { name: `${P} tenedor ${letra}`, level: 1 })).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(400);
+  const card = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Liquidación acumulada' }) });
+  if (!(await card.count())) return null;
+  const ls = await lineas(card);
+  const saldoClase = await card.locator('p.cifra').nth(2).getAttribute('class');
+  return {
+    ganancia: trasEtiqueta(ls, 'Ganancia neta vendida'),
+    pagado: trasEtiqueta(ls, 'Pagado al tenedor'),
+    saldo: trasEtiqueta(ls, 'Saldo a favor de Santa Rita'),
+    saldoEnRojo: /peligro/.test(saldoClase ?? ''),
+  };
+}
+
+test('VRF D8A · ficha del contrato: la liquidación acumulada cuadra con el detalle de las ventas', async ({ page, browser }) => {
+  test.setTimeout(240_000);
+  const errores = [];
+  vigilar(page, errores);
+  await simularClima(page);
+  await iniciarSesion(page);
+  const lista = await leerLista(page);
+  const suma = (...ks) => ks.reduce((s, k) => s + (lista[k]?.tenedores ?? NaN), 0);
+  const r = { fichas: {}, sumasLista: { G: suma('P1', 'P2', 'P3'), H: suma('R1', 'R2'), J: suma('T1', 'T2'), S: suma('U1', 'U2'), Z: suma('V1', 'V2') } };
+  for (const c of ['G', 'H', 'J', 'S', 'Z', 'K']) r.fichas[c] = await leerFicha(page, c);
+  await leerFicha(page, 'J');
+  await page.screenshot({ path: `${DIR}/ficha-J.png`, fullPage: true });
+  // Otra sesión ve lo mismo.
+  const otro = await browser.newContext();
+  const p2 = await otro.newPage();
+  await simularClima(p2);
+  await iniciarSesion(p2);
+  r.fichaJOtraSesion = await leerFicha(p2, 'J');
+  await otro.close();
+  registrar('fichas', r);
+  registrar('consola y red', errores);
+  expect.soft(r.fichas.G).toEqual({ ganancia: 3_000_000, pagado: 1_500_000, saldo: 0, saldoEnRojo: false });
+  expect.soft(r.fichas.H).toEqual({ ganancia: 1_200_000, pagado: 600_000, saldo: 0, saldoEnRojo: false });
+  expect.soft(r.fichas.J).toEqual({ ganancia: 1_200_000, pagado: 900_000, saldo: 300_000, saldoEnRojo: true });
+  expect.soft(r.fichas.S).toEqual({ ganancia: 1_200_000, pagado: 600_000, saldo: 0, saldoEnRojo: false });
+  expect.soft(r.fichas.Z).toEqual({ ganancia: 1_200_000, pagado: 0, saldo: 0, saldoEnRojo: false });
+  expect.soft(r.fichas.K, 'contrato sin ventas: sin tarjeta').toBeNull();
+  for (const c of ['G', 'H', 'J', 'S', 'Z']) expect.soft(r.fichas[c]?.pagado, `${c}: pagado = suma de "A los tenedores"`).toBe(r.sumasLista[c]);
+  expect.soft(r.fichaJOtraSesion).toEqual(r.fichas.J);
+  expect.soft(errores).toEqual([]);
+});
+
+test('VRF D8A · ficha del contrato: estados de carga y de error con la consulta de ventas', async ({ page }) => {
+  test.setTimeout(180_000);
+  await simularClima(page);
+  await iniciarSesion(page);
+  const ruta = `/#/al-partir/${ids.C.J}`;
+  await page.route('**/rest/v1/ventas*', async (x) => {
+    await new Promise((ok) => setTimeout(ok, 2500));
+    await x.continue().catch(() => {});
+  });
+  await page.goto('/#/');
+  await page.goto(ruta);
+  await page.reload();
+  const cargando = await page.getByText('Cargando datos…').first().waitFor({ timeout: 2000 }).then(() => true).catch(() => false);
+  await page.unroute('**/rest/v1/ventas*');
+  await page.route('**/rest/v1/ventas*', (x) => x.fulfill({ status: 500, json: { message: 'caída simulada' } }));
+  await page.reload();
+  const alerta = page.getByRole('alert').filter({ hasText: 'No se pudieron cargar los datos' });
+  const error = await alerta.waitFor({ timeout: 20_000 }).then(() => true).catch(() => false);
+  const textoError = error ? (await alerta.innerText()).replace(/\s+/g, ' ') : null;
+  await page.screenshot({ path: `${DIR}/ficha-error.png`, fullPage: true });
+  await page.unroute('**/rest/v1/ventas*');
+  if (error) await page.getByRole('button', { name: 'Reintentar' }).click();
+  const recupera = await page.getByRole('heading', { name: 'Liquidación acumulada' }).waitFor({ timeout: 20_000 }).then(() => true).catch(() => false);
+  registrar('ficha carga y error', { cargando, error, textoError, recupera });
+  expect.soft({ cargando, error, recupera }).toEqual({ cargando: true, error: true, recupera: true });
+});
+
+test.describe('celular 375×812 · ficha del contrato', () => {
+  test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+  test('VRF D8A · la liquidación acumulada se lee en el celular', async ({ page }) => {
+    await simularClima(page);
+    await iniciarSesion(page);
+    const f = await leerFicha(page, 'J');
+    const card = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Liquidación acumulada' }) });
+    await card.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${DIR}/ficha-J-celular.png`, fullPage: true });
+    const d = await page.evaluate(medirDesborde);
+    registrar('ficha celular', { f, desborde: d });
+    expect.soft(d.scrollWidth).toBe(375);
+    expect.soft(d.fuera).toEqual([]);
+    expect.soft(d.recortados).toEqual([]);
+    expect.soft(d.textoFuera).toEqual([]);
+    expect.soft(f).toEqual({ ganancia: 1_200_000, pagado: 900_000, saldo: 300_000, saldoEnRojo: true });
+  });
+});
+
+// Va al final: documenta un hueco anterior (la tabla ventas acepta fecha futura fuera de registrar_venta)
+// y, si falla, en modo serial no debe saltarse las demás pruebas.
+test('VRF D8A · venta con fecha futura: la rechazan el asistente y la base de datos', async ({ page }) => {
+  test.setTimeout(180_000);
+  const manana = haceDias(-1);
+  const supabase = await clientePrueba();
+  const rpc = await supabase.rpc('registrar_venta', {
+    lote: ids.L.W,
+    fecha: manana,
+    comprador: `${P} Comprador futura`,
+    precio_kg: 8000,
+    destare: 0,
+    recomendacion: null,
+    notas: null,
+    animales: [{ animal_id: ids.a.K1, peso_kg: 300, costo_cop: 600000 }],
+  });
+  // Inserción directa en la tabla, sin pasar por registrar_venta (la API la permite a los miembros).
+  const directa = await supabase
+    .from('ventas')
+    .insert({ lote_id: ids.L.W, fecha: manana, comprador: `${P} Comprador directa futura`, precio_kg_cop: 8000, destare_pct: 0 })
+    .select('id');
+  if (directa.data?.length) await supabase.from('ventas').delete().in('id', directa.data.map((x) => x.id));
+  await simularClima(page);
+  await iniciarSesion(page);
+  await page.goto(`/#/ventas/nueva?lote=${ids.L.W}`);
+  await expect(page.getByRole('heading', { name: 'Registrar venta' })).toBeVisible({ timeout: 15_000 });
+  await page.getByLabel('Precio por kilo (COP)').fill('8000');
+  await page.getByLabel('Fecha de la venta').fill(manana);
+  await page.getByLabel('Comprador').fill(`${P} Comprador UI futura`);
+  await page.getByRole('button', { name: 'Guardar venta' }).click();
+  await page.waitForTimeout(1500);
+  const mensaje = await page.getByText('La fecha de la venta no puede ser futura.').isVisible();
+  const sigue = page.url().includes('/ventas/nueva');
+  const { data: creadas } = await supabase.from('ventas').select('id, comprador').like('comprador', `${P} Comprador%futura`);
+  const { data: k1 } = await supabase.from('venta_animales').select('venta_id').eq('animal_id', ids.a.K1);
+  const r = { rpcError: rpc.error?.message ?? null, directaError: directa.error?.message ?? null, directaCreada: directa.data?.length ?? 0, mensaje, sigue, creadas, k1Vendido: k1?.length ?? 0 };
+  registrar('fecha futura', r);
+  expect.soft(r.rpcError).toMatch(/fecha_futura/);
+  expect.soft(r.mensaje).toBe(true);
+  expect.soft(r.sigue).toBe(true);
+  expect.soft(r.creadas).toEqual([]);
+  expect.soft(r.k1Vendido).toBe(0);
+  expect.soft(r.directaCreada, 'la tabla ventas acepta una fecha futura fuera de registrar_venta').toBe(0);
+  // Bajo (ronda 2): la ficha del contrato escribe una ganancia negativa como "$-600.000", distinto del resto de la app.
+  expect.soft(fichaHNegativa, 'ganancia negativa en la ficha con el formato de la app').toContain('−$600.000');
 });
