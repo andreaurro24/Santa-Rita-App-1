@@ -1,7 +1,7 @@
 # Sprint 01 — Trazabilidad
 
-- Estado: en-ejecucion
-- Inicio: 2026-09-28 · Cierre: —
+- Estado: cerrado
+- Inicio: 2026-09-28 · Cierre: 2026-09-28
 - Aprobación del plan: [x] Andrés Sánchez aprobó en el chat, el 2026-09-27, todas las specs y los planes de sprint antes de que se escribieran. Hay que revisarlo al volver.
 
 ## 1. Plan
@@ -13,7 +13,7 @@ cada animal por día, saber cuándo llegará el lote a la meta y dónde está ca
 ### Alcance
 | Spec | Módulos | Estado |
 |---|---|---|
-| [004 — Jornada de pesaje por lote y GDP](../specs/004-pesajes-gdp/spec.md) | M3 | en-verificacion |
+| [004 — Jornada de pesaje por lote y GDP](../specs/004-pesajes-gdp/spec.md) | M3 | hecha |
 | [006 — Lotes, ciclos, fincas, potreros y movimientos](../specs/006-lotes-ubicacion/spec.md) | M5, M6 | hecha |
 | 003 — Gestión del hato (editar, dar de baja) | M2 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
 | 005 — Sanidad (programados, aplicación por lote, ICA) | M4 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
@@ -60,24 +60,53 @@ está resumido en `docs/plan.md` (M2 y M4).
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
 | 004 | 1 | RECHAZADO (Alto: la regla de 14 días escondía pérdidas reales; 3 Medios, 3 Bajos) | [004-2026-09-28](../reports/verificacion/004-2026-09-28.md) |
+| 004 | 2 | APROBADO (Alto corregido; 2 Medios y 4 Bajos, corregidos después o a la deuda) | [004-2026-09-28-ronda2](../reports/verificacion/004-2026-09-28-ronda2.md) |
 | 006 | 1 | APROBADO (4 Medios y 5 Bajos; los Medios se corrigieron después) | [006-2026-09-28](../reports/verificacion/006-2026-09-28.md) |
 
 ## 4. Cierre
 
+**Cerrado el 2026-09-28:** las specs 004 y 006 están `hecha` (APROBADO). Las specs 003 y 005
+siguen sin escribirse porque el control de permisos bloqueó sus archivos; pasan a la revisión
+humana (DT-00-7).
+
 ### Retroalimentación
-- Funcionó:
-- No funcionó:
-- Cambiar en el siguiente sprint:
+- **Funcionó:**
+  - El verificador encontró que mi regla de 14 días para la GDP ocultaba pérdidas reales. La
+    corrección que propuso (caída > 8 kg) es mejor que la mía, y la validó contra la semilla sin
+    falsas alarmas.
+  - Trabajar el siguiente sprint en el worktree mientras se verifica `main` mantuvo el ritmo.
+- **No funcionó:**
+  - Tomé un desvío de requisito (R5 de la 004) sin preguntar, porque el usuario había aprobado
+    todo por adelantado. El verificador lo marcó: un desvío que cambia el significado de un
+    requisito necesita aprobación explícita.
+  - Las pruebas que cruzan specs (proyección, potrero) cambian de premisa cuando se corrige otra
+    spec, y eso le cuesta tiempo al verificador.
+- **Cambiar en el siguiente sprint:**
+  - Los desvíos que cambian el alcance de un requisito se marcan como "pendiente de aprobación
+    humana" en la spec y en el resumen al usuario.
+  - Antes de cada commit, confirmar que la semilla (`db:seed`) conoce las tablas nuevas.
 
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
+| DT-01-1 | Aprobación humana explícita del desvío de R5 (GDP del último periodo ≥ 14 días + caída > 8 kg en 30 días) | Media | Verificación 004 r2 | Revisión humana |
+| DT-01-2 | Se puede cambiar el peso de un pesaje de una jornada cerrada por API directa (la interfaz no lo permite) | Baja | Verificación 004 r2 | 4 |
+| DT-01-3 | La ficha marca "Pierde peso" junto a una GDP del último periodo positiva sin explicar por qué (la alerta vino de la caída de 30 días) | Baja | Verificación 004 r2 | 4 |
+| DT-01-4 | Un UPDATE directo coherente de finca y potrero no deja movimiento (solo la función `mover_animales` lo registra) | Baja | Verificación 006 | 4 |
+| DT-01-5 | Un segundo toque justo después de guardar en la jornada responde 409 (sin daño en los datos) | Baja | Verificación 004 | 4 |
 
 ### Información importante
-- Decisiones:
-- Recursos creados (sin secretos):
-- Comandos nuevos:
-- Gotchas:
+- **Decisiones:**
+  - Alerta de pérdida: GDP del último periodo ≥ 14 días negativa, o una caída de más de 8 kg
+    desde el máximo de los últimos 30 días.
+  - La proyección del lote estima el peso de hoy de cada animal con su propia GDP.
+  - D2 cubre vientres y terneras (con confirmación); la base de datos lo bloquea al vender (spec 011).
+- **Recursos creados:** migraciones 0600 (jornadas), 0700 (movimientos) y 1100 (integridad).
+- **Comandos nuevos:** ninguno.
+- **Gotchas:**
+  - Las funciones SQL con parámetros llamados como columnas (`fecha`, `motivo`) funcionan
+    mientras la columna no esté en el FROM.
+  - El seed debe vaciar las tablas nuevas antes que lotes y fincas.
 
 ### Para el siguiente sprint
-- 
+- Reutilizar `gdpTotal`, `pesoActual` y `movimientos` para el reparto histórico de costos.

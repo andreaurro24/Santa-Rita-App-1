@@ -3,7 +3,7 @@
 // tenedores (D11), el destare (D5), la ganancia diaria (spec 004) y el riesgo de pasto (D4).
 import { pesoActual, formatCOP } from './breakeven';
 import { gdpTotal, diasEntre } from './gdp';
-import { costoAcumuladoAnimal } from './costos';
+import { costoAcumuladoAnimal, repartirCostos } from './costos';
 
 export const ESCENARIOS_SEMANAS = [0, 2, 4, 8];
 export const SENSIBILIDAD = [-0.1, -0.05, 0.05, 0.1];
@@ -50,6 +50,7 @@ function resultado(vendibles, { costoBase, precioKg, destarePct, dias, gastoDiar
  * @param {object} e
  * @param {object[]} e.animales       animales del lote (forma de useHato)
  * @param {object[]} e.costos         gastos del lote (forma de useCostos)
+ * @param {Map}   [e.reparto]         reparto de costos de toda la finca (useRepartoCostos); si falta, se calcula solo con el lote
  * @param {number|null} e.precioKg    precio del kilo en pie
  * @param {number} e.destarePct       destare en %
  * @param {number|null} e.metaKg      meta pactada del lote (si no, promedio de metas)
@@ -57,7 +58,7 @@ function resultado(vendibles, { costoBase, precioKg, destarePct, dias, gastoDiar
  * @param {string|null} e.pasto       nivel más crítico reciente: 'verde' | 'amarillo' | 'rojo' | null
  * @param {string} e.hoy              'AAAA-MM-DD' (Bogotá)
  */
-export function analizarLoteV2({ animales, costos, precioKg, destarePct = 0, metaKg = null, clima = null, pasto = null, hoy }) {
+export function analizarLoteV2({ animales, costos, reparto = null, precioKg, destarePct = 0, metaKg = null, clima = null, pasto = null, hoy }) {
   const activos = animales.filter((a) => a.estado === 'Activo');
   const vendibles = activos.filter((a) => a.categoria !== 'vientre'); // R7 / D2
   const excluidos = activos.length - vendibles.length;
@@ -70,7 +71,8 @@ export function analizarLoteV2({ animales, costos, precioKg, destarePct = 0, met
   }
 
   // Costo acumulado de cada animal hasta hoy (compra + gastos directos + parte del lote).
-  const costoBase = new Map(vendibles.map((a) => [a.id, costoAcumuladoAnimal(a, costos, animales).total]));
+  const repartoLote = reparto ?? repartirCostos(costos, animales);
+  const costoBase = new Map(vendibles.map((a) => [a.id, costoAcumuladoAnimal(a, repartoLote).total]));
   const gastoDiario = gastoDiarioLote(costos, hoy);
   const gastoDiarioPorAnimal = gastoDiario / vendibles.length;
   const base = { costoBase, precioKg, destarePct, gastoDiarioPorAnimal };

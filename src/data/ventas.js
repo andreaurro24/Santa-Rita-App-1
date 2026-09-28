@@ -60,6 +60,6 @@ export function useRegistrarVenta() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => ['ventas', 'hato', 'lotes'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    onSuccess: () => ['ventas', 'hato', 'lotes', 'historia-lotes'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
   });
 }

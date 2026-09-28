@@ -46,16 +46,22 @@ export function gdpReciente(pesos = []) {
 // ruido: en la semilla, la mayor caída por ruido es 7,2 kg (verificación 004, hallazgo Alto).
 export const UMBRAL_CAIDA_KG = 8;
 
-// Kilos perdidos entre los dos últimos días con pesaje (0 si ganó o no hay dos pesajes).
+export const DIAS_VENTANA_CAIDA = 30;
+
+// Kilos perdidos desde el peso más alto de los 30 días anteriores al último pesaje. Así una
+// pérdida en dos caídas pequeñas seguidas (340 → 332 → 324) también cuenta (verificación 004 r2).
 export function caidaUltimoPesaje(pesos = []) {
   const serie = unoPorDia(pesos);
   if (serie.length < 2) return 0;
-  const [anterior, ultimo] = serie.slice(-2);
-  return Math.max(0, redondear(anterior.pesoKg - ultimo.pesoKg, 1));
+  const ultimo = serie.at(-1);
+  const ventana = serie.slice(0, -1).filter((p) => diasEntre(p.fecha, ultimo.fecha) <= DIAS_VENTANA_CAIDA);
+  if (!ventana.length) return 0;
+  const maximo = Math.max(...ventana.map((p) => p.pesoKg));
+  return Math.max(0, redondear(maximo - ultimo.pesoKg, 1));
 }
 
-// R7: pierde peso si la GDP del último periodo (≥ 14 días) es negativa, o si entre los dos
-// últimos pesajes cayó más de 8 kg (un animal recién comprado o revisado en una visita).
+// R7: pierde peso si la GDP del último periodo (≥ 14 días) es negativa, o si cayó más de 8 kg
+// desde su máximo de los últimos 30 días (un animal recién comprado o revisado en una visita).
 export function pierdePeso(animal) {
   const g = gdpReciente(animal.pesos);
   return (g != null && g < 0) || caidaUltimoPesaje(animal.pesos) > UMBRAL_CAIDA_KG;

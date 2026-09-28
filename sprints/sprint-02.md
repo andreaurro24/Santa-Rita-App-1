@@ -13,8 +13,8 @@ están en fincas de tenedores "Al partir".
 ### Alcance
 | Spec | Módulos | Estado |
 |---|---|---|
-| [008 — Insumos y costos](../specs/008-costos/spec.md) | M8 | en-progreso |
-| [007 — "Al partir": tenedores, contratos y visitas](../specs/007-al-partir/spec.md) | M7 | aprobada |
+| [008 — Insumos y costos](../specs/008-costos/spec.md) | M8 | en-verificacion (ronda 2) |
+| [007 — "Al partir": tenedores, contratos y visitas](../specs/007-al-partir/spec.md) | M7 | en-verificacion (ronda 2) |
 
 ### Fuera de alcance
 - Recomendación v2, ventas y liquidación del tenedor (Sprint 3).
@@ -40,10 +40,15 @@ están en fincas de tenedores "Al partir".
 ## 2. Bitácora
 | Fecha | Spec / tarea | Resultado | Notas y desvíos |
 |---|---|---|---|
+| 2026-09-28 | 008 · T1–T5 | Migración 0900, dominio de reparto, `/costos` y tarjetas de costo. E2E 3/3 | Implementado en el worktree mientras se verificaba el Sprint 1 |
+| 2026-09-28 | 007 · T1–T5 | Migración 1000, funciones `asignar_a_contrato` y `registrar_visita`, `/al-partir`. E2E 3/3 | — |
+| 2026-09-28 | 007 y 008 · correcciones ronda 1 | Reparto histórico de costos desde `movimientos`, editar tenedor, visitas con confirmación y regla R6, migración 1400. Vitest 125/125 | También las mejoras de la 004 r2: caída en 30 días y proyección con el peso estimado de hoy |
 
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
+| 008 | 1 | RECHAZADO (Alto: el gasto directo desaparecía al mover el animal; 2 Medios, 5 Bajos) | [008-2026-09-28](../reports/verificacion/008-2026-09-28.md) |
+| 007 | 1 | RECHAZADO (Alto: no se podía editar un tenedor; 6 Medios, 5 Bajos) | [007-2026-09-28](../reports/verificacion/007-2026-09-28.md) |
 
 ## 4. Cierre
 

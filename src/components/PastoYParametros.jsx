@@ -30,7 +30,7 @@ export function EstadoPasto() {
       titulo="Estado del pasto"
       icono={Sprout}
       accion={
-        <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setRegistrando(true)}>
+        <Button variante="suave" tamano="sm" icono={Plus} disabled={!fincas.data?.length} onClick={() => setRegistrando(true)}>
           Registrar estado
         </Button>
       }
@@ -61,7 +61,7 @@ export function EstadoPasto() {
           );
         }}
       </ConDatos>
-      {registrando && <PastoForm fincas={fincas.data ?? []} onClose={() => setRegistrando(false)} />}
+      {registrando && fincas.data && <PastoForm fincas={fincas.data} onClose={() => setRegistrando(false)} />}
     </Card>
   );
 }

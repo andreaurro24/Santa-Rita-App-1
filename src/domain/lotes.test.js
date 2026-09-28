@@ -24,7 +24,7 @@ describe('resumenLote', () => {
     expect(r.gdp).toBe(0.75);
     expect(r.avancePct).toBe(76.4);
     // (350 − 267,5) / 0,75 = 110 días
-    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 110, fecha: '2027-01-17', desde: '2026-09-29' });
+    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 110, fecha: '2027-01-17', pesoEstimadoHoy: 267.5 });
   });
 
   it('sin meta del lote usa el promedio de las metas de sus animales', () => {
@@ -37,11 +37,18 @@ describe('resumenLote', () => {
     expect(resumenLote({ pesoMeta: 350, animales: [animal([['2026-08-01', 300], ['2026-09-01', 290]])] }, '2026-09-29').proyeccion).toEqual({ tipo: 'sin_datos' });
   });
 
-  it('la fecha se proyecta desde el último pesaje, no desde hoy', () => {
+  it('estima el peso de hoy con la GDP desde el último pesaje', () => {
     const lote = { pesoMeta: 350, animales: [animal([['2026-07-01', 200], ['2026-08-30', 260]])] }; // 1 kg/día
     const r = resumenLote(lote, '2026-09-29');
-    // 90 kg desde el 30-ago → 28-nov; faltan 60 días desde hoy
-    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 60, fecha: '2026-11-28', desde: '2026-08-30' });
+    // hoy ≈ 290 kg; faltan 60 kg a 1 kg/día → 28-nov
+    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 60, fecha: '2026-11-28', pesoEstimadoHoy: 290 });
+  });
+
+  it('pesar hoy un solo animal no mueve la fecha del lote (verificación 004 r2)', () => {
+    const viejo = (fin) => animal([['2026-07-01', 200], ['2026-08-30', fin]]);
+    const antes = resumenLote({ pesoMeta: 350, animales: [viejo(260), viejo(260)] }, '2026-09-29').proyeccion;
+    const despues = resumenLote({ pesoMeta: 350, animales: [viejo(260), animal([['2026-07-01', 200], ['2026-08-30', 260], ['2026-09-29', 290]])] }, '2026-09-29').proyeccion;
+    expect(Math.abs(despues.dias - antes.dias)).toBeLessThanOrEqual(1);
   });
 
   it('si por la GDP ya debería estar en la meta, lo dice en vez de dar una fecha pasada', () => {

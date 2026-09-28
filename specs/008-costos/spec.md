@@ -44,6 +44,22 @@ calcula el costo acumulado de cada animal y de cada lote según D9. La recomenda
   pertenecen al lote y que ingresaron en esa fecha o antes. Todavía no se reconstruye la
   pertenencia histórica desde `movimientos`.
 
+## Correcciones de la verificación ronda 1 (`reports/verificacion/008-2026-09-28.md`)
+- **Alto:** el reparto usa la **pertenencia histórica** al lote, reconstruida desde `movimientos`
+  (reemplaza la simplificación declarada).
+  - Un gasto directo sigue al animal aunque cambie de lote.
+  - Un gasto de lote se reparte entre los animales que estaban en ese lote en esa fecha: sin
+    repartos hacia atrás, y los vendidos dejan de recibir gastos desde su venta.
+  - `repartirCostos` (dominio) y `useRepartoCostos` (datos) son la única fuente para la ficha,
+    el lote, `/costos`, la recomendación v2 y la venta.
+- **Base de datos (migración 1400):** el trigger valida animal y lote solo al crear o reasignar;
+  un gasto de un animal que se movió ya se puede editar.
+- **Formulario:**
+  - El selector de animal ofrece solo animales activos, más el animal ya asignado.
+  - Los montos con decimales se rechazan; un monto por encima de $5.000 millones pide revisar.
+  - Los errores de fecha y de número fuera de rango muestran un mensaje en español.
+  - Los botones de solo ícono miden 48 px.
+
 ## Tareas
 - [x] T1 Migración `costos` + RLS + validaciones
 - [x] T2 Dominio de reparto y acumulado + pruebas

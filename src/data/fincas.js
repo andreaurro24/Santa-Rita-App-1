@@ -58,6 +58,7 @@ export function useMoverAnimales() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hato'] });
       queryClient.invalidateQueries({ queryKey: ['movimientos'] });
+      queryClient.invalidateQueries({ queryKey: ['historia-lotes'] });
     },
   });
 }

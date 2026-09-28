@@ -41,6 +41,21 @@ tenedores, sus contratos y las visitas, con los pesos que se toman en cada una.
   - `/al-partir/:contratoId`: animales, visitas, "Registrar visita" y "Asignar animales".
 - **Dominio:** se reutilizan `gdpLote` y `pesoActual`.
 
+## Correcciones de la verificación ronda 1 (`reports/verificacion/007-2026-09-28.md`)
+- **Alto (R1):** "Editar tenedor" en el detalle del contrato.
+- **Visitas:**
+  - Un peso con más de 15 % de diferencia frente al último pide confirmación.
+  - Un animal sin peso ni marca queda como "no encontrado" (R6), con un aviso antes de guardar.
+  - Cada casilla dice de qué animal es y el error se borra al corregir.
+- **Contrato:** el porcentaje es obligatorio, los precios van sin decimales y la fecha de inicio
+  no puede ser futura.
+- **Base de datos (migración 1400):**
+  - Mover un animal fuera de la finca del tenedor le quita el contrato (trigger).
+  - `asignar_a_contrato` rechaza fechas anteriores al ingreso y animales de otro contrato.
+  - Las visitas rechazan fechas futuras y animales fuera del contrato también en escrituras
+    directas (triggers).
+- **Ficha:** muestra las visitas de verificación del animal, incluidos los "no encontrado".
+
 ## Tareas
 - [x] T1 Migración visitas + función de asignación
 - [x] T2 Tenedores y contratos (crear y editar)

@@ -60,6 +60,12 @@ describe('gdpReciente (R5) y pierdePeso (R7)', () => {
     expect(pierdePeso({ pesos: [p('2026-09-01', 300), p('2026-09-11', 285)] })).toBe(true); // −15 kg en 10 días
   });
 
+  it('dos caídas pequeñas seguidas que suman más de 8 kg sí alertan (verificación 004 r2)', () => {
+    const pesos = [p('2026-09-01', 300), p('2026-09-05', 340), p('2026-09-11', 332), p('2026-09-18', 324)];
+    expect(caidaUltimoPesaje(pesos)).toBe(16);
+    expect(pierdePeso({ pesos })).toBe(true);
+  });
+
   it('el ruido de báscula (≤ 8 kg entre pesajes seguidos) no alerta', () => {
     expect(caidaUltimoPesaje([p('2026-09-07', 351.3), p('2026-09-16', 344.1)])).toBe(7.2);
     expect(pierdePeso({ pesos: [p('2026-08-08', 328.4), p('2026-09-07', 351.3), p('2026-09-16', 344.1)] })).toBe(false);

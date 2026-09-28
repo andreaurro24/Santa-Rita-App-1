@@ -35,7 +35,7 @@ test('009 R1–R3: registrar el pasto de una finca y cambiar el destare', async 
   const hoja = page.getByRole('dialog', { name: 'Registrar estado del pasto' });
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja.getByRole('alert')).toHaveText('Elige cómo está el pasto.');
-  await hoja.getByLabel('Finca').selectOption({ label: 'Finca Santa Rita' });
+  await hoja.getByRole('combobox').first().selectOption({ label: 'Finca Santa Rita' }); // el nombre accesible incluye la opción elegida
   await hoja.getByText('Escaso').click();
   await hoja.getByLabel('Notas').fill(`${NOTA_PASTO} seco`);
   await hoja.getByRole('button', { name: 'Guardar' }).click();

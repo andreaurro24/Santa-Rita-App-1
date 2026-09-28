@@ -112,7 +112,6 @@ function NuevaVentaContenido({ datos }) {
   const analisis = useAnalisisLote(datos, loteId, form.precioKg);
 
   const animalesLote = useMemo(() => datos.hato.data.animales.filter((a) => a.loteId === loteId), [datos.hato.data, loteId]);
-  const costosLote = useMemo(() => datos.costos.data.filter((c) => c.loteId === loteId), [datos.costos.data, loteId]);
   const vendibles = animalesLote
     .filter((a) => a.estado === 'Activo' && a.categoria !== 'vientre') // R2 / D2
     .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
@@ -144,7 +143,7 @@ function NuevaVentaContenido({ datos }) {
   const vista = resultadoVenta(
     incluidos.map((f) => ({
       pesoKg: Number(String(f.peso).replace(',', '.')) || 0,
-      costoCop: costoAcumuladoAnimal(f.animal, costosLote, animalesLote).total,
+      costoCop: costoAcumuladoAnimal(f.animal, datos.costos.reparto).total,
       contratoId: f.animal.contratoId,
       porcentajeTenedor: f.animal.porcentajeTenedor,
     })),
@@ -163,7 +162,7 @@ function NuevaVentaContenido({ datos }) {
     for (const f of incluidos) {
       const p = Math.round(Number(String(f.peso).replace(',', '.')) * 10) / 10;
       if (!(p > 0 && p < 1500)) return setError(`El peso de ${f.animal.numeroInterno} debe estar entre 0,1 y 1.499 kg.`);
-      animales.push({ animalId: f.animal.id, pesoKg: p, costoCop: costoAcumuladoAnimal(f.animal, costosLote, animalesLote).total });
+      animales.push({ animalId: f.animal.id, pesoKg: p, costoCop: costoAcumuladoAnimal(f.animal, datos.costos.reparto).total });
     }
     setError('');
     const r = analisis?.resultado;

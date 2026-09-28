@@ -1,6 +1,6 @@
 # Spec 004 — Jornada de pesaje por lote y ganancia diaria de peso (GDP)
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 1
 - Módulos del plan: M3
 
@@ -71,7 +71,7 @@ desde el celular y sin perder el hilo, y convertir esos datos en la ganancia dia
 - [x] T4 Confirmación por variación > 15 % — verifica: E2E
 - [x] T5 GDP y alerta de pérdida en la ficha, el hato y el panel — verifica: E2E
 - [x] T6 Historial de jornadas del lote
-- [ ] T7 Verificador
+- [x] T7 Verificador (ronda 1 RECHAZADO; ronda 2 APROBADO)
 
 ## Criterios de aceptación para el verificador
 - Abrir una jornada del lote 2026-B, pesar 3 animales (uno con una variación de +30 % que

@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, Pencil, MoveRight, CheckCircle2, Receipt } from 'lucid
 import { useHato } from '../data/hato';
 import { useLotes, useGuardarLote } from '../data/lotes';
 import { resumenLote, vientresHaciaCeba } from '../domain/lotes';
-import { useCostos } from '../data/costos';
+import { useRepartoCostos } from '../data/costos';
 import { resumenCostosLote } from '../domain/costos';
 import { formatCOP } from '../domain/breakeven';
 import { pesoActual } from '../domain/breakeven';
@@ -42,7 +42,7 @@ function useLotesConAnimales() {
 function textoProyeccion(p) {
   if (p.tipo === 'fecha') return `${formatFecha(p.fecha)} (en ${p.dias} días)`;
   if (p.tipo === 'meta_alcanzada') return 'Meta alcanzada';
-  if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (${formatFecha(p.fecha)}): confírmalo con un pesaje`;
+  if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (peso estimado ${p.pesoEstimadoHoy} kg): confírmalo con un pesaje`;
   if (p.tipo === 'sin_animales') return 'Sin animales';
   return 'Sin datos suficientes';
 }
@@ -217,9 +217,9 @@ function DetalleContenido({ lote }) {
 
 // Spec 008 · R5: resumen de costos del lote.
 function CostosLote({ lote }) {
-  const costos = useCostos();
-  if (!costos.data) return null;
-  const r = resumenCostosLote(lote.animales, costos.data.filter((c) => c.loteId === lote.id));
+  const { costos, reparto } = useRepartoCostos();
+  if (!costos || !reparto) return null;
+  const r = resumenCostosLote(lote.animales, costos.filter((c) => c.loteId === lote.id), reparto);
   return (
     <Card
       titulo="Costos"

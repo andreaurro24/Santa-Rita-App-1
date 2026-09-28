@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Receipt } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useLotes } from '../data/lotes';
-import { useCostos, useGuardarCosto, useBorrarCosto } from '../data/costos';
+import { useRepartoCostos, useGuardarCosto, useBorrarCosto } from '../data/costos';
 import { useAuth } from '../context/AuthContext';
 import { CATEGORIAS_COSTO, resumenCostosLote } from '../domain/costos';
 import { formatCOP } from '../domain/breakeven';
@@ -25,15 +25,15 @@ const pesos = (n) => `$${formatCOP(Math.round(n))}`;
 export default function Costos() {
   const hato = useHato();
   const lotes = useLotes();
-  const costos = useCostos();
+  const costos = useRepartoCostos();
   return (
-    <ConDatos queries={[hato, lotes, costos]}>
-      {() => <CostosContenido animales={hato.data.animales} lotes={lotes.data} costos={costos.data} />}
+    <ConDatos queries={[hato, lotes, ...costos.queries]}>
+      {() => <CostosContenido animales={hato.data.animales} lotes={lotes.data} costos={costos.costos} reparto={costos.reparto} />}
     </ConDatos>
   );
 }
 
-function CostosContenido({ animales, lotes, costos }) {
+function CostosContenido({ animales, lotes, costos, reparto }) {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const loteId = params.get('lote') ?? lotes[0]?.id ?? '';
@@ -43,7 +43,7 @@ function CostosContenido({ animales, lotes, costos }) {
   const lote = lotes.find((l) => l.id === loteId);
   const animalesLote = useMemo(() => animales.filter((a) => a.loteId === loteId), [animales, loteId]);
   const costosLote = costos.filter((c) => c.loteId === loteId);
-  const resumen = resumenCostosLote(animalesLote, costosLote);
+  const resumen = resumenCostosLote(animalesLote, costosLote, reparto);
   const numero = (id) => animales.find((a) => a.id === id)?.numeroInterno;
 
   return (
@@ -146,14 +146,20 @@ function CostoForm({ costo, lotes, animales, onClose }) {
   });
   const [error, setError] = useState('');
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor, ...(campo === 'loteId' ? { animalId: '' } : {}) }));
-  const animalesLote = animales.filter((a) => a.loteId === form.loteId).sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
+  // Activos del lote, más el animal ya asignado aunque hoy esté en otro lote (verificación 008).
+  const animalesLote = animales
+    .filter((a) => (a.loteId === form.loteId && a.estado === 'Activo') || a.id === costo.animalId)
+    .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
 
   function handleSubmit(e) {
     e.preventDefault();
-    const monto = Number(String(form.montoCop).replace(/\./g, ''));
+    const texto = String(form.montoCop).trim().replace(/[\s$]/g, '');
+    if (/[.,]\d{1,2}$/.test(texto)) return setError('El monto va en pesos enteros, sin centavos (por ejemplo 12500 o 12.500).');
+    const monto = Number(texto.replace(/\./g, ''));
     if (!form.loteId) return setError('Elige el lote del gasto.');
     if (!form.descripcion.trim()) return setError('Describe el gasto (por ejemplo: 10 bultos de sal mineral).');
     if (!Number.isInteger(monto) || monto <= 0) return setError('El monto debe ser un número entero de pesos mayor que cero.');
+    if (monto > 5_000_000_000) return setError('El monto supera $5.000 millones: revisa que no sobren ceros.');
     if (!form.fecha || form.fecha > hoyISO()) return setError('La fecha del gasto no puede ser futura.');
     setError('');
     guardar.mutate({ ...form, montoCop: monto }, { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) });

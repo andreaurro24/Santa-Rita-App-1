@@ -82,5 +82,5 @@ test('R11: al imprimir el reporte no salen la navegación ni los controles', asy
   await expect(page.getByRole('button', { name: 'Imprimir o guardar PDF' })).toBeHidden();
   await expect(page.getByLabel('Lote')).toBeHidden();
   await expect(page.getByRole('article')).toBeVisible();
-  await expect(page.getByRole('article')).toContainText('Justificación');
+  await expect(page.getByRole('article')).toContainText('Por qué');
 });

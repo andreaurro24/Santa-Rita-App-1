@@ -1,6 +1,6 @@
 // Spec 006 · resumen del lote y fecha proyectada para llegar a la meta pactada (D3).
 import { pesoActual, fechaUltimoPesaje } from './breakeven';
-import { diasEntre, gdpLote } from './gdp';
+import { diasEntre, gdpLote, gdpTotal } from './gdp';
 
 function sumarDias(iso, dias) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -26,12 +26,20 @@ export function resumenLote(lote, hoy) {
   } else if (gdp == null || gdp <= 0) {
     proyeccion = { tipo: 'sin_datos' }; // R3
   } else {
-    // La proyección arranca en la fecha del peso usado (el último pesaje del lote), no en hoy:
-    // si el lote se pesó hace 30 días, ya ganó ese peso (verificación 006, Medio 1).
-    const base = activos.map(fechaUltimoPesaje).filter(Boolean).sort().at(-1) ?? hoy;
-    const fecha = sumarDias(base, Math.ceil((meta - pesoPromedio) / gdp));
-    const dias = diasEntre(hoy, fecha);
-    proyeccion = dias > 0 ? { tipo: 'fecha', dias, fecha, desde: base } : { tipo: 'meta_estimada', fecha, desde: base };
+    // Se estima el peso de hoy de cada animal con su propia GDP desde su último pesaje: si el lote
+    // se pesó hace 30 días ya ganó ese peso (verificación 006), y pesar un solo animal hoy no
+    // mueve la fecha de todo el lote (verificación 004 r2).
+    const estimados = activos.map((a) => {
+      const f = fechaUltimoPesaje(a) ?? hoy;
+      return pesoActual(a) + (gdpTotal(a.pesos) ?? 0) * Math.max(0, diasEntre(f, hoy));
+    });
+    const pesoEstimadoHoy = redondear1(estimados.reduce((s, x) => s + x, 0) / estimados.length);
+    if (pesoEstimadoHoy >= meta) {
+      proyeccion = { tipo: 'meta_estimada', pesoEstimadoHoy };
+    } else {
+      const dias = Math.ceil((meta - pesoEstimadoHoy) / gdp);
+      proyeccion = { tipo: 'fecha', dias, fecha: sumarDias(hoy, dias), pesoEstimadoHoy };
+    }
   }
 
   return { nActivos: activos.length, pesoPromedio, meta, avancePct, gdp, proyeccion };

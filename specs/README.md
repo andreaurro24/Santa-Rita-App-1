@@ -45,7 +45,7 @@ está mal escrito: reescríbelo.
 |---|---|---|
 | [001 — Fundaciones: Supabase, autenticación y esquema](001-fundaciones/spec.md) | en-verificacion (bloqueada por T9: despliegue) | 0 |
 | [002 — Sistema de diseño y layout adaptable](002-sistema-diseno/spec.md) | hecha | 0 |
-| [004 — Jornada de pesaje por lote y GDP](004-pesajes-gdp/spec.md) | en-verificacion (ronda 2) | 1 |
+| [004 — Jornada de pesaje por lote y GDP](004-pesajes-gdp/spec.md) | hecha | 1 |
 | [006 — Lotes, ciclos, fincas, potreros y movimientos](006-lotes-ubicacion/spec.md) | hecha | 1 |
 | [007 — "Al partir": tenedores, contratos y visitas](007-al-partir/spec.md) | en-verificacion | 2 |
 | [008 — Insumos y costos](008-costos/spec.md) | en-verificacion | 2 |

@@ -9,7 +9,7 @@ const VARIANTES = {
 
 const TAMANOS = {
   md: 'min-h-12 px-4 text-base md:min-h-10 md:text-sm',
-  sm: 'min-h-12 px-3 text-sm md:min-h-9',
+  sm: 'min-h-12 min-w-12 px-3 text-sm md:min-h-9 md:min-w-9',
 };
 
 export default function Button({ variante = 'primario', tamano = 'md', icono: Icono, className = '', children, ...props }) {

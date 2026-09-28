@@ -69,7 +69,7 @@ test('R2–R6: contrato nuevo, asignar 2 animales, visita con un peso y un no en
 
   // En la ficha: el peso de la visita y el movimiento a la finca del tenedor
   await page.goto(`/#/animales/${propios[0].id}`);
-  await expect(page.getByText('333.3 kg', { exact: true })).toBeVisible();
+  await expect(page.getByText('333.3 kg', { exact: true }).first()).toBeVisible();
   await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) })).toContainText(MOTIVO);
 });
 

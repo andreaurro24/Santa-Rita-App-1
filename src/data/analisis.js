@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useHato } from './hato';
 import { useLotes } from './lotes';
-import { useCostos } from './costos';
+import { useRepartoCostos } from './costos';
 import { usePrecios } from './precios';
 import { useParametros, useCondicionPasto } from './pasto';
 import { useClima } from './externos';
@@ -13,18 +13,18 @@ import { hoyISO } from '../utils/format';
 export function useAnalisisLotes() {
   const hato = useHato();
   const lotes = useLotes();
-  const costos = useCostos();
+  const costos = useRepartoCostos();
   const precios = usePrecios();
   const parametros = useParametros();
   const pasto = useCondicionPasto();
   const clima = useClima();
-  return { queries: [hato, lotes, costos, precios, parametros, pasto], hato, lotes, costos, precios, parametros, pasto, clima };
+  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto], hato, lotes, costos, precios, parametros, pasto, clima };
 }
 
 export function useAnalisisLote(datos, loteId, precioManual) {
   const { hato, lotes, costos, precios, parametros, pasto, clima } = datos;
   return useMemo(() => {
-    if (!hato.data || !lotes.data || !costos.data || !precios.data || !parametros.data || !pasto.data) return null;
+    if (!hato.data || !lotes.data || !costos.reparto || !precios.data || !parametros.data || !pasto.data) return null;
     const lote = lotes.data.find((l) => l.id === loteId);
     if (!lote) return null;
     const hoy = hoyISO();
@@ -41,7 +41,8 @@ export function useAnalisisLote(datos, loteId, precioManual) {
       clima: clima.data ?? null,
       resultado: analizarLoteV2({
         animales,
-        costos: costos.data.filter((c) => c.loteId === loteId),
+        costos: costos.costos.filter((c) => c.loteId === loteId),
+        reparto: costos.reparto,
         precioKg,
         destarePct: parametros.data.destarePct,
         metaKg: lote.pesoMeta,
@@ -50,5 +51,5 @@ export function useAnalisisLote(datos, loteId, precioManual) {
         hoy,
       }),
     };
-  }, [hato.data, lotes.data, costos.data, precios.data, parametros.data, pasto.data, clima.data, loteId, precioManual]);
+  }, [hato.data, lotes.data, costos.costos, costos.reparto, precios.data, parametros.data, pasto.data, clima.data, loteId, precioManual]);
 }

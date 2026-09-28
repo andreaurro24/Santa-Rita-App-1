@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, UserPlus, ClipboardCheck, Handshake } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, UserPlus, UserPen, ClipboardCheck, Handshake, AlertTriangle } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useFincas } from '../data/fincas';
 import {
@@ -13,7 +13,7 @@ import {
   useRegistrarVisita,
 } from '../data/alPartir';
 import { pesoActual, formatCOP } from '../domain/breakeven';
-import { gdpLote } from '../domain/gdp';
+import { gdpLote, variacionSospechosa } from '../domain/gdp';
 import { ConDatos } from '../components/EstadoCarga';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -106,6 +106,7 @@ export function ContratoDetalle() {
 
 function DetalleContrato({ contrato, animales }) {
   const [editando, setEditando] = useState(false);
+  const [editandoTenedor, setEditandoTenedor] = useState(false);
   const [asignando, setAsignando] = useState(false);
   const [visitando, setVisitando] = useState(false);
   const visitas = useVisitas(contrato.id);
@@ -128,6 +129,9 @@ function DetalleContrato({ contrato, animales }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variante="secundario" icono={UserPen} onClick={() => setEditandoTenedor(true)}>
+            Editar tenedor
+          </Button>
           <Button variante="secundario" icono={Pencil} onClick={() => setEditando(true)}>
             Editar contrato
           </Button>
@@ -202,16 +206,18 @@ function DetalleContrato({ contrato, animales }) {
       </Card>
 
       {editando && <ContratoForm contrato={contrato} onClose={() => setEditando(false)} />}
+      {editandoTenedor && <TenedorForm tenedor={contrato.tenedor} onClose={() => setEditandoTenedor(false)} />}
       {asignando && <AsignarForm contrato={contrato} animales={animales} onClose={() => setAsignando(false)} />}
       {visitando && <VisitaForm contrato={contrato} animales={suyos} onClose={() => setVisitando(false)} />}
     </div>
   );
 }
 
-function TenedorForm({ onClose }) {
+// R1: crear o editar un tenedor (verificación 007, Alto: faltaba editar).
+function TenedorForm({ tenedor, onClose }) {
   const guardar = useGuardarTenedor();
   const fincas = useFincas();
-  const [form, setForm] = useState({ nombre: '', telefono: '', fincaId: '', fincaNueva: '' });
+  const [form, setForm] = useState({ id: tenedor?.id, nombre: tenedor?.nombre ?? '', telefono: tenedor?.telefono ?? '', fincaId: tenedor?.fincaId ?? '', fincaNueva: '' });
   const [error, setError] = useState('');
   const set = (c, v) => setForm((f) => ({ ...f, [c]: v }));
   const deTenedores = fincas.data?.filter((f) => f.tipo === 'tenedor') ?? [];
@@ -226,7 +232,7 @@ function TenedorForm({ onClose }) {
 
   return (
     <Modal
-      titulo="Nuevo tenedor"
+      titulo={tenedor ? 'Editar tenedor' : 'Nuevo tenedor'}
       onClose={onClose}
       pie={
         <>
@@ -289,8 +295,10 @@ function ContratoForm({ contrato, onClose }) {
     e.preventDefault();
     const pct = Number(form.porcentaje);
     if (!form.tenedorId) return setError('Elige el tenedor.');
-    if (!(pct >= 0 && pct <= 100)) return setError('El porcentaje debe estar entre 0 y 100.');
+    if (String(form.porcentaje).trim() === '' || !(pct >= 0 && pct <= 100)) return setError('Escribe el porcentaje de la ganancia neta, entre 0 y 100.');
+    if (form.fechaInicio && form.fechaInicio > hoyISO()) return setError('La fecha de inicio no puede ser futura.');
     for (const [campo, nombre] of [['precioAnimalCop', 'precio del animal'], ['precioKgCop', 'precio por kilo']]) {
+      if (form[campo] !== '' && !Number.isInteger(Number(form[campo]))) return setError(`El ${nombre} va en pesos enteros, sin decimales.`);
       if (form[campo] !== '' && !(Number(form[campo]) >= 0)) return setError(`El ${nombre} no puede ser negativo.`);
     }
     setError('');
@@ -333,7 +341,7 @@ function ContratoForm({ contrato, onClose }) {
           <Input type="number" min="0" max="100" step="0.5" inputMode="decimal" value={form.porcentaje} onChange={(e) => set('porcentaje', e.target.value)} />
         </Field>
         <Field label="Fecha de inicio">
-          <Input type="date" value={form.fechaInicio ?? ''} onChange={(e) => set('fechaInicio', e.target.value)} />
+          <Input type="date" value={form.fechaInicio ?? ''} max={hoyISO()} onChange={(e) => set('fechaInicio', e.target.value)} />
         </Field>
         <Field label="Precio del animal (COP)">
           <Input type="number" min="0" step="1" inputMode="numeric" value={form.precioAnimalCop} onChange={(e) => set('precioAnimalCop', e.target.value)} />
@@ -433,31 +441,44 @@ function AsignarForm({ contrato, animales, onClose }) {
   );
 }
 
-// R5, R6: una fila por animal del contrato: su peso o "no encontrado".
+// R5, R6: una fila por animal del contrato: su peso o "no encontrado". Un animal sin peso ni
+// marca queda como no encontrado (R6), y un peso con más de 15 % de diferencia frente al último
+// pide confirmación, como en la jornada de pesaje (verificación 007).
 function VisitaForm({ contrato, animales, onClose }) {
   const registrar = useRegistrarVisita();
   const [fecha, setFecha] = useState(hoyISO());
   const [notas, setNotas] = useState('');
   const [filas, setFilas] = useState(() => Object.fromEntries(animales.map((a) => [a.id, { peso: '', noEncontrado: false }])));
   const [error, setError] = useState('');
-  const set = (id, campo, valor) => setFilas((f) => ({ ...f, [id]: { ...f[id], [campo]: valor } }));
+  const [confirmados, setConfirmados] = useState(null); // firma de los pesos ya confirmados
+  const set = (id, campo, valor) => {
+    setFilas((f) => ({ ...f, [id]: { ...f[id], [campo]: valor } }));
+    setError('');
+    setConfirmados(null);
+  };
+  const sinDato = animales.filter((a) => !filas[a.id].noEncontrado && filas[a.id].peso.trim() === '');
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!fecha || fecha > hoyISO()) return setError('La fecha de la visita no puede ser futura.');
     const revisiones = [];
+    const sospechosos = [];
     for (const a of animales) {
       const f = filas[a.id];
-      if (f.noEncontrado) {
+      if (f.noEncontrado || f.peso.trim() === '') {
         revisiones.push({ animalId: a.id, pesoKg: null });
         continue;
       }
-      if (f.peso === '') continue; // no revisado en esta visita
       const peso = Math.round(Number(String(f.peso).replace(',', '.')) * 10) / 10;
       if (!(peso > 0 && peso < 1500)) return setError(`El peso de ${a.numeroInterno} debe estar entre 0,1 y 1.499 kg.`);
+      if (variacionSospechosa(peso, pesoActual(a))) sospechosos.push(`${a.numeroInterno}: ${pesoActual(a)} → ${peso} kg`);
       revisiones.push({ animalId: a.id, pesoKg: peso });
     }
-    if (!revisiones.length) return setError('Escribe al menos un peso o marca algún animal como no encontrado.');
+    const firma = JSON.stringify(revisiones);
+    if (sospechosos.length && confirmados !== firma) {
+      setConfirmados(firma);
+      return setError(`Revisa estos pesos, cambian más de 15 % frente al último: ${sospechosos.join('; ')}. Si están bien, toca "Guardar visita" otra vez.`);
+    }
     setError('');
     registrar.mutate({ contratoId: contrato.id, fecha, notas, revisiones }, { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) });
   }
@@ -479,30 +500,50 @@ function VisitaForm({ contrato, animales, onClose }) {
     >
       <form id="form-visita" onSubmit={handleSubmit} noValidate className="space-y-3">
         <Field label="Fecha de la visita">
-          <Input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} />
+          <Input
+            type="date"
+            value={fecha}
+            max={hoyISO()}
+            onChange={(e) => {
+              setFecha(e.target.value);
+              setError('');
+            }}
+          />
         </Field>
         <ul className="divide-y divide-gray-100">
           {animales.map((a) => (
             <li key={a.id} className="flex flex-wrap items-center gap-3 py-2">
               <Chapeta numero={a.numeroInterno} />
-              <label className="flex-1">
+              <label className="min-w-32 flex-1">
                 <span className="sr-only">Peso de {a.numeroInterno} (kg)</span>
                 <Input
                   type="text"
                   inputMode="decimal"
-                  placeholder={`Último: ${pesoActual(a)} kg`}
+                  placeholder={`Últ. ${pesoActual(a)}`}
                   value={filas[a.id].peso}
                   disabled={filas[a.id].noEncontrado}
                   onChange={(e) => set(a.id, 'peso', e.target.value)}
                 />
               </label>
               <label className="flex min-h-12 items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" className="size-5 accent-earth-600" checked={filas[a.id].noEncontrado} onChange={(e) => set(a.id, 'noEncontrado', e.target.checked)} />
-                No encontrado
+                <input
+                  type="checkbox"
+                  className="size-5 accent-earth-600"
+                  checked={filas[a.id].noEncontrado}
+                  onChange={(e) => set(a.id, 'noEncontrado', e.target.checked)}
+                  aria-label={`No encontrado ${a.numeroInterno}`}
+                />
+                <span aria-hidden="true">No encontrado</span>
               </label>
             </li>
           ))}
         </ul>
+        {sinDato.length > 0 && (
+          <p className="flex gap-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            {sinDato.length} {sinDato.length === 1 ? 'animal sin peso quedará' : 'animales sin peso quedarán'} como no encontrados en esta visita.
+          </p>
+        )}
         <Field label="Notas">
           <Input value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Estado del pasto, del agua, de los animales" />
         </Field>

@@ -3,7 +3,8 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight, Receipt, Printer } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
 import { useMovimientos } from '../data/fincas';
-import { useCostos } from '../data/costos';
+import { useVisitasAnimal } from '../data/alPartir';
+import { useRepartoCostos } from '../data/costos';
 import { CATEGORIAS_COSTO, costoAcumuladoAnimal } from '../domain/costos';
 import MoverAnimales from '../components/MoverAnimales';
 import { ConDatos } from '../components/EstadoCarga';
@@ -24,11 +25,11 @@ import { formatFecha, diasHasta, hoyISO, formatoGdp } from '../utils/format';
 
 export default function AnimalDetail() {
   const hato = useHato();
-  const costos = useCostos();
-  return <ConDatos queries={[hato, costos]}>{() => <FichaAnimal animales={hato.data.animales} costos={costos.data} />}</ConDatos>;
+  const costos = useRepartoCostos();
+  return <ConDatos queries={[hato, ...costos.queries]}>{() => <FichaAnimal animales={hato.data.animales} reparto={costos.reparto} />}</ConDatos>;
 }
 
-function FichaAnimal({ animales, costos }) {
+function FichaAnimal({ animales, reparto }) {
   const { id } = useParams();
   const { user } = useAuth();
   const animal = animales.find((a) => a.id === id);
@@ -136,7 +137,7 @@ function FichaAnimal({ animales, costos }) {
         </Card>
       </div>
 
-      <CostoAnimal animal={animal} animales={animales} costos={costos} />
+      <CostoAnimal animal={animal} reparto={reparto} />
 
       <Card
         titulo="Ubicación"
@@ -155,6 +156,7 @@ function FichaAnimal({ animales, costos }) {
           <Row label="Lote" value={animal.loteNombre} />
         </dl>
         <Movimientos animalId={animal.id} />
+        <VisitasAnimal animalId={animal.id} />
       </Card>
 
       <Card
@@ -199,9 +201,8 @@ function FichaAnimal({ animales, costos }) {
 }
 
 // Spec 008 · R4: costo acumulado del animal (compra + gastos directos + su parte del lote).
-function CostoAnimal({ animal, animales, costos }) {
-  const delLote = animales.filter((a) => a.loteId === animal.loteId);
-  const c = costoAcumuladoAnimal(animal, costos.filter((x) => x.loteId === animal.loteId), delLote);
+function CostoAnimal({ animal, reparto }) {
+  const c = costoAcumuladoAnimal(animal, reparto);
   const pesos = (n) => `$${formatCOP(Math.round(n))}`;
   return (
     <Card titulo="Costo acumulado" icono={Receipt}>
@@ -222,6 +223,28 @@ function CostoAnimal({ animal, animales, costos }) {
         <p className="text-sm text-gray-500">Todavía no hay gastos registrados para este animal ni su lote.</p>
       )}
     </Card>
+  );
+}
+
+// Spec 007 · R5, R6: visitas de verificación "Al partir" en las que se revisó el animal.
+function VisitasAnimal({ animalId }) {
+  const visitas = useVisitasAnimal(animalId);
+  if (!visitas.data?.length) return null;
+  return (
+    <>
+      <h3 className="mb-1 mt-4 text-sm font-semibold text-gray-700">Visitas de verificación</h3>
+      <ul className="divide-y divide-gray-100 text-sm">
+        {visitas.data.map((v) => (
+          <li key={`${v.fecha}-${v.tenedor}`} className="flex flex-wrap justify-between gap-2 py-2">
+            <span className="text-gray-900">
+              {formatFecha(v.fecha)}
+              {v.tenedor ? `, finca de ${v.tenedor}` : ''}
+            </span>
+            {v.encontrado ? <span className="text-gray-700">{v.pesoKg} kg</span> : <Badge tono="alerta">No encontrado</Badge>}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

@@ -106,7 +106,7 @@ export function useAsignarAContrato() {
       const { error } = await supabase.rpc('asignar_a_contrato', { ids, contrato: contratoId, fecha, motivo: motivo.trim() });
       if (error) throw error;
     },
-    onSuccess: () => invalidar('hato', 'contratos', 'movimientos'),
+    onSuccess: () => invalidar('hato', 'contratos', 'movimientos', 'historia-lotes'),
   });
 }
 
@@ -149,5 +149,27 @@ export function useRegistrarVisita() {
       if (error) throw error;
     },
     onSuccess: () => invalidar('visitas', 'contratos', 'hato'),
+  });
+}
+
+// Visitas en las que se revisó un animal (para su ficha): fecha, tenedor y si se encontró.
+export function useVisitasAnimal(animalId) {
+  return useQuery({
+    queryKey: ['visitas', 'animal', animalId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('visita_animales')
+        .select('encontrado, pesaje:pesajes ( peso_kg ), visita:visitas_verificacion ( fecha, contrato:contratos_al_partir ( tenedor:tenedores ( nombre ) ) )')
+        .eq('animal_id', animalId);
+      if (error) throw error;
+      return data
+        .map((r) => ({
+          fecha: r.visita?.fecha,
+          tenedor: r.visita?.contrato?.tenedor?.nombre ?? null,
+          encontrado: r.encontrado,
+          pesoKg: r.pesaje?.peso_kg != null ? Number(r.pesaje.peso_kg) : null,
+        }))
+        .sort((a, b) => b.fecha.localeCompare(a.fecha));
+    },
   });
 }
