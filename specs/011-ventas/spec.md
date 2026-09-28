@@ -21,8 +21,11 @@ toca a cada tenedor "Al partir".
 - R4 — El sistema deberá guardar una copia de la recomendación del sistema al momento de la
   venta (recomendación, equilibrio y margen) y mostrarla junto al resultado real.
 - R5 — El sistema deberá calcular la liquidación de cada contrato "Al partir" en la venta:
-  porcentaje × ganancia neta del contrato (suma de las ganancias de sus animales vendidos), solo si
-  es positiva. *(Cambiado el 2026-09-28 por decisión humana, DT-03-3: antes se pagaba animal por animal.)*
+  porcentaje × ganancia neta **acumulada** del contrato (suma de las ganancias de todos sus animales
+  vendidos hasta esa venta, en orden de fecha y hora de registro), menos lo ya pagado en ventas
+  anteriores, nunca menos de $0. Si una pérdida posterior deja al tenedor con más de lo que le toca,
+  la liquidación muestra el **saldo a favor de Santa Rita**. *(Cambiado el 2026-09-28 por decisión
+  humana: DT-03-3 por contrato y DT-04-9 acumulado entre ventas.)*
 - R6 — El sistema deberá listar las ventas con su ingreso, su margen real y si se siguió la
   recomendación.
 

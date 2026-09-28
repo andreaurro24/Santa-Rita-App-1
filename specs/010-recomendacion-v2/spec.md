@@ -18,8 +18,9 @@ esa pregunta con números explicables.
 - R2 — El sistema deberá calcular el margen neto para Santa Rita (D11): ingreso − costo
   acumulado − participación de los tenedores. La participación de cada contrato "Al partir" es
   su porcentaje sobre la ganancia neta del contrato (la suma de las ganancias de sus animales,
-  donde la pérdida de uno descuenta de los demás), solo si es positiva. *(Cambiado el
-  2026-09-28 por decisión humana, DT-03-3: antes se calculaba animal por animal.)*
+  donde la pérdida de uno descuenta de los demás), acumulada con las ventas anteriores del mismo
+  contrato y descontando lo ya pagado (ver 011 R5). *(Cambiado el 2026-09-28 por decisión
+  humana, DT-03-3 y DT-04-9: antes se calculaba animal por animal.)*
 - R3 — El sistema deberá mostrar escenarios de vender hoy, en 2, en 4 y en 8 semanas. Cada uno
   usa el peso proyectado con la GDP de cada animal y le suma el gasto diario promedio del lote
   en los últimos 90 días por los días de espera.

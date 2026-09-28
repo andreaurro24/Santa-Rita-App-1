@@ -18,26 +18,63 @@ export function gastoDiarioLote(costosLote, hoy) {
   return recientes.reduce((s, c) => s + c.montoCop, 0) / DIAS_GASTO_RECIENTE;
 }
 
-// D8/D11 (decisión del 2026-09-28, DT-03-3): el tenedor recibe su porcentaje de la ganancia neta
-// del CONTRATO (la suma de las ganancias de sus animales vendidos), solo si esa suma es positiva.
-// Un animal que pierde descuenta de lo que ganaron los demás del mismo contrato.
-// items: [{ contratoId, porcentaje, ganancia }] → Map contratoId → { animales, ganancia, monto }.
-export function partesTenedores(items) {
+// D8/D11 (decisiones del 2026-09-28, DT-03-3 y DT-04-9): el tenedor recibe su porcentaje de la
+// ganancia neta ACUMULADA del contrato: la suma de las ganancias de todos sus animales vendidos
+// hasta esta venta, incluidas las ventas anteriores. En cada venta se le paga lo que le toca con
+// ese acumulado menos lo que ya se le pagó, nunca menos de $0. Así la pérdida de un animal
+// descuenta de lo que ganaron los demás del mismo contrato, aunque se vendan en ventas distintas.
+// Si una pérdida llega después de haber pagado, lo pagado de más queda como `saldoAFavor` de
+// Santa Rita: se descuenta de las siguientes ventas del contrato o se cobra al cerrarlo.
+// items:  [{ contratoId, porcentaje, ganancia }] de esta venta.
+// previo: Map contratoId → { ganancia, parte, pagado } de las ventas anteriores (estadoContratos).
+export function partesTenedores(items, previo = new Map()) {
   const porContrato = new Map();
   for (const { contratoId, porcentaje, ganancia } of items) {
     // Un contrato al 0 % también se liquida (con $0): así aparece en el detalle de la venta.
     if (!contratoId || porcentaje == null) continue;
-    const l = porContrato.get(contratoId) ?? { contratoId, porcentaje, animales: 0, ganancia: 0, monto: 0 };
+    const l = porContrato.get(contratoId) ?? { contratoId, porcentaje, animales: 0, ganancia: 0, parte: 0 };
     l.animales += 1;
     l.ganancia += ganancia;
+    l.parte += (ganancia * porcentaje) / 100; // por animal, por si el % del contrato cambió entre ventas
     porContrato.set(contratoId, l);
   }
-  for (const l of porContrato.values()) l.monto = (Math.max(0, l.ganancia) * l.porcentaje) / 100;
+  for (const l of porContrato.values()) {
+    const p = previo.get(l.contratoId) ?? { ganancia: 0, parte: 0, pagado: 0 };
+    l.gananciaAcumulada = p.ganancia + l.ganancia;
+    l.parteAcumulada = p.parte + l.parte;
+    l.pagadoAntes = p.pagado;
+    l.monto = Math.max(0, Math.max(0, l.parteAcumulada) - p.pagado);
+    l.saldoAFavor = Math.max(0, p.pagado + l.monto - Math.max(0, l.parteAcumulada));
+  }
   return porContrato;
 }
 
+const gananciasVenta = (animales, { precioKg, destarePct = 0 }) =>
+  animales.map((a) => ({
+    contratoId: a.contratoId,
+    porcentaje: a.porcentajeTenedor,
+    ganancia: a.pesoKg * (1 - destarePct / 100) * precioKg - a.costoCop,
+  }));
+
+// Orden en que se liquidan las ventas: por fecha y, el mismo día, por hora de registro.
+const ordenVentas = (a, b) => a.fecha.localeCompare(b.fecha) || (a.creado ?? '').localeCompare(b.creado ?? '') || a.id.localeCompare(b.id);
+
+// Estado de cada contrato después de liquidar las ventas en orden. Con `antesDe` (id de una venta)
+// solo cuenta las anteriores a esa; con `hasta` (fecha) las de esa fecha o antes.
+export function estadoContratos(ventas, { antesDe = null, hasta = null } = {}) {
+  const estado = new Map();
+  for (const v of [...ventas].sort(ordenVentas)) {
+    if (v.id === antesDe) break;
+    if (hasta && v.fecha > hasta) break;
+    for (const l of partesTenedores(gananciasVenta(v.animales, v), estado).values()) {
+      estado.set(l.contratoId, { ganancia: l.gananciaAcumulada, parte: l.parteAcumulada, pagado: l.pagadoAntes + l.monto });
+    }
+  }
+  return estado;
+}
+
 // Resultado económico de vender ya (dias = 0) o dentro de `dias`, al precio dado.
-function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal }) {
+function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal, contratosPrevios }) {
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
@@ -54,7 +91,7 @@ function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias,
   }
   // D11: la parte de los tenedores se calcula por contrato (partesTenedores).
   let participacion = 0;
-  for (const l of partesTenedores(ganancias).values()) participacion += l.monto;
+  for (const l of partesTenedores(ganancias, contratosPrevios).values()) participacion += l.monto;
   return {
     pesoVendible,
     ingreso,
@@ -76,8 +113,9 @@ function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias,
  * @param {object|null} e.clima       { isFallback, resumenLluvia7d }
  * @param {string|null} e.pasto       nivel más crítico reciente: 'verde' | 'amarillo' | 'rojo' | null
  * @param {string} e.hoy              'AAAA-MM-DD' (Bogotá)
+ * @param {Map}   [e.contratosPrevios] estado de los contratos por las ventas ya hechas (estadoContratos)
  */
-export function analizarLoteV2({ animales, costos, reparto = null, precioKg, destarePct = 0, metaKg = null, clima = null, pasto = null, hoy }) {
+export function analizarLoteV2({ animales, costos, reparto = null, precioKg, destarePct = 0, metaKg = null, clima = null, pasto = null, hoy, contratosPrevios = new Map() }) {
   const activos = animales.filter((a) => a.estado === 'Activo');
   const vendibles = activos.filter((a) => a.categoria !== 'vientre'); // R7 / D2
   const excluidos = activos.length - vendibles.length;
@@ -97,7 +135,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
   // R3 (verificación 010, Alto): se parte del peso ESTIMADO de hoy de cada animal, no del último
   // pesaje, que puede tener semanas. Es el mismo cálculo de la proyección del lote (spec 006).
   const pesoBase = new Map(vendibles.map((a) => [a.id, pesoEstimadoHoy(a, hoy)]));
-  const base = { costoBase, pesoBase, precioKg, destarePct, gastoDiarioPorAnimal };
+  const base = { costoBase, pesoBase, precioKg, destarePct, gastoDiarioPorAnimal, contratosPrevios };
 
   const hoyR = resultado(vendibles, { ...base, dias: 0 });
   const escenarios = ESCENARIOS_SEMANAS.map((semanas) => ({ semanas, ...resultado(vendibles, { ...base, dias: semanas * 7 }) }));
@@ -192,20 +230,20 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
 
 // Spec 011 · R5, R6: resultado real de una venta y liquidación de cada contrato "Al partir".
 // animales: [{ pesoKg, costoCop, contratoId, porcentajeTenedor }] (copias guardadas en la venta).
-export function resultadoVenta(animales, { precioKg, destarePct = 0 }) {
+// previo: estado de los contratos por las ventas anteriores (estadoContratos), D8 acumulado.
+export function resultadoVenta(animales, { precioKg, destarePct = 0 }, previo = new Map()) {
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
-  const ganancias = [];
   for (const a of animales) {
     const vendibleKg = a.pesoKg * (1 - destarePct / 100);
-    const ingresoA = vendibleKg * precioKg;
-    ganancias.push({ contratoId: a.contratoId, porcentaje: a.porcentajeTenedor, ganancia: ingresoA - a.costoCop });
     pesoVendible += vendibleKg;
-    ingreso += ingresoA;
+    ingreso += vendibleKg * precioKg;
     costo += a.costoCop;
   }
-  const liquidaciones = [...partesTenedores(ganancias).values()].map(({ contratoId, animales: n, ganancia, monto }) => ({ contratoId, animales: n, ganancia, monto }));
+  const liquidaciones = [...partesTenedores(gananciasVenta(animales, { precioKg, destarePct }), previo).values()].map(
+    ({ contratoId, animales: n, ganancia, gananciaAcumulada, pagadoAntes, monto, saldoAFavor }) => ({ contratoId, animales: n, ganancia, gananciaAcumulada, pagadoAntes, monto, saldoAFavor }),
+  );
   const participacion = liquidaciones.reduce((s, l) => s + l.monto, 0);
   return { pesoVendible, ingreso, costo, participacion, margenNeto: ingreso - costo - participacion, liquidaciones };
 }

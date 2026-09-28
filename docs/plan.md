@@ -50,8 +50,9 @@ inicio, aunque al principio solo exista la cuenta de Miguel.
   terceros bajo "Al partir". Cada animal está en una finca y, opcionalmente, en un potrero.
 - **D8 · "Al partir":** los dueños entregan animales a una finca externa bajo contrato
   (animales entregados, precio del animal, precio por kilo y porcentaje pactado). El tenedor
-  los cuida y, al vender, recibe un porcentaje de la **ganancia neta del contrato**: la suma de
-  las ganancias de sus animales vendidos, solo si es positiva (decisión del 2026-09-28). Miguel
+  los cuida y, al vender, recibe un porcentaje de la **ganancia neta acumulada del contrato**: la
+  suma de las ganancias de todos sus animales vendidos hasta esa venta, menos lo ya pagado; lo
+  pagado de más queda como saldo a favor de Santa Rita (decisiones del 2026-09-28). Miguel
   verifica con visitas sin previo aviso; el resultado de cada visita debe quedar registrado.
 - **D9 · Costos:** la compra se registra por animal. Los demás costos (suplemento, sal
   mineral, medicamentos, jornales, transporte, arriendo de pasto) se registran por lote y se
@@ -216,7 +217,7 @@ están `hecha` (con veredicto `APROBADO` del verificador y visto bueno humano).
 - 2026-09-28: Reparto de costos histórico (según el lote en que estaba cada animal en la fecha del gasto, reconstruido desde `movimientos`).
 - 2026-09-28: La recomendación parte del peso estimado de hoy (último pesaje + GDP × días), no del último pesaje.
 - 2026-09-28: Cliente Supabase con `@supabase/auth-js` y `@supabase/postgrest-js` (sin almacenamiento, tiempo real ni funciones) para cumplir la meta de 500 kB. Confirmado por el humano el 2026-09-28.
-- 2026-09-28: La parte del tenedor "Al partir" se calcula sobre la ganancia neta del contrato, no animal por animal (DT-03-3).
+- 2026-09-28: La parte del tenedor "Al partir" se calcula sobre la ganancia neta del contrato, no animal por animal (DT-03-3), y acumulada entre las ventas del contrato, con saldo a favor de Santa Rita si se pagó de más (DT-04-9).
 - 2026-09-28: Se recomienda vender cuando esperar ya no sube el margen, aunque no se haya llegado a la meta pactada; la razón lo dice (DT-03-9).
 - 2026-09-28: D2 cubre vientres y terneras con confirmación; la base de datos impide vender vientres.
 - 2026-09-28: Recomendación v2 con costo real, parte del tenedor, escenarios a 2/4/8 semanas, pasto y clima; se retiró el motor v1.

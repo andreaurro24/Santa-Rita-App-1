@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 
 // Spec 011 · ventas reales de lotes.
 
-const SELECT_VENTA = `id, fecha, comprador, precio_kg_cop, destare_pct, recomendacion_sistema, notas,
+const SELECT_VENTA = `id, fecha, created_at, comprador, precio_kg_cop, destare_pct, recomendacion_sistema, notas,
   lote:lotes ( id, nombre ),
   animales:venta_animales ( animal_id, peso_kg, costo_acumulado_cop, contrato_id, porcentaje_tenedor,
     animal:animales ( numero_interno ),
@@ -13,6 +13,7 @@ function mapVenta(v) {
   return {
     id: v.id,
     fecha: v.fecha,
+    creado: v.created_at,
     comprador: v.comprador,
     precioKg: v.precio_kg_cop,
     destarePct: Number(v.destare_pct),

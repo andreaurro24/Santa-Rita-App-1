@@ -6,7 +6,7 @@ import { useAnalisisLotes, useAnalisisLote } from '../data/analisis';
 import { pesoActual, formatCOP } from '../domain/breakeven';
 import { costoAcumuladoAnimal } from '../domain/costos';
 import { HEMBRAS_REPRODUCTIVAS } from '../domain/lotes';
-import { resultadoVenta, siguioRecomendacion } from '../domain/decision';
+import { estadoContratos, resultadoVenta, siguioRecomendacion } from '../domain/decision';
 import { ConDatos } from '../components/EstadoCarga';
 import RecomendacionBadge from '../components/RecomendacionBadge';
 import Card from '../components/ui/Card';
@@ -61,7 +61,7 @@ export function VentasLista() {
           ) : (
             <ul className="space-y-3">
               {ventas.data.map((v) => {
-                const r = resultadoVenta(v.animales, v);
+                const r = resultadoVenta(v.animales, v, estadoContratos(ventas.data, { antesDe: v.id }));
                 return (
                   <li key={v.id}>
                     <Link to={`/ventas/${v.id}`} className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-brand-300">
@@ -148,6 +148,8 @@ function NuevaVentaContenido({ datos }) {
       porcentajeTenedor: f.animal.porcentajeTenedor,
     })),
     { precioKg: precio || 0, destarePct: destare || 0 },
+    // D8 acumulado: cuentan las ventas registradas hasta la fecha de esta (DT-04-9).
+    estadoContratos(datos.ventas.data, { hasta: form.fecha }),
   );
   const terneras = incluidos.filter((f) => HEMBRAS_REPRODUCTIVAS.includes(f.animal.categoria)).length;
 
@@ -287,7 +289,7 @@ export function VentaDetalle() {
       {() => {
         const v = ventas.data.find((x) => x.id === ventaId);
         return v ? (
-          <DetalleVenta venta={v} />
+          <DetalleVenta venta={v} ventas={ventas.data} />
         ) : (
           <EmptyState titulo="Esa venta no existe" accion={<Link to="/ventas" className="font-medium text-brand-700">Ver ventas</Link>} />
         );
@@ -296,8 +298,8 @@ export function VentaDetalle() {
   );
 }
 
-function DetalleVenta({ venta: v }) {
-  const r = resultadoVenta(v.animales, v);
+function DetalleVenta({ venta: v, ventas }) {
+  const r = resultadoVenta(v.animales, v, estadoContratos(ventas, { antesDe: v.id }));
   const rec = v.recomendacion;
   const tenedorDe = (contratoId) => v.animales.find((a) => a.contratoId === contratoId)?.tenedor ?? 'Tenedor';
   return (
@@ -346,8 +348,19 @@ function DetalleVenta({ venta: v }) {
           <ul className="divide-y divide-gray-100">
             {r.liquidaciones.map((l) => (
               <li key={l.contratoId} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                <span className="font-medium text-gray-900">
-                  {tenedorDe(l.contratoId)}: {cantidad(l.animales, 'res', 'reses')}, ganancia neta {pesos(l.ganancia)}
+                <span className="text-gray-900">
+                  <span className="font-medium">
+                    {tenedorDe(l.contratoId)}: {cantidad(l.animales, 'res', 'reses')}, ganancia neta {pesos(l.ganancia)}
+                  </span>
+                  {/* D8 acumulado (DT-04-9): el contrato ya tuvo ventas antes de esta. */}
+                  {(l.pagadoAntes > 0 || l.gananciaAcumulada !== l.ganancia) && (
+                    <span className="block text-gray-600">
+                      Acumulada del contrato {pesos(l.gananciaAcumulada)}; ya se le pagaron {pesos(l.pagadoAntes)}.
+                    </span>
+                  )}
+                  {l.saldoAFavor > 0 && (
+                    <span className="block text-peligro">Saldo a favor de Santa Rita: {pesos(l.saldoAFavor)} (se descuenta de las próximas ventas del contrato o se cobra al cerrarlo).</span>
+                  )}
                 </span>
                 <span className="cifra text-base font-bold text-earth-700">Pagar {pesos(l.monto)}</span>
               </li>

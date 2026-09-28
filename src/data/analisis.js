@@ -5,7 +5,8 @@ import { useRepartoCostos } from './costos';
 import { usePrecios } from './precios';
 import { useParametros, useCondicionPasto } from './pasto';
 import { useClima } from './externos';
-import { analizarLoteV2 } from '../domain/decision';
+import { useVentas } from './ventas';
+import { analizarLoteV2, estadoContratos } from '../domain/decision';
 import { pastoMasCritico } from '../domain/pasto';
 import { hoyISO } from '../utils/format';
 
@@ -18,12 +19,14 @@ export function useAnalisisLotes() {
   const parametros = useParametros();
   const pasto = useCondicionPasto();
   const clima = useClima();
+  // D8 acumulado: lo que ya se liquidó a cada contrato en ventas anteriores (DT-04-9).
+  const ventas = useVentas();
   // El clima entra en la carga: sin esperarlo, la recomendación cambiaba al llegar el pronóstico (verificación 010).
-  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto, clima], hato, lotes, costos, precios, parametros, pasto, clima };
+  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto, clima, ventas], hato, lotes, costos, precios, parametros, pasto, clima, ventas };
 }
 
 export function useAnalisisLote(datos, loteId, precioManual) {
-  const { hato, lotes, costos, precios, parametros, pasto, clima } = datos;
+  const { hato, lotes, costos, precios, parametros, pasto, clima, ventas } = datos;
   return useMemo(() => {
     if (!hato.data || !lotes.data || !costos.reparto || !precios.data || !parametros.data || !pasto.data) return null;
     const lote = lotes.data.find((l) => l.id === loteId);
@@ -53,7 +56,8 @@ export function useAnalisisLote(datos, loteId, precioManual) {
         clima: clima.data ?? null,
         pasto: pastoCritico?.nivel ?? null,
         hoy,
+        contratosPrevios: estadoContratos(ventas.data ?? []),
       }),
     };
-  }, [hato.data, lotes.data, costos.costos, costos.reparto, precios.data, parametros.data, pasto.data, clima.data, loteId, precioManual]);
+  }, [hato.data, lotes.data, costos.costos, costos.reparto, precios.data, parametros.data, pasto.data, clima.data, ventas.data, loteId, precioManual]);
 }

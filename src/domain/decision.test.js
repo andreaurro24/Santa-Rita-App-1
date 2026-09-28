@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analizarLoteV2, gastoDiarioLote, resultadoVenta, siguioRecomendacion } from './decision';
+import { analizarLoteV2, estadoContratos, gastoDiarioLote, resultadoVenta, siguioRecomendacion } from './decision';
 
 // Lote de números redondos para calcular a mano:
 // 2 novillos de 300 kg, compra $600.000 c/u, meta 350 kg, GDP 1 kg/día (270 → 300 en 30 días).
@@ -163,7 +163,7 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
 
   it('liquida por contrato con la ganancia y el monto a pagar', () => {
     const r = resultadoVenta(vendidos, { precioKg: 8_000 });
-    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, monto: 500_000 }]);
+    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, gananciaAcumulada: 1_000_000, pagadoAntes: 0, monto: 500_000, saldoAFavor: 0 }]);
   });
 
   it('liquida por separado dos contratos de la misma venta y lista el contrato al 0 %', () => {
@@ -181,7 +181,7 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
 
   it('un contrato con ganancia neta negativa no paga nada al tenedor', () => {
     const r = resultadoVenta([vendidos[2]], { precioKg: 8_000 });
-    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 1, ganancia: -400_000, monto: 0 }]);
+    expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 1, ganancia: -400_000, gananciaAcumulada: -400_000, pagadoAntes: 0, monto: 0, saldoAFavor: 0 }]);
     expect(r.participacion).toBe(0);
   });
 
@@ -224,5 +224,46 @@ describe('analizarLoteV2 · peso estimado de hoy (verificación 010, Alto)', () 
 
   it('vender antes de la meta dice cuánto se deja de ganar (D4)', () => {
     expect(analizarLoteV2(base({ pasto: 'rojo' })).razones.join(' ')).toMatch(/Anticipar la venta deja de ganar hasta/);
+  });
+});
+
+describe('liquidación acumulada por contrato (D8, DT-04-9)', () => {
+  // Contrato C1 al 50 %. A $8.000/kg: 300 kg con costo 600.000 gana 1.800.000; 150 kg con costo 1.800.000 pierde 600.000.
+  const gana = { pesoKg: 300, costoCop: 600_000, contratoId: 'C1', porcentajeTenedor: 50 };
+  const pierde = { pesoKg: 150, costoCop: 1_800_000, contratoId: 'C1', porcentajeTenedor: 50 };
+  const venta = (id, fecha, animales, creado = '') => ({ id, fecha, creado, precioKg: 8_000, destarePct: 0, animales });
+
+  it('si la ganancia se vende primero y la pérdida después, lo pagado de más queda como saldo a favor', () => {
+    const juntos = resultadoVenta([gana, pierde], { precioKg: 8_000 }).participacion;
+    const ventas = [venta('v1', '2026-09-01', [gana]), venta('v2', '2026-09-10', [pierde])];
+    const primera = resultadoVenta([gana], ventas[0], estadoContratos(ventas, { antesDe: 'v1' }));
+    const segunda = resultadoVenta([pierde], ventas[1], estadoContratos(ventas, { antesDe: 'v2' }));
+    expect(juntos).toBe(600_000);
+    // La primera paga 900.000; con la pérdida, al contrato le tocan 600.000: 300.000 a favor de Santa Rita.
+    expect(primera.participacion).toBe(900_000);
+    expect(segunda.participacion).toBe(0);
+    expect(segunda.liquidaciones[0]).toMatchObject({ gananciaAcumulada: 1_200_000, pagadoAntes: 900_000, monto: 0, saldoAFavor: 300_000 });
+  });
+
+  it('si la pérdida se vende primero, la ganancia posterior la descuenta', () => {
+    const ventas = [venta('v1', '2026-09-01', [pierde]), venta('v2', '2026-09-10', [gana])];
+    expect(resultadoVenta([pierde], ventas[0], estadoContratos(ventas, { antesDe: 'v1' })).participacion).toBe(0);
+    const segunda = resultadoVenta([gana], ventas[1], estadoContratos(ventas, { antesDe: 'v2' }));
+    // Igual que venderlos juntos: 50 % de 1.200.000.
+    expect(segunda.participacion).toBe(600_000);
+    expect(segunda.liquidaciones[0]).toMatchObject({ gananciaAcumulada: 1_200_000, pagadoAntes: 0, saldoAFavor: 0 });
+  });
+
+  it('ordena por fecha y hora de registro, sin importar el orden de la lista', () => {
+    const ventas = [venta('b', '2026-09-01', [gana], '2026-09-01T11:00Z'), venta('a', '2026-09-01', [pierde], '2026-09-01T10:00Z')];
+    expect(estadoContratos(ventas, { antesDe: 'b' }).get('C1')).toEqual({ ganancia: -600_000, parte: -300_000, pagado: 0 });
+    expect(estadoContratos(ventas).get('C1')).toEqual({ ganancia: 1_200_000, parte: 600_000, pagado: 600_000 });
+  });
+
+  it('la recomendación descuenta lo que ya se le pagó al tenedor en ventas anteriores', () => {
+    // a gana 1.800.000 hoy (50 % = 900.000), pero el contrato ya tiene una pérdida de 600.000 vendida antes.
+    const previo = new Map([['C1', { ganancia: -600_000, parte: -300_000, pagado: 0 }]]);
+    const animales = [animal('a', { contratoId: 'C1', porcentajeTenedor: 50 }), animal('b')];
+    expect(analizarLoteV2(base({ animales, contratosPrevios: previo })).hoy.participacion).toBe(600_000);
   });
 });
