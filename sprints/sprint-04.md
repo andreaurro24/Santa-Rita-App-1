@@ -49,6 +49,8 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 | 2026-09-28 | Bajos de la 012 r2 | Plurales de días en `/lotes` y de animales sin pesar; la ficha de un animal vendido muestra su estado y no ofrece "Mover"; spec 012 actualizada con el desvío de R3 | — |
 | 2026-09-28 | Decisiones humanas | DT-01-1 aprobada (14 días); DT-04-1 se mantienen las dependencias; DT-03-9 se mantiene "Vender" sin meta, con una razón que lo dice; DT-03-3 la parte del tenedor pasa a calcularse por contrato (`partesTenedores` en `decision.js`, usada por la recomendación y la liquidación) | Cambio de regla de negocio: pasa por el verificador |
 | 2026-09-28 | Despliegue | Push de `main` a GitHub | El conector de Vercel no tiene permiso sobre el equipo del usuario (403): la conexión la hace el humano con `DEPLOY.md` |
+| 2026-09-28 | Verificación D8/D11 por contrato | APROBADO ([d11-contrato-2026-09-28](../reports/verificacion/d11-contrato-2026-09-28.md)); Bajos corregidos: contrato al 0 % en la liquidación, pruebas de DT-03-9 y de varios contratos, razón sin "NaN %" | Queda DT-04-9 para decisión humana |
+| 2026-09-28 | Despliegue y perfil | Vercel publica desde el fork con sincronización cada 15 min (`sincronizar-fork.yml`); perfil `dueno` creado para el usuario del humano | Producción y desarrollo comparten el proyecto de Supabase (DT-04-10) |
 | 2026-09-28 | Prueba propia inestable | `al-partir.spec.js`: la visita rechazada ya no depende de qué contrato devuelve la base ni de su fecha de inicio | — |
 
 ## 3. Verificación
@@ -89,6 +91,9 @@ Con este sprint terminan los cinco sprints del plan; lo que falta depende de acc
 | DT-04-5 | Las razones de la recomendación dicen "en rojo"/"en amarillo" mientras `/mercado` dice "Escaso"/"Regular" | Baja | 012 r2 (010) | 5 |
 | DT-04-6 | La ficha de un animal vendido todavía ofrece "Registrar evento" | Baja | 012 r2 (011) | 5 |
 | DT-04-8 | `/indicadores` dice "hace 0 días" y "hace 1 días". Se corrigió y se revirtió: la prueba del verificador (`verificador-indicadores.spec.js:101`) exige ese texto y la 012 ya agotó sus dos rondas. Corregir junto con esa prueba en la próxima verificación | Baja | 012 r2 | 5 |
+| DT-04-9 | **Decisión humana:** la parte del tenedor se compensa dentro de cada venta. Si un contrato se vende en varias ventas (varios lotes o ventas parciales), el tenedor puede cobrar más que con la liquidación acumulada del contrato | Media | Verificación D11 | Humano |
+| DT-04-10 | Producción (Vercel) usa el mismo proyecto de Supabase que desarrollo y pruebas: antes del censo real, proyecto aparte o limpieza y pruebas en otro lado | Alta (antes del piloto) | Despliegue | Humano |
+| DT-04-11 | La prueba `verificador-recomendacion.spec.js:194` falla a veces en la suite completa: al recargar datos, `/recomendacion` vuelve al primer lote (`useState(lotes[0])` se reinicia) | Baja | Verificación D11 | 5 |
 | DT-04-7 | Importar censo: sin vista previa de las filas válidas; la fila de ejemplo de la plantilla se puede importar; todo animal entra con `origen: 'compra'` | Baja | 013 | 5 |
 
 ### Información importante

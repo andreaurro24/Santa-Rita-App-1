@@ -25,7 +25,8 @@ export function gastoDiarioLote(costosLote, hoy) {
 export function partesTenedores(items) {
   const porContrato = new Map();
   for (const { contratoId, porcentaje, ganancia } of items) {
-    if (!contratoId || !porcentaje) continue;
+    // Un contrato al 0 % también se liquida (con $0): así aparece en el detalle de la venta.
+    if (!contratoId || porcentaje == null) continue;
     const l = porContrato.get(contratoId) ?? { contratoId, porcentaje, animales: 0, ganancia: 0, monto: 0 };
     l.animales += 1;
     l.ganancia += ganancia;
@@ -170,7 +171,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     // R5 (decisión del 2026-09-28, DT-03-9): se vende aunque no se haya llegado a la meta pactada,
     // porque esperar ya no sube el margen; se dice explícitamente que la meta no se alcanzó.
     razones.unshift(`Esperar ya no paga: lo que cuesta mantener el lote supera lo que gana en peso. El margen de hoy es ${pesos(hoyR.margenNeto)}.`);
-    if (avancePct != null) razones.push(`El lote no llegó a la meta pactada (va en el ${Math.round(avancePct)} %): confirma con el comprador que acepta ese peso.`);
+    if (Number.isFinite(avancePct)) razones.push(`El lote no llegó a la meta pactada (va en el ${Math.round(avancePct)} %): confirma con el comprador que acepta ese peso.`);
   }
 
   return {

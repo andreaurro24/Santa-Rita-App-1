@@ -120,6 +120,8 @@ describe('analizarLoteV2 · recomendación (R5–R7)', () => {
     const animales = [animal('a', { costoCompra: 0 }), animal('b', { costoCompra: 0 })];
     const r = analizarLoteV2(base({ animales, costos, precioKg: 100_000 }));
     expect(r.recomendacion).toBe('VENDER');
+    // DT-03-9: se vende sin haber llegado a la meta (300 de 350 kg) y la razón lo dice.
+    expect(r.razones.join(' ')).toMatch(/no llegó a la meta pactada \(va en el 86 %\)/);
   });
 
   it('excluye los vientres y lo dice (D2)', () => {
@@ -147,7 +149,7 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
   const vendidos = [
     { pesoKg: 350, costoCop: 1_500_000, contratoId: null, porcentajeTenedor: null },
     { pesoKg: 300, costoCop: 1_000_000, contratoId: 'C1', porcentajeTenedor: 50 },
-    { pesoKg: 200, costoCop: 2_000_000, contratoId: 'C1', porcentajeTenedor: 50 }, // pierde: no paga al tenedor
+    { pesoKg: 200, costoCop: 2_000_000, contratoId: 'C1', porcentajeTenedor: 50 }, // pierde: descuenta de la ganancia del contrato
   ];
 
   it('ingreso con destare, costo, participación y margen neto', () => {
@@ -162,6 +164,19 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
   it('liquida por contrato con la ganancia y el monto a pagar', () => {
     const r = resultadoVenta(vendidos, { precioKg: 8_000 });
     expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 2, ganancia: 1_000_000, monto: 500_000 }]);
+  });
+
+  it('liquida por separado dos contratos de la misma venta y lista el contrato al 0 %', () => {
+    const r = resultadoVenta(
+      [
+        ...vendidos,
+        { pesoKg: 300, costoCop: 1_000_000, contratoId: 'C2', porcentajeTenedor: 30 }, // gana 1.400.000 → 420.000
+        { pesoKg: 300, costoCop: 1_000_000, contratoId: 'C3', porcentajeTenedor: 0 },
+      ],
+      { precioKg: 8_000 },
+    );
+    expect(r.liquidaciones.map((l) => [l.contratoId, l.monto])).toEqual([['C1', 500_000], ['C2', 420_000], ['C3', 0]]);
+    expect(r.participacion).toBe(920_000);
   });
 
   it('un contrato con ganancia neta negativa no paga nada al tenedor', () => {
