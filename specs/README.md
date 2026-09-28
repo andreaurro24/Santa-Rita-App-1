@@ -43,5 +43,5 @@ está mal escrito: reescríbelo.
 ## Índice
 | Spec | Estado | Sprint |
 |---|---|---|
-| [001 — Fundaciones: Supabase, autenticación y esquema](001-fundaciones/spec.md) | en-progreso | 0 |
-| [002 — Sistema de diseño y layout adaptable](002-sistema-diseno/spec.md) | borrador | 0 |
+| [001 — Fundaciones: Supabase, autenticación y esquema](001-fundaciones/spec.md) | en-verificacion (bloqueada por T9: despliegue) | 0 |
+| [002 — Sistema de diseño y layout adaptable](002-sistema-diseno/spec.md) | en-verificacion | 0 |

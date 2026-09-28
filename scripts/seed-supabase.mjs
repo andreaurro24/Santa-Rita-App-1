@@ -93,8 +93,16 @@ function construirFilas(animales = seedAnimals, precios = PRECIO_KILO_EN_PIE_HIS
       contrato_id: partir ? partir.contrato.id : null,
       estado: a.estado.toLowerCase(),
     });
+    // created_at explícito y creciente: si hay dos pesajes el mismo día, vale el último de la lista.
     a.pesos.forEach((p, i) =>
-      pesajes.push({ id: uuid(`pesaje:${a.numeroInterno}:${i}`), animal_id: id, fecha: p.fecha, peso_kg: p.pesoKg, notas: null }),
+      pesajes.push({
+        id: uuid(`pesaje:${a.numeroInterno}:${i}`),
+        animal_id: id,
+        fecha: p.fecha,
+        peso_kg: p.pesoKg,
+        notas: null,
+        created_at: `${p.fecha}T12:00:${String(i).padStart(2, '0')}Z`,
+      }),
     );
     a.sanidad.forEach((s, i) =>
       eventos.push({

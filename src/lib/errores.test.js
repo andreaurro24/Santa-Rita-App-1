@@ -11,6 +11,7 @@ describe('mensajeError', () => {
   it('explica una fecha futura rechazada por la base de datos', () => {
     expect(mensajeError({ code: '23514', message: 'fecha_futura: el pesaje tiene fecha 2099-01-01' })).toMatch(/no puede ser futura/);
     expect(mensajeError({ code: '23514', message: 'new row violates check constraint "pesajes_peso_kg_check"' })).toMatch(/fuera del rango/);
+    expect(mensajeError({ code: '23514', message: 'new row violates check constraint "animales_categoria_sexo_check"' })).toMatch(/categoría no corresponde al sexo/);
   });
 
   it('reconoce credenciales incorrectas, permisos y falta de red', () => {

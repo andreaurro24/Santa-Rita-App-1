@@ -140,6 +140,19 @@ function HatoContenido({ animales, lotes }) {
   );
 }
 
+// D2: la categoría depende del sexo (la base de datos también lo exige).
+const CATEGORIAS = {
+  Macho: [
+    { valor: 'novillo', label: 'Novillo' },
+    { valor: 'ternero', label: 'Ternero' },
+    { valor: 'reproductor', label: 'Reproductor' },
+  ],
+  Hembra: [
+    { valor: 'ternera', label: 'Ternera' },
+    { valor: 'vientre', label: 'Vientre (no se vende)' },
+  ],
+};
+
 function NuevoAnimalModal({ lotes, onClose }) {
   const addAnimal = useAddAnimal();
   const contratos = useContratosVigentes();
@@ -222,18 +235,21 @@ function NuevoAnimalModal({ lotes, onClose }) {
           <Input value={form.chapetaICA} onChange={(e) => set('chapetaICA', e.target.value)} autoCapitalize="characters" />
         </Field>
         <Field label="Sexo">
-          <Select value={form.sexo} onChange={(e) => set('sexo', e.target.value)}>
+          <Select
+            value={form.sexo}
+            onChange={(e) => setForm((f) => ({ ...f, sexo: e.target.value, categoria: CATEGORIAS[e.target.value][0].valor }))}
+          >
             <option>Macho</option>
             <option>Hembra</option>
           </Select>
         </Field>
         <Field label="Categoría">
           <Select value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>
-            <option value="novillo">Novillo</option>
-            <option value="ternero">Ternero</option>
-            <option value="ternera">Ternera</option>
-            <option value="vientre">Vientre (no se vende)</option>
-            <option value="reproductor">Reproductor</option>
+            {CATEGORIAS[form.sexo].map((c) => (
+              <option key={c.valor} value={c.valor}>
+                {c.label}
+              </option>
+            ))}
           </Select>
         </Field>
         <Field label="Lote" className="sm:col-span-2">

@@ -48,7 +48,9 @@ export function AuthProvider({ children }) {
     // para no bloquear el cliente de auth.
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') queryClient.clear();
-      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') return; // SIGNED_IN lo resuelve login()
+      // SIGNED_IN también llega cuando se entra desde otra pestaña; resolverlo dos veces tras
+      // login() es inofensivo (el perfil es el mismo).
+      if (event === 'TOKEN_REFRESHED') return;
       setTimeout(() => aplicarSesion(session), 0);
     });
 

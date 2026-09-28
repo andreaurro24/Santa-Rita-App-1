@@ -1,6 +1,6 @@
 # Spec 002 — Sistema de diseño "Hierro y sabana" y layout adaptable
 
-- Estado: borrador
+- Estado: en-verificacion
 - Sprint: 0
 - Módulos del plan: transversal (identidad visual de `docs/plan.md` §7)
 
@@ -81,14 +81,29 @@ que hacen.
 - **Tono del texto:** verbos en infinitivo o imperativo ("Registrar peso"), frases en
   minúscula inicial, sin etiquetas en mayúsculas sostenidas.
 
+## Desvíos durante la implementación (2026-09-28)
+- La escala gris de Tailwind se reasignó a neutros verdosos. Ahora `text-gray-400` cumple AA
+  (antes daba 2,5:1 sobre blanco), así que el texto secundario existente se volvió legible sin
+  tocar cada página.
+- `.input` se movió a `@layer components`. Sin capa le ganaba a las utilidades de Tailwind v4
+  (el ícono de búsqueda se montaba sobre el texto).
+- Clima y TRM pasaron a hooks compartidos (`src/data/externos.js`, TanStack Query) y las
+  cancelaciones ya no se tratan como fallos. Esto elimina la deuda de los avisos "signal is
+  aborted" que se veían en consola.
+- Los lotes de ceba se ordenan antes que la cría, para que Recomendación y Reporte abran en un
+  lote con costo.
+- La categoría del animal depende del sexo (D2). La base de datos lo exige con
+  `animales_categoria_sexo_check` (migración 0500, hallazgo de la verificación 001 ronda 2).
+- `playwright.config.js` acepta `E2E_PORT`, para correr dos suites a la vez sin compartir servidor.
+
 ## Tareas
-- [ ] T1 Tokens y fuentes en `index.css` / `index.html` — verifica: `npm run build`
-- [ ] T2 Marca SR (componente + favicon) — verifica: revisión visual
-- [ ] T3 Componentes `ui/` — verifica: `npm run lint`
-- [ ] T4 Layout adaptable (SideNav / BottomNav) — verifica: 375 px y 1280 px sin scroll horizontal
-- [ ] T5 Rediseño de Login y Panel — verifica: revisión visual en ambos anchos
-- [ ] T6 Rediseño de Hato (tarjetas / tabla) y Ficha del animal — verifica: E2E de pesaje sigue pasando
-- [ ] T7 Rediseño de Mercado, Recomendación y Reporte (+ impresión) — verifica: vista previa de impresión
+- [x] T1 Tokens y fuentes en `index.css` / `index.html` — verifica: `npm run build`
+- [x] T2 Marca SR (componente + favicon) — verifica: revisión visual
+- [x] T3 Componentes `ui/` — verifica: `npm run lint`
+- [x] T4 Layout adaptable (SideNav / BottomNav) — verifica: 375 px y 1280 px sin scroll horizontal
+- [x] T5 Rediseño de Login y Panel — verifica: revisión visual en ambos anchos
+- [x] T6 Rediseño de Hato (tarjetas / tabla) y Ficha del animal — verifica: E2E de pesaje sigue pasando
+- [x] T7 Rediseño de Mercado, Recomendación y Reporte (+ impresión) — verifica: vista previa de impresión
 - [ ] T8 Correr el `verificador` sobre esta spec
 
 ## Criterios de aceptación para el verificador

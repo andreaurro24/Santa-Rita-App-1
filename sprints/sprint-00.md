@@ -2,7 +2,7 @@
 
 - Estado: en-ejecucion
 - Inicio: 2026-09-27 · Cierre: —
-- Aprobación del plan: [x] Andrés Sánchez el 2026-09-27 (spec 001). La spec 002 está pendiente de aprobación.
+- Aprobación del plan: [x] Andrés Sánchez el 2026-09-27 (spec 001; la 002 se aprobó en el chat el mismo día)
 
 ## 1. Plan
 
@@ -15,7 +15,7 @@ verificar automáticamente.
 | Spec | Módulos | Estado |
 |---|---|---|
 | [001 — Supabase, autenticación y esquema](../specs/001-fundaciones/spec.md) | M1 + base de datos | aprobada |
-| [002 — Sistema de diseño y layout adaptable](../specs/002-sistema-diseno/spec.md) | transversal | borrador |
+| [002 — Sistema de diseño y layout adaptable](../specs/002-sistema-diseno/spec.md) | transversal | en-verificacion |
 
 ### Fuera de alcance
 - Módulos nuevos (costos, ciclos, ventas, "Al partir" v2, recomendación v2): Sprints 1–3.
@@ -52,6 +52,8 @@ verificar automáticamente.
 | 2026-09-27 | 001 · T8 | Playwright; `npm run test:e2e`: 11/11 | Solo proyecto escritorio; el móvil entra con la spec 002 |
 | 2026-09-28 | 001 · correcciones ronda 1 | Todos los Alto y Medio corregidos, y 4 de 6 Bajos. `npm test` 21/21; E2E 27/29 | Las 2 que fallan: "animal a medias" (su premisa cambió con `registrar_animal`) y la de celular (es de la spec 002). Bug propio en el trigger de fecha futura (AND sin cortocircuito), corregido con la migración 0400 |
 | 2026-09-28 | 001 · T9 | Push al repo del equipo bloqueado por los permisos de Claude Code (lo cuenta como publicación). T9 queda para el usuario | — |
+| 2026-09-28 | 001 · hallazgos ronda 2 | Migración 0500: sin fechas futuras en precios ni en animales; categoría acorde al sexo (D2). Además: SIGNED_IN en otra pestaña, orden del gráfico de peso, `created_at` explícito en la semilla | La prueba de atomicidad del verificador depende de una fecha futura en el animal, que ahora se rechaza: el verificador debe ajustar su instrumento |
+| 2026-09-28 | 002 · T1–T7 | Tokens, marca SR, componentes `ui/`, layout adaptable y 7 pantallas rediseñadas. Vitest 48/48 (incluye la prueba de tokens de R1). E2E de diseño 6/6. Suite completa 41/42 | Trabajado en un git worktree mientras corría la ronda 2 de la 001. Revisión visual a 375 y 1280 px. Corregido `.input` (sin capa CSS) que tapaba el ícono de búsqueda |
 | 2026-09-27 | 001 · T9 | **Pendiente**: requiere decidir cómo desplegar (push al repo del equipo o subida directa a Vercel) | Se consulta al usuario |
 
 ## 3. Verificación

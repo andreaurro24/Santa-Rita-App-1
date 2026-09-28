@@ -9,6 +9,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { formatFecha } from '../utils/format';
+import { ordenarPesajes } from '../domain/breakeven';
 import { COLOR } from '../styles/tokens';
 
 // Serie única (peso de un animal en el tiempo) en verde potrero; la meta pactada va como
@@ -28,7 +29,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function WeightChart({ pesos, pesoObjetivo, height = 220 }) {
-  const data = [...pesos].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const data = ordenarPesajes(pesos);
 
   return (
     <ResponsiveContainer width="100%" height={height}>
