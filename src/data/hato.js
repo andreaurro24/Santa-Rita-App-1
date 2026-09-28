@@ -10,7 +10,7 @@ const HATO_KEY = ['hato'];
 const SELECT_ANIMALES = `
   id, numero_interno, chapeta_ica, marca_finca, sexo, categoria, origen, fecha_ingreso,
   fecha_nacimiento, peso_ingreso_kg, peso_objetivo_kg, costo_compra_cop, estado,
-  lote:lotes ( id, codigo, nombre ),
+  lote:lotes ( id, codigo, nombre, tipo ),
   contrato:contratos_al_partir ( id, porcentaje_ganancia, tenedor:tenedores ( nombre, finca:fincas ( nombre ) ) ),
   pesajes ( fecha, peso_kg, created_at ),
   eventos_sanitarios ( id, tipo, descripcion, estado, fecha_aplicada, fecha_programada )
@@ -36,6 +36,7 @@ export function mapAnimal(row) {
     lote: row.lote?.codigo,
     loteId: row.lote?.id,
     loteNombre: row.lote?.nombre,
+    loteTipo: row.lote?.tipo,
     esquema: row.contrato ? 'Al partir' : 'Propio',
     tenedor: tenedor ? `${tenedor.nombre} – ${tenedor.finca?.nombre ?? 'sin finca'}` : null,
     porcentajeTenedor: row.contrato ? Number(row.contrato.porcentaje_ganancia) : null,
@@ -53,10 +54,12 @@ export function mapAnimal(row) {
 function agruparLotes(animales) {
   const map = new Map();
   for (const a of animales) {
-    if (!map.has(a.lote)) map.set(a.lote, { codigo: a.lote, id: a.loteId, nombre: a.loteNombre, animales: [] });
+    if (!map.has(a.lote)) map.set(a.lote, { codigo: a.lote, id: a.loteId, nombre: a.loteNombre, tipo: a.loteTipo, animales: [] });
     map.get(a.lote).animales.push(a);
   }
-  return [...map.values()].sort((x, y) => x.codigo.localeCompare(y.codigo));
+  // Primero los lotes de ceba (los que se venden), luego la cría; dentro de cada tipo, por código.
+  const orden = (l) => (l.tipo === 'cria' ? 1 : 0);
+  return [...map.values()].sort((x, y) => orden(x) - orden(y) || x.codigo.localeCompare(y.codigo));
 }
 
 async function fetchHato() {

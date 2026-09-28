@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
-import { CloudSun, Droplets, Banknote, DollarSign, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { CloudSun, Droplets, Banknote, DollarSign, Plus, AlertTriangle } from 'lucide-react';
 import { usePrecios, useAddPrecio } from '../data/precios';
+import { useClima, useTRM } from '../data/externos';
 import { ConDatos } from '../components/EstadoCarga';
 import { mensajeError } from '../lib/errores';
-import { hoyISO } from '../utils/format';
 import { useAuth } from '../context/AuthContext';
 import PriceChart from '../components/PriceChart';
-import { fetchClimaFinca, describeWeatherCode } from '../api/weather';
-import { fetchTRM } from '../api/trm';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import Skeleton from '../components/ui/Skeleton';
+import { Field, Input, FormError } from '../components/ui/Field';
+import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
-import { formatFecha } from '../utils/format';
+import { formatFecha, hoyISO } from '../utils/format';
 import { UBICACION_FINCA, PERDIDA_REVALUACION_COP_POR_KG } from '../data/seedMercado';
 
 export default function Market() {
@@ -17,140 +21,97 @@ export default function Market() {
   return <ConDatos queries={preciosQuery}>{() => <MercadoContenido {...preciosQuery.data} />}</ConDatos>;
 }
 
+function Fuente({ dato, enVivo }) {
+  if (!dato) return null;
+  return dato.isFallback ? <Badge>Respaldo sin conexión</Badge> : <Badge tono="ok">En vivo, {enVivo}</Badge>;
+}
+
 function MercadoContenido({ precios, precioActual }) {
   const { user } = useAuth();
-  const [clima, setClima] = useState(null);
-  const [trm, setTrm] = useState(null);
-  const [cargando, setCargando] = useState(true);
+  const { data: clima } = useClima();
+  const { data: trm } = useTRM();
   const [showForm, setShowForm] = useState(false);
 
   const puedeEditar = user?.rol === 'administrador' || user?.rol === 'dueno';
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setCargando(true);
-    Promise.all([fetchClimaFinca({ signal: controller.signal }), fetchTRM({ signal: controller.signal })]).then(
-      ([c, t]) => {
-        setClima(c);
-        setTrm(t);
-        setCargando(false);
-      },
-    );
-    return () => controller.abort();
-  }, []);
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Mercado y clima</h1>
-        <p className="text-sm text-gray-500">
-          Consulta centralizada de variables externas para la decisión de venta — {UBICACION_FINCA.nombre}.
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900">Mercado y clima</h1>
+        <p className="text-sm text-gray-500">Lo que hoy se consulta a mano para decidir la venta, en un solo lugar. {UBICACION_FINCA.nombre}.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
-            <CloudSun size={16} className="text-brand-600" /> Clima — pronóstico 7 días
-            {clima && !clima.isFallback && (
-              <span className="ml-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-700">
-                En vivo · Open-Meteo
-              </span>
-            )}
-            {clima?.isFallback && (
-              <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-500">
-                Respaldo sin conexión
-              </span>
-            )}
-          </h2>
-          {cargando || !clima ? (
-            <p className="text-sm text-gray-400">Consultando pronóstico…</p>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card titulo="Clima, próximos 7 días" icono={CloudSun} accion={<Fuente dato={clima} enVivo="Open-Meteo" />}>
+          {!clima ? (
+            <Skeleton lineas={4} />
           ) : (
             <>
               <div className="mb-4 flex items-center gap-4">
-                <p className="text-4xl font-semibold text-gray-900">{Math.round(clima.actual.temperaturaC)}°C</p>
+                <p className="cifra text-5xl font-bold text-gray-900">{Math.round(clima.actual.temperaturaC)}°</p>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">{describeWeatherCode(clima.actual.codigo)}</p>
-                  <p className="flex items-center gap-1 text-xs text-gray-500">
-                    <Droplets size={12} /> {clima.resumenLluvia7d} mm acumulados en 7 días
+                  <p className="font-medium text-gray-800">{describeWeatherCode(clima.actual.codigo)}</p>
+                  <p className="flex items-center gap-1 text-sm text-gray-600">
+                    <Droplets size={14} aria-hidden="true" /> {clima.resumenLluvia7d} mm de lluvia en 7 días
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-1 text-center text-xs">
+              <ol className="grid grid-cols-7 gap-1 text-center text-xs">
                 {clima.diario.map((d) => (
-                  <div key={d.fecha} className="rounded-lg bg-gray-50 p-1.5">
-                    <p className="text-gray-400">{formatFecha(d.fecha).slice(0, 6)}</p>
-                    <p className="font-semibold text-gray-700">{Math.round(d.tempMaxC)}°</p>
-                    <p className="text-gray-400">{Math.round(d.tempMinC)}°</p>
-                    {d.precipitacionMm > 0 && <p className="text-blue-500">{Math.round(d.precipitacionMm)}mm</p>}
-                  </div>
+                  <li key={d.fecha} className="rounded-lg bg-gray-50 px-0.5 py-1.5">
+                    <p className="text-gray-500">{new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'short' })}</p>
+                    <p className="cifra text-sm font-bold text-gray-900">{Math.round(d.tempMaxC)}°</p>
+                    <p className="text-gray-500">{Math.round(d.tempMinC)}°</p>
+                    <p className={d.precipitacionMm > 0 ? 'font-medium text-brand-700' : 'text-gray-400'}>{Math.round(d.precipitacionMm)} mm</p>
+                  </li>
                 ))}
-              </div>
+              </ol>
               {clima.resumenLluvia7d < 2 && (
-                <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                  Precipitación muy baja pronosticada: posible riesgo de escasez de pasto (patrón de alerta similar a El Niño).
+                <p className="mt-3 flex gap-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                  Casi no se pronostica lluvia: puede escasear el pasto, como en los episodios de El Niño.
                 </p>
               )}
             </>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
-            <DollarSign size={16} className="text-brand-600" /> TRM (peso / dólar)
-            {trm && !trm.isFallback && (
-              <span className="ml-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-700">
-                En vivo · datos.gov.co
-              </span>
-            )}
-            {trm?.isFallback && (
-              <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-500">
-                Respaldo sin conexión
-              </span>
-            )}
-          </h2>
-          {cargando || !trm ? (
-            <p className="text-sm text-gray-400">Consultando TRM…</p>
+        <Card titulo="TRM, peso frente al dólar" icono={DollarSign} accion={<Fuente dato={trm} enVivo="datos.gov.co" />}>
+          {!trm ? (
+            <Skeleton lineas={3} />
           ) : (
             <>
-              <p className="text-4xl font-semibold text-gray-900">${formatCOP(trm.valor)}</p>
-              <p className="text-xs text-gray-500">{trm.fecha ? `Vigente desde ${formatFecha(trm.fecha)}` : 'Valor de referencia'}</p>
-              <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-                La revaluación del peso frente al dólar le ha costado a la finca ≈ ${formatCOP(PERDIDA_REVALUACION_COP_POR_KG)} COP
-                por kilo vendido (línea base documentada en el Project Charter, Cap. 1.2).
+              <p className="cifra text-5xl font-bold text-gray-900">${formatCOP(trm.valor)}</p>
+              <p className="text-sm text-gray-600">{trm.fecha ? `Vigente desde ${formatFecha(trm.fecha)}` : 'Valor de referencia'}</p>
+              <p className="mt-4 rounded-lg bg-peligro-50 px-3 py-2 text-sm text-peligro">
+                La revaluación del peso le costó a la finca unos ${formatCOP(PERDIDA_REVALUACION_COP_POR_KG)} por kilo vendido en la última venta.
               </p>
             </>
           )}
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold text-gray-900">
-            <Banknote size={16} className="text-brand-600" /> Precio del kilo en pie (ganado gordo)
-          </h2>
-          {puedeEditar && (
-            <button
-              onClick={() => setShowForm((s) => !s)}
-              className="flex items-center gap-1 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100"
-            >
-              <Plus size={14} /> Actualizar precio
-            </button>
-          )}
-        </div>
-        <p className="mb-3 text-xs text-gray-500">
-          SIPSA (DANE) y Fedegán no publican una API pública formal, así que este valor se actualiza manualmente a partir de sus
-          boletines — igual que hoy, pero centralizado para todos.
+      <Card
+        titulo="Precio del kilo en pie"
+        icono={Banknote}
+        accion={
+          puedeEditar && (
+            <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setShowForm((s) => !s)}>
+              Actualizar precio
+            </Button>
+          )
+        }
+      >
+        <p className="mb-3 text-sm text-gray-600">
+          SIPSA (DANE) y Fedegán no tienen una API pública, así que el precio se copia de sus boletines. Queda guardado para todos.
         </p>
-        {showForm && (
-          <PrecioForm onCancel={() => setShowForm(false)} onSaved={() => setShowForm(false)} />
-        )}
-        <div className="mb-3 flex items-baseline gap-2">
-          <p className="text-3xl font-semibold text-gray-900">${precioActual ? formatCOP(precioActual.precioCOP) : '—'}</p>
-          <p className="text-sm text-gray-400">COP/kg · {precioActual ? formatFecha(precioActual.fecha) : ''}</p>
+        {showForm && <PrecioForm onCancel={() => setShowForm(false)} onSaved={() => setShowForm(false)} />}
+        <div className="mb-3 flex flex-wrap items-baseline gap-x-2">
+          <p className="cifra text-4xl font-bold text-gray-900">${precioActual ? formatCOP(precioActual.precioCOP) : '—'}</p>
+          <p className="text-sm text-gray-600">por kilo{precioActual ? `, boletín del ${formatFecha(precioActual.fecha)}` : ''}</p>
         </div>
         <PriceChart precios={precios} />
-      </div>
+      </Card>
     </div>
   );
 }
@@ -174,30 +135,24 @@ function PrecioForm({ onSaved, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
-      <label className="text-sm">
-        <span className="mb-1 block text-gray-600">Fecha del boletín</span>
-        <input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} className="input" required />
-      </label>
-      <label className="text-sm">
-        <span className="mb-1 block text-gray-600">Precio (COP/kg)</span>
-        <input type="number" min="1" step="1" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} className="input" required />
-      </label>
-      <button
-        type="submit"
-        disabled={addPrecio.isPending}
-        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-      >
-        {addPrecio.isPending ? 'Guardando…' : 'Guardar'}
-      </button>
-      {error && (
-        <p role="alert" className="w-full text-sm text-red-600">
-          {error}
-        </p>
-      )}
-      <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700">
-        Cancelar
-      </button>
+    <form onSubmit={handleSubmit} noValidate className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 md:flex md:flex-wrap md:items-end">
+      <Field label="Fecha del boletín">
+        <Input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} required />
+      </Field>
+      <Field label="Precio (COP/kg)">
+        <Input type="number" min="1" step="1" inputMode="numeric" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} required />
+      </Field>
+      <div className="col-span-2 flex gap-2">
+        <Button type="submit" disabled={addPrecio.isPending}>
+          {addPrecio.isPending ? 'Guardando…' : 'Guardar'}
+        </Button>
+        <Button variante="fantasma" onClick={onCancel}>
+          Cancelar
+        </Button>
+      </div>
+      <div className="col-span-2 md:w-full">
+        <FormError>{error}</FormError>
+      </div>
     </form>
   );
 }

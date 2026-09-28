@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Sprout, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useAuth, tieneAcceso } from '../context/AuthContext';
 import AccesoBloqueado from '../components/AccesoBloqueado';
+import MarcaSR from '../components/MarcaSR';
+import Button from '../components/ui/Button';
+import { Field, Input, FormError } from '../components/ui/Field';
 
 export default function Login() {
   const { user, login } = useAuth();
@@ -13,7 +16,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  // R2: tras entrar, volver a la ruta que se pidió sin sesión.
+  // R2 (spec 001): tras entrar, volver a la ruta que se pidió sin sesión.
   const destino = location.state?.from && location.state.from !== '/login' ? location.state.from : '/';
 
   if (tieneAcceso(user)) return <Navigate to={destino} replace />;
@@ -38,61 +41,41 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-800 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-brand-700 px-8 py-6 text-white text-center">
-          <Sprout className="mx-auto mb-2 h-9 w-9 text-brand-200" />
-          <h1 className="text-xl font-semibold">Finca Santa Rita</h1>
-          <p className="text-sm text-brand-200">Sistema de trazabilidad y apoyo a la decisión de venta</p>
+    <div className="flex min-h-dvh flex-col bg-brand-800 md:items-center md:justify-center md:px-4">
+      <div className="flex flex-col items-center gap-3 px-6 pb-8 pt-14 text-center text-white md:pt-0">
+        <MarcaSR className="size-16 text-chapeta" />
+        <div>
+          <h1 className="text-3xl font-bold">Finca Santa Rita</h1>
+          <p className="mt-1 text-brand-200">El hato, sus pesos y el momento de vender</p>
         </div>
-
-        <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4" noValidate>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Correo
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-              placeholder="nombre@correo.com"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error && (
-            <p role="alert" className="text-sm text-red-600">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={enviando}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors disabled:opacity-60"
-          >
-            <LogIn size={16} />
-            {enviando ? 'Ingresando…' : 'Ingresar'}
-          </button>
-        </form>
       </div>
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex-1 space-y-4 rounded-t-3xl bg-white px-6 pb-10 pt-8 md:w-full md:max-w-sm md:flex-none md:rounded-2xl md:pb-8"
+      >
+        <Field label="Correo">
+          <Input
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nombre@correo.com"
+            autoFocus
+          />
+        </Field>
+        <Field label="Contraseña">
+          <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </Field>
+
+        <FormError>{error}</FormError>
+
+        <Button type="submit" icono={LogIn} disabled={enviando} className="w-full">
+          {enviando ? 'Ingresando…' : 'Ingresar'}
+        </Button>
+      </form>
     </div>
   );
 }

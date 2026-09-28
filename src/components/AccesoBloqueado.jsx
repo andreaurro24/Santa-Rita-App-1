@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import Button from './ui/Button';
 
 // Explica por qué una sesión válida no puede ver los datos: sin perfil (pedir acceso) o
 // sin conexión al consultar el perfil (reintentar). Se usa en el login y en las rutas.
@@ -15,28 +16,26 @@ export default function AccesoBloqueado() {
   }
 
   return (
-    <div role="alert" className="mx-auto mt-24 max-w-md rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-      <p className="mb-2 font-semibold">
-        {esRed ? 'No se pudo verificar tu acceso' : 'Tu cuenta no tiene acceso a los datos de la finca'}
-      </p>
-      <p className="mb-4">
-        {esRed
-          ? user.errorPerfil
-          : `La cuenta ${user?.email} existe, pero no tiene un perfil activo. Pídele al dueño que te dé acceso.`}
-      </p>
-      <div className="flex gap-2">
-        {esRed && (
-          <button
-            onClick={reintentar}
-            disabled={reintentando}
-            className="rounded-lg bg-white px-3 py-2 font-medium ring-1 ring-amber-300 hover:bg-amber-100 disabled:opacity-60"
-          >
-            {reintentando ? 'Reintentando…' : 'Reintentar'}
-          </button>
-        )}
-        <button onClick={logout} className="rounded-lg bg-white px-3 py-2 font-medium ring-1 ring-amber-300 hover:bg-amber-100">
-          Cerrar sesión
-        </button>
+    <div className="flex min-h-dvh items-center justify-center px-4">
+      <div role="alert" className="w-full max-w-md rounded-xl border border-alerta bg-alerta-50 p-6 text-sm text-gray-900">
+        <p className="mb-2 text-base font-semibold">
+          {esRed ? 'No se pudo verificar tu acceso' : 'Tu cuenta no tiene acceso a los datos de la finca'}
+        </p>
+        <p className="mb-5">
+          {esRed
+            ? user.errorPerfil
+            : `La cuenta ${user?.email} existe, pero no tiene un perfil activo. Pídele al dueño que te dé acceso.`}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {esRed && (
+            <Button onClick={reintentar} disabled={reintentando}>
+              {reintentando ? 'Reintentando…' : 'Reintentar'}
+            </Button>
+          )}
+          <Button variante="secundario" onClick={logout}>
+            Cerrar sesión
+          </Button>
+        </div>
       </div>
     </div>
   );

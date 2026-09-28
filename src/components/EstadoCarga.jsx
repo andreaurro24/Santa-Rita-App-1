@@ -1,29 +1,32 @@
 import { AlertTriangle, Loader2, RotateCw } from 'lucide-react';
 import { mensajeError } from '../lib/errores';
+import Button from './ui/Button';
+import Skeleton from './ui/Skeleton';
 
 // Spec 001 · R7: estados compartidos de carga y error para toda pantalla que lee datos.
 export function Cargando({ texto = 'Cargando datos…' }) {
   return (
-    <div role="status" className="flex items-center justify-center gap-2 py-16 text-sm text-gray-500">
-      <Loader2 size={18} className="animate-spin" /> {texto}
+    <div role="status" className="space-y-6 py-4">
+      <p className="flex items-center gap-2 text-sm text-gray-500">
+        <Loader2 size={16} className="animate-spin" aria-hidden="true" /> {texto}
+      </p>
+      <Skeleton lineas={3} className="max-w-md" />
+      <Skeleton lineas={4} />
     </div>
   );
 }
 
 export function ErrorCarga({ error, onReintentar }) {
   return (
-    <div role="alert" className="mx-auto max-w-md rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+    <div role="alert" className="mx-auto max-w-md rounded-xl border border-peligro/30 bg-peligro-50 p-5 text-sm text-peligro">
       <p className="mb-1 flex items-center gap-2 font-semibold">
-        <AlertTriangle size={16} /> No se pudieron cargar los datos
+        <AlertTriangle size={16} aria-hidden="true" /> No se pudieron cargar los datos
       </p>
-      <p className="mb-3">{mensajeError(error)}</p>
+      <p className="mb-4 text-gray-800">{mensajeError(error)}</p>
       {onReintentar && (
-        <button
-          onClick={onReintentar}
-          className="flex items-center gap-1 rounded-lg bg-white px-3 py-2 font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-100"
-        >
-          <RotateCw size={14} /> Reintentar
-        </button>
+        <Button variante="secundario" tamano="sm" icono={RotateCw} onClick={onReintentar}>
+          Reintentar
+        </Button>
       )}
     </div>
   );

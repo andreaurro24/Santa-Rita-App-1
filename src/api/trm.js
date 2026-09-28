@@ -20,6 +20,7 @@ export async function fetchTRM({ signal } = {}) {
       fecha: registro.vigenciadesde?.slice(0, 10) ?? null,
     };
   } catch (err) {
+    if (err.name === 'AbortError') throw err; // consulta cancelada (cambio de pantalla): no es un fallo
     console.warn('No se pudo obtener la TRM en vivo, usando valor de respaldo:', err.message);
     return FALLBACK_TRM;
   }

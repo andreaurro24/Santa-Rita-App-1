@@ -74,6 +74,7 @@ export async function fetchClimaFinca({ signal } = {}) {
       resumenLluvia7d: round1(diario.reduce((acc, d) => acc + (d.precipitacionMm || 0), 0)),
     };
   } catch (err) {
+    if (err.name === 'AbortError') throw err; // consulta cancelada (cambio de pantalla): no es un fallo
     console.warn('No se pudo obtener el clima en vivo, usando datos de respaldo:', err.message);
     return FALLBACK_WEATHER;
   }

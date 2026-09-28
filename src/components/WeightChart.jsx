@@ -9,13 +9,13 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { formatFecha } from '../utils/format';
+import { COLOR } from '../styles/tokens';
 
-// Serie única (peso de un animal en el tiempo): un solo hue validado (verde, slot
-// categórico 6 de la paleta de referencia), meta pactada como línea de referencia
-// punteada en gris muted — evita necesitar un segundo color categórico para "meta".
-const LINE_COLOR = '#008300';
-const GRID_COLOR = '#e1e0d9';
-const AXIS_COLOR = '#898781';
+// Serie única (peso de un animal en el tiempo) en verde potrero; la meta pactada va como
+// línea punteada suave, así no hace falta un segundo color para distinguirla.
+const LINE_COLOR = COLOR.potrero;
+const GRID_COLOR = COLOR.linea;
+const AXIS_COLOR = COLOR.eje;
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -54,9 +54,9 @@ export default function WeightChart({ pesos, pesoObjetivo, height = 220 }) {
         {pesoObjetivo && (
           <ReferenceLine
             y={pesoObjetivo}
-            stroke="#c3c2b7"
+            stroke={COLOR.meta}
             strokeDasharray="4 4"
-            label={{ value: `Meta ${pesoObjetivo} kg`, position: 'insideTopRight', fontSize: 11, fill: '#898781' }}
+            label={{ value: `Meta ${pesoObjetivo} kg`, position: 'insideTopRight', fontSize: 11, fill: AXIS_COLOR }}
           />
         )}
         <Line

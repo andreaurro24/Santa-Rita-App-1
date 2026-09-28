@@ -1,13 +1,13 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatFecha } from '../utils/format';
+import { COLOR } from '../styles/tokens';
 import { formatCOP } from '../domain/breakeven';
 
-// Serie única (precio del kilo en pie): hue categórico slot 1 (azul) de la paleta de
-// referencia, distinto del verde usado para peso, para que ambos gráficos nunca se
-// confundan si aparecen juntos en el mismo panel.
-const LINE_COLOR = '#2a78d6';
-const GRID_COLOR = '#e1e0d9';
-const AXIS_COLOR = '#898781';
+// Serie única (precio del kilo en pie) en color cuero, distinto del verde del peso, para que
+// los dos gráficos no se confundan si aparecen juntos.
+const LINE_COLOR = COLOR.cuero;
+const GRID_COLOR = COLOR.linea;
+const AXIS_COLOR = COLOR.eje;
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;

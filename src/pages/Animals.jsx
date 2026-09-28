@@ -1,9 +1,15 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, X } from 'lucide-react';
+import { Search, Plus, ChevronRight } from 'lucide-react';
 import { useHato, useAddAnimal, useContratosVigentes } from '../data/hato';
 import { useAuth } from '../context/AuthContext';
 import { ConDatos } from '../components/EstadoCarga';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import Chapeta from '../components/ui/Chapeta';
+import EmptyState from '../components/ui/EmptyState';
+import Modal from '../components/ui/Modal';
+import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { formatFecha, hoyISO } from '../utils/format';
 import { mensajeError } from '../lib/errores';
@@ -23,110 +29,111 @@ function HatoContenido({ animales, lotes }) {
   const puedeRegistrar = Boolean(user?.rol);
 
   const filtrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
     return animales
       .filter((a) => (loteFiltro === 'TODOS' ? true : a.lote === loteFiltro))
-      .filter((a) => {
-        const q = busqueda.trim().toLowerCase();
-        if (!q) return true;
-        return (
-          a.numeroInterno.toLowerCase().includes(q) ||
-          a.chapetaICA.toLowerCase().includes(q) ||
-          a.id.toLowerCase().includes(q)
-        );
-      })
+      .filter((a) => !q || a.numeroInterno.toLowerCase().includes(q) || a.chapetaICA.toLowerCase().includes(q))
       .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
   }, [animales, busqueda, loteFiltro]);
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Trazabilidad del hato</h1>
-          <p className="text-sm text-gray-500">Identificación, peso y sanidad individual — {animales.length} reses registradas.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Trazabilidad del hato</h1>
+          <p className="text-sm text-gray-500">{animales.length} reses registradas, con su identificación, peso y sanidad.</p>
         </div>
         {puedeRegistrar && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
-          >
-            <Plus size={16} /> Registrar animal
-          </button>
+          <Button icono={Plus} onClick={() => setShowForm(true)}>
+            Registrar animal
+          </Button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por número interno o chapeta ICA…"
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-        </div>
-        <select
-          value={loteFiltro}
-          onChange={(e) => setLoteFiltro(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-        >
-          <option value="TODOS">Todos los lotes</option>
-          {lotes.map((l) => (
-            <option key={l.codigo} value={l.codigo}>
-              {l.nombre}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-3 md:flex-row">
+        <label className="relative flex-1">
+          <span className="sr-only">Buscar</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
+          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por número interno o chapeta ICA" className="pl-10" />
+        </label>
+        <label className="md:w-72">
+          <span className="sr-only">Lote</span>
+          <Select value={loteFiltro} onChange={(e) => setLoteFiltro(e.target.value)}>
+            <option value="TODOS">Todos los lotes</option>
+            {lotes.map((l) => (
+              <option key={l.codigo} value={l.codigo}>
+                {l.nombre}
+              </option>
+            ))}
+          </Select>
+        </label>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-400">
-            <tr>
-              <th className="px-4 py-3">N° interno</th>
-              <th className="px-4 py-3">Chapeta ICA</th>
-              <th className="px-4 py-3">Lote</th>
-              <th className="px-4 py-3">Esquema</th>
-              <th className="px-4 py-3 text-right">Peso actual</th>
-              <th className="px-4 py-3 text-right">Meta</th>
-              <th className="px-4 py-3">Última actualización</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
+      {filtrados.length === 0 ? (
+        <EmptyState titulo="No hay animales con ese filtro">Prueba con otro número, otra chapeta o todos los lotes.</EmptyState>
+      ) : (
+        <>
+          {/* R10: tarjetas en celular */}
+          <ul className="space-y-2 md:hidden">
             {filtrados.map((a) => (
-              <tr key={a.id} className="hover:bg-brand-50/50">
-                <td className="px-4 py-2.5">
-                  <Link to={`/animales/${a.id}`} className="font-medium text-brand-700 hover:underline">
-                    {a.numeroInterno}
-                  </Link>
-                </td>
-                <td className="px-4 py-2.5 text-gray-500">{a.chapetaICA}</td>
-                <td className="px-4 py-2.5 text-gray-600">{a.loteNombre}</td>
-                <td className="px-4 py-2.5">
-                  {a.esquema === 'Al partir' ? (
-                    <span className="inline-flex items-center rounded-full bg-earth-100 px-2 py-0.5 text-xs font-medium text-earth-700">
-                      Al partir · {a.tenedor?.split(' – ')[0]}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                      Propio
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 text-right font-medium text-gray-800">{pesoActual(a)} kg</td>
-                <td className="px-4 py-2.5 text-right text-gray-400">{a.pesoObjetivo} kg</td>
-                <td className="px-4 py-2.5 text-gray-500">{formatFecha(fechaUltimoPesaje(a))}</td>
-              </tr>
+              <li key={a.id}>
+                <Link to={`/animales/${a.id}`} className="flex min-h-16 items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3">
+                  <Chapeta numero={a.numeroInterno} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-gray-500">{a.loteNombre}</p>
+                    <p className="text-sm">
+                      <span className="cifra text-lg font-bold text-gray-900">{pesoActual(a)} kg</span>
+                      <span className="text-gray-500"> de {a.pesoObjetivo} kg</span>
+                    </p>
+                  </div>
+                  {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                  <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
+                </Link>
+              </li>
             ))}
-            {filtrados.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
-                  No se encontraron animales con ese filtro.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+
+          {/* R10: tabla en escritorio */}
+          <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white md:block">
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-200 text-left text-gray-500">
+                <tr>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">N° interno</th>
+                  <th className="px-4 py-3 font-medium">Chapeta ICA</th>
+                  <th className="px-4 py-3 font-medium">Lote</th>
+                  <th className="px-4 py-3 font-medium">Esquema</th>
+                  <th className="whitespace-nowrap px-4 py-3 text-right font-medium">Peso actual</th>
+                  <th className="px-4 py-3 text-right font-medium">Meta</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Último pesaje</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtrados.map((a) => (
+                  <tr key={a.id} className="hover:bg-brand-50/60">
+                    <td className="px-4 py-2">
+                      <Link to={`/animales/${a.id}`} className="inline-block rounded-md hover:ring-2 hover:ring-brand-300">
+                        <Chapeta numero={a.numeroInterno} />
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-600">{a.chapetaICA}</td>
+                    <td className="px-4 py-2 text-gray-700">{a.loteNombre}</td>
+                    <td className="px-4 py-2">
+                      {a.esquema === 'Al partir' ? (
+                        <Badge tono="cuero">Al partir, {a.tenedor?.split(' – ')[0]}</Badge>
+                      ) : (
+                        <Badge>Propio</Badge>
+                      )}
+                    </td>
+                    <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">{pesoActual(a)} kg</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-right text-gray-500">{a.pesoObjetivo} kg</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-600">{formatFecha(fechaUltimoPesaje(a))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {showForm && <NuevoAnimalModal lotes={lotes} onClose={() => setShowForm(false)} />}
     </div>
@@ -154,7 +161,7 @@ function NuevoAnimalModal({ lotes, onClose }) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  // R5: se valida aquí para dar un mensaje claro, y la base de datos vuelve a validar.
+  // R5 (spec 001): se valida aquí para dar un mensaje claro, y la base de datos vuelve a validar.
   function validar() {
     const ingreso = Number(form.pesoIngreso);
     const objetivo = Number(form.pesoObjetivo);
@@ -193,107 +200,82 @@ function NuevoAnimalModal({ lotes, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div role="dialog" aria-modal="true" aria-labelledby="nuevo-animal-titulo" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 id="nuevo-animal-titulo" className="text-lg font-semibold text-gray-900">Registrar nuevo animal</h3>
-          <button onClick={onClose} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600">
-            <X size={18} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} noValidate className="grid grid-cols-2 gap-3">
-          <Field label="Número interno" required>
-            <input value={form.numeroInterno} onChange={(e) => set('numeroInterno', e.target.value)} className="input" />
-          </Field>
-          <Field label="Chapeta ICA / Sinigán" required>
-            <input value={form.chapetaICA} onChange={(e) => set('chapetaICA', e.target.value)} className="input" />
-          </Field>
-          <Field label="Sexo">
-            <select value={form.sexo} onChange={(e) => set('sexo', e.target.value)} className="input">
-              <option>Macho</option>
-              <option>Hembra</option>
-            </select>
-          </Field>
-          <Field label="Categoría">
-            <select value={form.categoria} onChange={(e) => set('categoria', e.target.value)} className="input">
-              <option value="novillo">Novillo</option>
-              <option value="ternero">Ternero</option>
-              <option value="ternera">Ternera</option>
-              <option value="vientre">Vientre (no se vende)</option>
-              <option value="reproductor">Reproductor</option>
-            </select>
-          </Field>
-          <Field label="Lote">
-            <select value={form.loteId} onChange={(e) => set('loteId', e.target.value)} className="input">
-              {lotes.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.nombre}
+    <Modal
+      titulo="Registrar nuevo animal"
+      onClose={onClose}
+      pie={
+        <>
+          <Button variante="fantasma" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="form-nuevo-animal" disabled={addAnimal.isPending}>
+            {addAnimal.isPending ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </>
+      }
+    >
+      <form id="form-nuevo-animal" onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="Número interno" required>
+          <Input value={form.numeroInterno} onChange={(e) => set('numeroInterno', e.target.value)} />
+        </Field>
+        <Field label="Chapeta ICA / Sinigán" required>
+          <Input value={form.chapetaICA} onChange={(e) => set('chapetaICA', e.target.value)} autoCapitalize="characters" />
+        </Field>
+        <Field label="Sexo">
+          <Select value={form.sexo} onChange={(e) => set('sexo', e.target.value)}>
+            <option>Macho</option>
+            <option>Hembra</option>
+          </Select>
+        </Field>
+        <Field label="Categoría">
+          <Select value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>
+            <option value="novillo">Novillo</option>
+            <option value="ternero">Ternero</option>
+            <option value="ternera">Ternera</option>
+            <option value="vientre">Vientre (no se vende)</option>
+            <option value="reproductor">Reproductor</option>
+          </Select>
+        </Field>
+        <Field label="Lote" className="sm:col-span-2">
+          <Select value={form.loteId} onChange={(e) => set('loteId', e.target.value)}>
+            {lotes.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.nombre}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Peso de ingreso (kg)" required>
+          <Input type="number" min="1" step="0.1" inputMode="decimal" value={form.pesoIngreso} onChange={(e) => set('pesoIngreso', e.target.value)} />
+        </Field>
+        <Field label="Peso objetivo pactado (kg)" required>
+          <Input type="number" min="1" step="0.1" inputMode="decimal" value={form.pesoObjetivo} onChange={(e) => set('pesoObjetivo', e.target.value)} />
+        </Field>
+        <Field label="Costo de compra (COP)">
+          <Input type="number" min="0" step="1" inputMode="numeric" value={form.costoCompra} onChange={(e) => set('costoCompra', e.target.value)} />
+        </Field>
+        <Field label="Esquema">
+          <Select value={form.esquema} onChange={(e) => set('esquema', e.target.value)}>
+            <option>Propio</option>
+            <option>Al partir</option>
+          </Select>
+        </Field>
+        {form.esquema === 'Al partir' && (
+          <Field label='Contrato "Al partir"' required className="sm:col-span-2">
+            <Select value={form.contratoId} onChange={(e) => set('contratoId', e.target.value)}>
+              <option value="">{contratos.isPending ? 'Cargando contratos…' : 'Selecciona el tenedor'}</option>
+              {contratos.data?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.etiqueta}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="Peso de ingreso (kg)" required>
-            <input type="number" min="1" step="0.1" value={form.pesoIngreso} onChange={(e) => set('pesoIngreso', e.target.value)} className="input" />
-          </Field>
-          <Field label="Peso objetivo pactado (kg)" required>
-            <input type="number" min="1" step="0.1" value={form.pesoObjetivo} onChange={(e) => set('pesoObjetivo', e.target.value)} className="input" />
-          </Field>
-          <Field label="Costo de compra (COP)">
-            <input type="number" min="0" step="1" value={form.costoCompra} onChange={(e) => set('costoCompra', e.target.value)} className="input" />
-          </Field>
-          <Field label="Esquema">
-            <select value={form.esquema} onChange={(e) => set('esquema', e.target.value)} className="input">
-              <option>Propio</option>
-              <option>Al partir</option>
-            </select>
-          </Field>
-          {form.esquema === 'Al partir' && (
-            <label className="col-span-2 block text-sm">
-              <span className="mb-1 block font-medium text-gray-700">
-                Contrato "Al partir" <span className="text-red-500">*</span>
-              </span>
-              <select value={form.contratoId} onChange={(e) => set('contratoId', e.target.value)} className="input">
-                <option value="">{contratos.isPending ? 'Cargando contratos…' : 'Selecciona el tenedor'}</option>
-                {contratos.data?.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.etiqueta}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {error && (
-            <p role="alert" className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-
-          <div className="col-span-2 mt-2 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={addAnimal.isPending}
-              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-            >
-              {addAnimal.isPending ? 'Guardando…' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, required, children }) {
-  return (
-    <label className="col-span-1 block text-sm">
-      <span className="mb-1 block font-medium text-gray-700">
-        {label} {required && <span className="text-red-500">*</span>}
-      </span>
-      {children}
-    </label>
+        )}
+        <div className="sm:col-span-2">
+          <FormError>{error}</FormError>
+        </div>
+      </form>
+    </Modal>
   );
 }

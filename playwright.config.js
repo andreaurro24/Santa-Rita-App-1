@@ -5,7 +5,8 @@ import { defineConfig, devices } from '@playwright/test';
 // usuario de prueba de .env.test (nunca credenciales reales).
 for (const f of ['.env.local', '.env.test']) if (existsSync(f)) process.loadEnvFile(f);
 
-const PORT = 5174;
+// E2E_PORT permite correr dos suites a la vez (p. ej. desde un git worktree) sin compartir servidor.
+const PORT = Number(process.env.E2E_PORT ?? 5174);
 
 export default defineConfig({
   testDir: 'tests/e2e',
