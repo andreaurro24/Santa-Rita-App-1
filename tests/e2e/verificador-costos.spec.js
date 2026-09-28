@@ -241,7 +241,12 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   registrar('validaciones', r);
   expect(r.ui.vacio).toMatch(/Describe el gasto/);
   expect(r.ui.descripcionEnBlanco).toMatch(/Describe el gasto/);
-  for (const m of ['0', '-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).toMatch(/mayor que cero/);
+  // Premisa cambiada a propósito (2026-09-28): "-5", "abc" y "1,000,000" ahora responden "El monto debe ser
+  // un número de pesos…" (formato) y "0" sigue en "mayor que cero". Lo que se verifica: ninguno se guarda
+  // y el mensaje dice qué hacer.
+  expect(r.ui['monto 0']).toMatch(/mayor que cero/);
+  for (const m of ['-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).toMatch(/El monto debe ser un número (de pesos|entero de pesos mayor que cero)/);
+  for (const m of ['0', '-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).not.toBe('GUARDADO');
   expect(r.ui.fechaFutura).toMatch(/futura/);
   expect(r.bd.montoCero).toMatch(/^23514/);
   expect(r.bd.montoNegativo).toMatch(/^23514/);
