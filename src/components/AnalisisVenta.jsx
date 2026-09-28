@@ -34,7 +34,7 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-        <Stat label="Reses para vender" value={r.nAnimales} sub={r.excluidos ? `${r.excluidos} hembras excluidas` : undefined} />
+        <Stat label="Reses para vender" value={r.nAnimales} sub={r.excluidos ? `${r.excluidos} ${r.excluidos === 1 ? 'vientre excluido' : 'vientres excluidos'}` : undefined} />
         <Stat label="Peso promedio" value={kg(r.pesoPromedio)} sub={`${formatPct(Math.round(r.avancePct))} de la meta (${kg(r.meta)})`} />
         <Stat label="Punto de equilibrio real" value={`${pesos(r.hoy.equilibrioKg)}/kg`} sub={`Destare ${formatPct(destarePct)}`} />
         <Stat
@@ -56,8 +56,8 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
               <tr>
                 <th className="py-2 pr-3 font-medium">Cuándo</th>
                 <th className="py-2 pr-3 text-right font-medium">Peso a pagar</th>
-                <th className={`py-2 pr-3 text-right font-medium ${compacto ? '' : 'hidden md:table-cell'}`}>Ingreso</th>
-                <th className={`py-2 pr-3 text-right font-medium ${compacto ? '' : 'hidden md:table-cell'}`}>Costo</th>
+                <th className={`py-2 pr-3 text-right font-medium hidden md:table-cell print:table-cell`}>Ingreso</th>
+                <th className={`py-2 pr-3 text-right font-medium hidden md:table-cell print:table-cell`}>Costo</th>
                 <th className="py-2 text-right font-medium">Margen neto</th>
               </tr>
             </thead>
@@ -69,8 +69,8 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
                     {e === mejor && <span className="ml-1 text-xs font-normal text-gray-600">(el mejor)</span>}
                   </td>
                   <td className="py-2 pr-3 text-right text-gray-700">{kg(e.pesoVendible)}</td>
-                  <td className={`py-2 pr-3 text-right text-gray-700 ${compacto ? '' : 'hidden md:table-cell'}`}>{pesos(e.ingreso)}</td>
-                  <td className={`py-2 pr-3 text-right text-gray-700 ${compacto ? '' : 'hidden md:table-cell'}`}>{pesos(e.costo + e.participacion)}</td>
+                  <td className={`py-2 pr-3 text-right text-gray-700 hidden md:table-cell print:table-cell`}>{pesos(e.ingreso)}</td>
+                  <td className={`py-2 pr-3 text-right text-gray-700 hidden md:table-cell print:table-cell`}>{pesos(e.costo + e.participacion)}</td>
                   <td className={`cifra py-2 text-right text-base font-bold ${e.margenNeto >= 0 ? 'text-gray-900' : 'text-peligro'}`}>{pesos(e.margenNeto)}</td>
                 </tr>
               ))}

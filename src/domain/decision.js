@@ -2,7 +2,7 @@
 // Responde "¿vender hoy o esperar?" con el costo real (spec 008, D10), la parte de los
 // tenedores (D11), el destare (D5), la ganancia diaria (spec 004) y el riesgo de pasto (D4).
 import { pesoActual, formatCOP } from './breakeven';
-import { gdpTotal, diasEntre } from './gdp';
+import { gdpTotal, diasEntre, pesoEstimadoHoy } from './gdp';
 import { costoAcumuladoAnimal, repartirCostos } from './costos';
 
 export const ESCENARIOS_SEMANAS = [0, 2, 4, 8];
@@ -18,13 +18,13 @@ export function gastoDiarioLote(costosLote, hoy) {
 }
 
 // Resultado económico de vender ya (dias = 0) o dentro de `dias`, al precio dado.
-function resultado(vendibles, { costoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal }) {
+function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal }) {
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
   let participacion = 0;
   for (const a of vendibles) {
-    const peso = pesoActual(a) + (gdpTotal(a.pesos) ?? 0) * dias;
+    const peso = pesoBase.get(a.id) + (gdpTotal(a.pesos) ?? 0) * dias;
     const vendibleKg = peso * (1 - destarePct / 100);
     const ingresoA = vendibleKg * precioKg;
     const costoA = costoBase.get(a.id) + gastoDiarioPorAnimal * dias;
@@ -75,13 +75,16 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
   const costoBase = new Map(vendibles.map((a) => [a.id, costoAcumuladoAnimal(a, repartoLote).total]));
   const gastoDiario = gastoDiarioLote(costos, hoy);
   const gastoDiarioPorAnimal = gastoDiario / vendibles.length;
-  const base = { costoBase, precioKg, destarePct, gastoDiarioPorAnimal };
+  // R3 (verificación 010, Alto): se parte del peso ESTIMADO de hoy de cada animal, no del último
+  // pesaje, que puede tener semanas. Es el mismo cálculo de la proyección del lote (spec 006).
+  const pesoBase = new Map(vendibles.map((a) => [a.id, pesoEstimadoHoy(a, hoy)]));
+  const base = { costoBase, pesoBase, precioKg, destarePct, gastoDiarioPorAnimal };
 
   const hoyR = resultado(vendibles, { ...base, dias: 0 });
   const escenarios = ESCENARIOS_SEMANAS.map((semanas) => ({ semanas, ...resultado(vendibles, { ...base, dias: semanas * 7 }) }));
   const sensibilidad = SENSIBILIDAD.map((f) => ({ variacion: f, precioKg: precioKg * (1 + f), ...resultado(vendibles, { ...base, precioKg: precioKg * (1 + f), dias: 0 }) }));
 
-  const pesoPromedio = vendibles.reduce((s, a) => s + pesoActual(a), 0) / vendibles.length;
+  const pesoPromedio = vendibles.reduce((s, a) => s + pesoBase.get(a.id), 0) / vendibles.length;
   const meta = metaKg ?? vendibles.reduce((s, a) => s + a.pesoObjetivo, 0) / vendibles.length;
   const avancePct = (pesoPromedio / meta) * 100;
   const metaAlcanzada = pesoPromedio >= meta;
@@ -102,9 +105,21 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
   let recomendacion;
   if (hoyR.margenNeto <= 0) {
     recomendacion = 'NO_VENDER';
-    razones.unshift(`Vender hoy dejaría una pérdida de ${pesos(-hoyR.margenNeto)} para Santa Rita.`);
+    razones.unshift(
+      Math.round(hoyR.margenNeto) === 0
+        ? 'Vender hoy no dejaría ganancia para Santa Rita.'
+        : `Vender hoy dejaría una pérdida de ${pesos(-hoyR.margenNeto)} para Santa Rita.`,
+    );
     const positivo = futuros.find((e) => e.margenNeto > 0);
-    if (positivo) razones.push(`Si el lote sigue ganando peso al ritmo actual, en ${positivo.semanas} semanas el margen sería de ${pesos(positivo.margenNeto)}.`);
+    if (positivo && !riesgoPasto) {
+      razones.push(`Si el lote sigue ganando peso al ritmo actual, en ${positivo.semanas} semanas el margen sería de ${pesos(positivo.margenNeto)}.`);
+    } else if (positivo) {
+      razones.push(
+        `En ${positivo.semanas} semanas el margen sería de ${pesos(positivo.margenNeto)} si el lote sigue ganando peso, pero hay riesgo de pasto: sin pasto los animales pueden dejar de ganar o perder peso. Evalúa suplementar o buscar un mejor precio.`,
+      );
+    } else if (riesgoPasto) {
+      razones.push('Además hay riesgo de pasto: busca un mejor precio o suplementa mientras tanto.');
+    }
   } else if (metaAlcanzada) {
     recomendacion = 'VENDER';
     razones.unshift(`El lote llegó a la meta pactada (${Math.round(avancePct)} %) con un margen neto de ${pesos(hoyR.margenNeto)}.`);
@@ -121,6 +136,12 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
         ? `El pasto está en rojo: se recomienda anticipar la venta mientras el margen es positivo (${pesos(hoyR.margenNeto)}).`
         : `Casi no se pronostica lluvia (${String(clima.resumenLluvia7d).replace('.', ',')} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
     );
+    // D4: decir cuánto se deja de ganar al anticipar.
+    if (mejorFuturo.margenNeto > hoyR.margenNeto) {
+      razones.push(
+        `Anticipar la venta deja de ganar hasta ${pesos(mejorFuturo.margenNeto - hoyR.margenNeto)} frente a esperar ${mejorFuturo.semanas} semanas, si el lote siguiera ganando peso sin problemas de pasto.`,
+      );
+    }
   } else if (mejorFuturo.margenNeto > hoyR.margenNeto) {
     recomendacion = 'ESPERAR';
     razones.unshift(

@@ -44,6 +44,7 @@ function CostosContenido({ animales, lotes, costos, reparto }) {
   const animalesLote = useMemo(() => animales.filter((a) => a.loteId === loteId), [animales, loteId]);
   const costosLote = costos.filter((c) => c.loteId === loteId);
   const resumen = resumenCostosLote(animalesLote, costosLote, reparto);
+  const sinRepartir = (reparto.sinRepartir ?? []).filter((c) => c.loteId === loteId);
   const numero = (id) => animales.find((a) => a.id === id)?.numeroInterno;
 
   return (
@@ -77,6 +78,12 @@ function CostosContenido({ animales, lotes, costos, reparto }) {
             <Stat label="Costo acumulado promedio por res" value={resumen.promedioPorAnimal != null ? pesos(resumen.promedioPorAnimal) : '—'} sub="Compra + gastos" />
             <Stat label="Gastos registrados" value={costosLote.length} />
           </div>
+          {sinRepartir.length > 0 && (
+            <p role="status" className="mb-4 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
+              {sinRepartir.length === 1 ? 'Un gasto' : `${sinRepartir.length} gastos`} ({pesos(sinRepartir.reduce((s, c) => s + c.montoCop, 0))}) no se
+              {sinRepartir.length === 1 ? ' reparte' : ' reparten'} entre ningún animal: en su fecha el lote no tenía animales. Revisa la fecha o asígnalo a un animal.
+            </p>
+          )}
           {resumen.total > 0 && (
             <ul className="space-y-2">
               {Object.entries(resumen.porCategoria)
@@ -158,6 +165,7 @@ function CostoForm({ costo, lotes, animales, onClose }) {
     const monto = Number(texto.replace(/\./g, ''));
     if (!form.loteId) return setError('Elige el lote del gasto.');
     if (!form.descripcion.trim()) return setError('Describe el gasto (por ejemplo: 10 bultos de sal mineral).');
+    if (!/^\d{1,3}(\.\d{3})*$|^\d+$/.test(texto)) return setError('El monto debe ser un número de pesos, por ejemplo 450000 o 450.000.');
     if (!Number.isInteger(monto) || monto <= 0) return setError('El monto debe ser un número entero de pesos mayor que cero.');
     if (monto > 5_000_000_000) return setError('El monto supera $5.000 millones: revisa que no sobren ceros.');
     if (!form.fecha || form.fecha > hoyISO()) return setError('La fecha del gasto no puede ser futura.');

@@ -13,7 +13,7 @@ tenedores, el pasto y el clima; que registre la venta real y vea si siguió la r
 ### Alcance
 | Spec | Módulos | Estado |
 |---|---|---|
-| [009 — Estado del pasto y destare](../specs/009-pasto-parametros/spec.md) | M9 | en-verificacion |
+| [009 — Estado del pasto y destare](../specs/009-pasto-parametros/spec.md) | M9 | hecha |
 | [010 — Recomendación de venta v2](../specs/010-recomendacion-v2/spec.md) | M10 | en-verificacion |
 | [011 — Venta real y cierre del ciclo](../specs/011-ventas/spec.md) | M11 | en-verificacion |
 
@@ -48,6 +48,8 @@ tenedores, el pasto y el clima; que registre la venta real y vea si siguió la r
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
+| 009 | 1 | APROBADO (2 Medios corregidos después, 1 Bajo) | [009-2026-09-28](../reports/verificacion/009-2026-09-28.md) |
+| 010 | 1 | RECHAZADO (Alto: el último pesaje se tomaba como el peso de hoy; 3 Medios, 4 Bajos) | [010-2026-09-28](../reports/verificacion/010-2026-09-28.md) |
 
 ## 4. Cierre
 

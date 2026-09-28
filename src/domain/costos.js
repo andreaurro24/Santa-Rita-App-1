@@ -43,12 +43,15 @@ export function repartirCostos(costos, animales, movimientos = []) {
     r[campo] += monto;
     r.porCategoria[categoria] = (r.porCategoria[categoria] ?? 0) + monto;
   };
+  // Gastos de lote sin animales en esa fecha: no los carga nadie y hay que avisarlo (verificación 008).
+  reparto.sinRepartir = [];
   for (const c of costos) {
     if (c.animalId) {
       sumar(c.animalId, c.montoCop, c.categoria, 'directos');
       continue;
     }
     const elegibles = animales.filter((a) => estabaEnLote(a, c.loteId, c.fecha, movsPorAnimal.get(a.id)));
+    if (!elegibles.length) reparto.sinRepartir.push(c);
     for (const a of elegibles) sumar(a.id, c.montoCop / elegibles.length, c.categoria, 'deLote');
   }
   return reparto;

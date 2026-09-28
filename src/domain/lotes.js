@@ -1,6 +1,6 @@
 // Spec 006 · resumen del lote y fecha proyectada para llegar a la meta pactada (D3).
-import { pesoActual, fechaUltimoPesaje } from './breakeven';
-import { diasEntre, gdpLote, gdpTotal } from './gdp';
+import { pesoActual } from './breakeven';
+import { gdpLote, pesoEstimadoHoy } from './gdp';
 
 function sumarDias(iso, dias) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -29,16 +29,13 @@ export function resumenLote(lote, hoy) {
     // Se estima el peso de hoy de cada animal con su propia GDP desde su último pesaje: si el lote
     // se pesó hace 30 días ya ganó ese peso (verificación 006), y pesar un solo animal hoy no
     // mueve la fecha de todo el lote (verificación 004 r2).
-    const estimados = activos.map((a) => {
-      const f = fechaUltimoPesaje(a) ?? hoy;
-      return pesoActual(a) + (gdpTotal(a.pesos) ?? 0) * Math.max(0, diasEntre(f, hoy));
-    });
-    const pesoEstimadoHoy = redondear1(estimados.reduce((s, x) => s + x, 0) / estimados.length);
-    if (pesoEstimadoHoy >= meta) {
-      proyeccion = { tipo: 'meta_estimada', pesoEstimadoHoy };
+    const estimados = activos.map((a) => pesoEstimadoHoy(a, hoy));
+    const estimadoHoy = redondear1(estimados.reduce((s, x) => s + x, 0) / estimados.length);
+    if (estimadoHoy >= meta) {
+      proyeccion = { tipo: 'meta_estimada', pesoEstimadoHoy: estimadoHoy };
     } else {
-      const dias = Math.ceil((meta - pesoEstimadoHoy) / gdp);
-      proyeccion = { tipo: 'fecha', dias, fecha: sumarDias(hoy, dias), pesoEstimadoHoy };
+      const dias = Math.ceil((meta - estimadoHoy) / gdp);
+      proyeccion = { tipo: 'fecha', dias, fecha: sumarDias(hoy, dias), pesoEstimadoHoy: estimadoHoy };
     }
   }
 

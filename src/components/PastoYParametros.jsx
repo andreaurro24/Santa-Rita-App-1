@@ -183,6 +183,7 @@ function DestareForm({ actual, onClose }) {
   const [error, setError] = useState('');
   function handleSubmit(e) {
     e.preventDefault();
+    if (String(valor).trim() === '') return setError('Escribe el destare (0 si el comprador no descuenta).');
     const n = Number(String(valor).replace(',', '.'));
     if (!(n >= 0 && n <= 15)) return setError('El destare debe estar entre 0 y 15 %.');
     setError('');

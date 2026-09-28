@@ -169,3 +169,33 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
     expect(siguioRecomendacion(null)).toBeNull();
   });
 });
+
+describe('analizarLoteV2 · peso estimado de hoy (verificación 010, Alto)', () => {
+  it('un lote pesado hace 30 días parte del peso estimado de hoy, no del último pesaje', () => {
+    // 1 kg/día; último pesaje el 31-ago (270 kg); hoy 30-sep → 300 kg estimados por animal
+    const viejo = (id) => animal(id, { pesos: [{ fecha: '2026-08-01', pesoKg: 240 }, { fecha: '2026-08-31', pesoKg: 270 }] });
+    const r = analizarLoteV2(base({ animales: [viejo('a'), viejo('b')], metaKg: 300 }));
+    expect(r.pesoPromedio).toBe(300);
+    expect(r.escenarios[0].pesoVendible).toBe(600);
+    expect(r.escenarios.find((e) => e.semanas === 4).pesoVendible).toBe(656);
+    expect(r.recomendacion).toBe('VENDER'); // ya está en la meta según el peso estimado
+  });
+
+  it('con riesgo de pasto no invita a esperar a que suba el margen', () => {
+    const animales = [animal('a', { costoCompra: 2_500_000 }), animal('b', { costoCompra: 2_500_000 })];
+    const r = analizarLoteV2(base({ animales, pasto: 'rojo' }));
+    expect(r.recomendacion).toBe('NO_VENDER');
+    expect(r.razones.join(' ')).toMatch(/hay riesgo de pasto/);
+    expect(r.razones.join(' ')).not.toMatch(/Si el lote sigue ganando peso al ritmo actual/);
+  });
+
+  it('margen exactamente cero no dice "pérdida de $-0"', () => {
+    const animales = [animal('a', { costoCompra: 2_400_000 }), animal('b', { costoCompra: 2_400_000 })];
+    const r = analizarLoteV2(base({ animales }));
+    expect(r.razones[0]).toBe('Vender hoy no dejaría ganancia para Santa Rita.');
+  });
+
+  it('vender antes de la meta dice cuánto se deja de ganar (D4)', () => {
+    expect(analizarLoteV2(base({ pasto: 'rojo' })).razones.join(' ')).toMatch(/Anticipar la venta deja de ganar hasta/);
+  });
+});

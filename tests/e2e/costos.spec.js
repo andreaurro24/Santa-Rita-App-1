@@ -74,7 +74,7 @@ test('R2: validaciones en la interfaz y en la base de datos', async ({ page }) =
   await hoja.getByLabel('Descripción').fill(`${PREFIJO} inválido`);
   await hoja.getByLabel('Monto (COP)').fill('-5');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
-  await expect(hoja.getByRole('alert')).toHaveText(/mayor que cero/);
+  await expect(hoja.getByRole('alert')).toHaveText(/número de pesos/); // "-5" no es un monto válido
   await hoja.getByLabel('Monto (COP)').fill('1000');
   await hoja.getByLabel('Fecha').fill('2099-01-01');
   await hoja.getByRole('button', { name: 'Guardar' }).click();

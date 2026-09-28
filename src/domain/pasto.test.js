@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pastoMasCritico, ultimoPorFinca } from './pasto';
 
-const e = (fincaId, fecha, nivel, creado) => ({ fincaId, fecha, nivel, creado });
+const e = (fincaId, fecha, nivel, creado, potreroId = null) => ({ fincaId, fecha, nivel, creado, potreroId });
 
 describe('ultimoPorFinca (R2)', () => {
   it('toma el más reciente de cada finca y marca los de más de 30 días', () => {
@@ -29,5 +29,18 @@ describe('pastoMasCritico', () => {
 
   it('null sin estados vigentes', () => {
     expect(pastoMasCritico([], '2026-09-30')).toBeNull();
+  });
+});
+
+describe('potreros de una misma finca (verificación 009)', () => {
+  it('el verde de un potrero no tapa el rojo de otro', () => {
+    const estados = [e('A', '2026-09-20', 'rojo', null, 'P1'), e('A', '2026-09-25', 'verde', null, 'P2')];
+    expect(ultimoPorFinca(estados, '2026-09-30').get('A').nivel).toBe('rojo');
+    expect(pastoMasCritico(estados, '2026-09-30').nivel).toBe('rojo');
+  });
+
+  it('un estado nuevo del mismo potrero sí reemplaza al anterior', () => {
+    const estados = [e('A', '2026-09-20', 'rojo', null, 'P1'), e('A', '2026-09-25', 'verde', null, 'P1')];
+    expect(pastoMasCritico(estados, '2026-09-30').nivel).toBe('verde');
   });
 });

@@ -1,6 +1,6 @@
 # Spec 009 — Estado del pasto y parámetros de venta
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 3
 - Módulos del plan: M9
 
@@ -31,12 +31,18 @@ debe ser un parámetro de la finca, no un número escrito en el código.
 - **Dominio:** `pastoMasCritico(estados, hoy)`, que usa solo los estados de ≤ 30 días, con
   pruebas.
 
+## Correcciones posteriores a la aprobación (Medios de `reports/verificacion/009-2026-09-28.md`)
+- El estado del pasto se guarda por área (la finca entera o cada potrero). El verde de un
+  potrero ya no tapa el rojo de otro, ni en la tarjeta ni en la recomendación.
+- Un destare vacío se rechaza (antes se guardaba como 0 % sin aviso).
+- "Registrar estado" se habilita solo cuando las fincas cargaron.
+
 ## Tareas
 - [x] T1 Migración y RLS
 - [x] T2 Registro y visualización del pasto
 - [x] T3 Parámetro de destare
 - [x] T4 E2E
-- [ ] T5 Verificador
+- [x] T5 Verificador (ronda 1 APROBADO)
 
 ## Aprobación
 - [x] Andrés Sánchez aprobó en el chat, el 2026-09-27, todas las specs de los sprints antes de que se escribieran. Hay que confirmarlo al revisar.

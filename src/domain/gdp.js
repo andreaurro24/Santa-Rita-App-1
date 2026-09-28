@@ -1,6 +1,6 @@
 // Spec 004 · Ganancia diaria de peso (GDP, kg/día). Base de la proyección de venta (spec 006)
 // y de la recomendación v2 (spec 010). Funciones puras: reciben pesajes { fecha, pesoKg, creado }.
-import { ordenarPesajes } from './breakeven';
+import { ordenarPesajes, pesoActual, fechaUltimoPesaje } from './breakeven';
 
 export function diasEntre(desdeISO, hastaISO) {
   const [a, b] = [desdeISO, hastaISO].map((f) => {
@@ -81,4 +81,12 @@ export function gdpLote(animales = []) {
 export function variacionSospechosa(pesoNuevo, pesoAnterior, umbral = 0.15) {
   if (!pesoAnterior || !pesoNuevo) return false;
   return Math.abs(pesoNuevo - pesoAnterior) / pesoAnterior > umbral;
+}
+
+// Peso estimado de un animal hoy: su último pesaje más su GDP por los días transcurridos desde
+// entonces. Lo usan la proyección del lote (spec 006) y la recomendación v2 (spec 010).
+export function pesoEstimadoHoy(animal, hoy) {
+  const fecha = fechaUltimoPesaje(animal);
+  if (!fecha) return pesoActual(animal);
+  return pesoActual(animal) + (gdpTotal(animal.pesos) ?? 0) * Math.max(0, diasEntre(fecha, hoy));
 }

@@ -1,6 +1,6 @@
 # Spec 008 — Insumos y costos por lote y por animal
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 2
 - Módulos del plan: M8
 
@@ -66,7 +66,7 @@ calcula el costo acumulado de cada animal y de cada lote según D9. La recomenda
 - [x] T3 Registro, edición y borrado de gastos en `/costos`
 - [x] T4 Costos en la ficha y en el detalle del lote
 - [x] T5 E2E
-- [ ] T6 Verificador
+- [x] T6 Verificador (ronda 1 RECHAZADO; ronda 2 APROBADO)
 
 ## Criterios de aceptación para el verificador
 - Un gasto de $1.000.000 en el lote 2026-B (30 animales, todos ingresados antes) suma

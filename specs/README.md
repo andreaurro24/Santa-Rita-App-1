@@ -47,10 +47,10 @@ está mal escrito: reescríbelo.
 | [002 — Sistema de diseño y layout adaptable](002-sistema-diseno/spec.md) | hecha | 0 |
 | [004 — Jornada de pesaje por lote y GDP](004-pesajes-gdp/spec.md) | hecha | 1 |
 | [006 — Lotes, ciclos, fincas, potreros y movimientos](006-lotes-ubicacion/spec.md) | hecha | 1 |
-| [007 — "Al partir": tenedores, contratos y visitas](007-al-partir/spec.md) | en-verificacion (ronda 2) | 2 |
-| [008 — Insumos y costos](008-costos/spec.md) | en-verificacion (ronda 2) | 2 |
-| [009 — Estado del pasto y parámetros de venta](009-pasto-parametros/spec.md) | en-verificacion | 3 |
-| [010 — Recomendación de venta v2](010-recomendacion-v2/spec.md) | en-verificacion | 3 |
+| [007 — "Al partir": tenedores, contratos y visitas](007-al-partir/spec.md) | hecha | 2 |
+| [008 — Insumos y costos](008-costos/spec.md) | hecha | 2 |
+| [009 — Estado del pasto y parámetros de venta](009-pasto-parametros/spec.md) | hecha | 3 |
+| [010 — Recomendación de venta v2](010-recomendacion-v2/spec.md) | en-verificacion (ronda 2) | 3 |
 | [011 — Venta real y cierre del ciclo](011-ventas/spec.md) | en-verificacion | 3 |
 | [012 — Indicadores, formato de cifras y rendimiento](012-kpis-reportes/spec.md) | en-verificacion | 4 |
 | [013 — Importar el censo desde CSV](013-importar-censo/spec.md) | en-verificacion | 4 |

@@ -64,6 +64,13 @@ describe('repartirCostos + costoAcumuladoAnimal (R3, R4, D9)', () => {
     expect(costoAcumuladoAnimal(v, reparto).deLote).toBe(0);
   });
 
+  it('un gasto de lote sin animales en su fecha queda marcado como sin repartir', () => {
+    const tarde = animal('a', '2026-06-01');
+    const reparto = repartirCostos([costo(500_000, '2026-03-01')], [tarde]);
+    expect(reparto.sinRepartir).toHaveLength(1);
+    expect(costoAcumuladoAnimal(tarde, reparto).deLote).toBe(0);
+  });
+
   it('cría propia sin costo de compra', () => {
     const a = animal('a', '2026-01-01', { costoCompra: null });
     expect(costoAcumuladoAnimal(a, repartirCostos([costo(10_000, '2026-02-01')], [a])).total).toBe(10_000);

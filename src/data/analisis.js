@@ -18,7 +18,8 @@ export function useAnalisisLotes() {
   const parametros = useParametros();
   const pasto = useCondicionPasto();
   const clima = useClima();
-  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto], hato, lotes, costos, precios, parametros, pasto, clima };
+  // El clima entra en la carga: sin esperarlo, la recomendación cambiaba al llegar el pronóstico (verificación 010).
+  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto, clima], hato, lotes, costos, precios, parametros, pasto, clima };
 }
 
 export function useAnalisisLote(datos, loteId, precioManual) {

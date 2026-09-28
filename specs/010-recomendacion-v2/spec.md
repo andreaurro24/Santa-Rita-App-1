@@ -46,6 +46,26 @@ esa pregunta con números explicables.
 - **UI:** Recomendación y Reporte muestran el semáforo, el equilibrio real, el margen neto, la
   tabla de escenarios y la de sensibilidad, y las razones.
 
+## Correcciones de la verificación ronda 1 (`reports/verificacion/010-2026-09-28.md`)
+- **Alto (R3):** los escenarios y el chequeo de la meta parten del **peso estimado de hoy** de
+  cada animal (último pesaje + su GDP × días desde entonces, `pesoEstimadoHoy` en `gdp.js`). Es
+  el mismo cálculo de la proyección del lote (spec 006), así que Lotes y Recomendación ya no se
+  contradicen.
+- **Medios:**
+  - Con riesgo de pasto, "No vender todavía" ya no invita a esperar a que el lote siga ganando peso.
+  - La recomendación espera el pronóstico antes de mostrarse (ya no cambia de "Esperar" a
+    "Vender antes").
+  - "Vender antes de la meta" dice cuánto margen se deja de ganar (D4).
+- **Bajos:**
+  - Con margen cero ya no dice "pérdida de $-0".
+  - "1 vientre excluido" en singular.
+  - "Vender antes de la meta" pasa a verde, porque es una recomendación de vender; "No vender
+    todavía" sigue en rojo.
+  - En el celular, la tabla del reporte oculta columnas y la impresión las muestra todas.
+- **Pendiente de decisión humana:** además de las cinco recomendaciones de R5, el motor
+  recomienda `VENDER` cuando esperar ya no paga (el costo diario supera la ganancia de peso),
+  aunque el lote no haya llegado a la meta.
+
 ## Tareas
 - [x] T1 Dominio v2 + pruebas
 - [x] T2 Pantalla de recomendación v2

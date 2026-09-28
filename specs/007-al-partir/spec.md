@@ -1,6 +1,6 @@
 # Spec 007 — "Al partir": tenedores, contratos y visitas de verificación
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 2
 - Módulos del plan: M7
 
@@ -62,7 +62,7 @@ tenedores, sus contratos y las visitas, con los pesos que se toman en cada una.
 - [x] T3 Asignar animales a un contrato
 - [x] T4 Registrar visita con pesos y "no encontrado"
 - [x] T5 E2E
-- [ ] T6 Verificador
+- [x] T6 Verificador (ronda 1 RECHAZADO; ronda 2 APROBADO)
 
 ## Criterios de aceptación para el verificador
 - Crear un contrato para un tenedor, asignarle 2 animales de Santa Rita (quedan en la finca
