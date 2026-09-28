@@ -5,6 +5,8 @@ import { clientePrueba, entrar, iniciarSesion } from './helpers';
 // Todo dato creado lleva el prefijo VRF-E2E y se borra en afterAll.
 // Ronda 2 (2026-09-28): la prueba del "animal a medias" se rehízo para el RPC registrar_animal y
 // se añadieron regresiones del nuevo flujo de login/perfil, fechas futuras, índices y desempate.
+// Verificación 002 (2026-09-28): la prueba de atomicidad se rehízo otra vez (la migración 0500
+// cambió su premisa) y se añadió la regresión de la 0500 al editar.
 
 const PREFIJO = 'VRF-E2E';
 const ANIMAL_PESO = '0103';
@@ -323,12 +325,18 @@ test('VRF animal: doble clic en Guardar no deja un mensaje de error falso', asyn
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
-// Ronda 2: el alta ya no hace dos POST (animales + pesajes) sino un solo POST a
-// rpc/registrar_animal. Para probar la atomicidad hay que hacer fallar el pesaje DENTRO de la
-// función, después de que el INSERT del animal ya tuvo éxito: se reescribe la petición para que
-// fecha_ingreso sea mañana. `animales.fecha_ingreso` no tiene CHECK de fecha (el INSERT del animal
-// pasa) y el trigger de `pesajes` rechaza la fecha futura (el segundo INSERT falla).
-test('VRF animal: si falla el pesaje inicial dentro de registrar_animal, no queda un animal a medias', async ({ page }) => {
+// Ronda 3 (verificación 002, 2026-09-28): la premisa de la ronda 2 cambió. Antes se reescribía
+// fecha_ingreso a mañana para que el INSERT del animal pasara y el del pesaje fallara por el
+// trigger. Con la migración 0500, `animales` tiene el mismo trigger, así que ahora falla el
+// PRIMER INSERT. Revisé qué más podría hacer fallar solo el segundo: el pesaje de ingreso usa los
+// mismos valores que el animal (`fecha_ingreso` y `peso_ingreso_kg`), y sus restricciones
+// (0 < peso < 1500 en numeric(6,1), fecha no futura, NOT NULL, FK al animal recién creado, RLS
+// es_miembro) son iguales o más débiles que las del animal. Desde el cliente ya no hay un dato que
+// haga fallar solo el segundo INSERT. Por eso la prueba verifica la propiedad que importa: con
+// ningún dato queda un animal sin su pesaje de ingreso (o se crean los dos, o ninguno), incluidos
+// los bordes de redondeo y las fechas extremas.
+test('VRF animal: registrar_animal es todo o nada (ningún dato deja un animal sin su pesaje de ingreso)', async ({ page }) => {
+  // 1) La interceptación de la ronda 2 ahora falla en el primer INSERT y no deja nada.
   await iniciarSesion(page);
   const dialogo = await abrirNuevoAnimal(page);
   await llenarAnimal(dialogo, { numero: `${PREFIJO}-5`, chapeta: `${PREFIJO}-CH-5` });
@@ -344,15 +352,15 @@ test('VRF animal: si falla el pesaje inicial dentro de registrar_animal, no qued
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
   const r = await respuesta;
   const cuerpo = await r.json();
-  console.log('RPC con pesaje fallido:', r.status(), JSON.stringify(cuerpo));
+  console.log('RPC con fecha_ingreso de mañana:', r.status(), JSON.stringify(cuerpo));
   expect(reescritas).toBe(1);
-  expect(cuerpo.message, 'el fallo debe venir del pesaje (segundo INSERT de la función)').toMatch(/fecha_futura: el pesaje/);
+  expect(cuerpo.message, 'la fecha futura ya se rechaza en el INSERT del animal (migración 0500)').toMatch(/fecha_futura: el animal/);
   await expect(dialogo.getByRole('alert')).toBeVisible();
   const supabase = await clientePrueba();
   const { data } = await supabase.from('animales').select('id').eq('numero_interno', `${PREFIJO}-5`);
-  expect(data, 'el INSERT del animal no se revirtió al fallar el pesaje').toHaveLength(0);
+  expect(data).toHaveLength(0);
 
-  // Reintentar con la red normal: se guarda (sin el "Ya existe…" de la ronda 1) con su pesaje.
+  // Reintentar con la red normal: se guarda con exactamente un pesaje de ingreso.
   await page.unroute('**/rest/v1/rpc/registrar_animal');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 15_000 });
@@ -362,6 +370,54 @@ test('VRF animal: si falla el pesaje inicial dentro de registrar_animal, no qued
     .eq('numero_interno', `${PREFIJO}-5`);
   expect(creado).toHaveLength(1);
   expect(creado[0].pesajes).toEqual([{ fecha: hoyBogota(), peso_kg: 200 }]);
+
+  // 2) Barrido por API (sin la validación del cliente): para cada dato, o hay error y no queda
+  //    el animal, o queda el animal con UN pesaje igual a su fecha y peso de ingreso.
+  const { data: a101 } = await supabase.from('animales').select('lote_id').eq('numero_interno', '0101').single();
+  const base = { sexo: 'Macho', categoria: 'novillo', origen: 'compra', fecha_ingreso: hoyBogota(), peso_ingreso_kg: 200, peso_objetivo_kg: 350, lote_id: a101.lote_id };
+  const casos = {
+    'peso 0,04 (redondea a 0,0)': { peso_ingreso_kg: 0.04 },
+    'peso 0,05 (redondea a 0,1)': { peso_ingreso_kg: 0.05 },
+    'peso 1499,94': { peso_ingreso_kg: 1499.94 },
+    'peso 1499,96 (redondea a 1500,0)': { peso_ingreso_kg: 1499.96 },
+    'peso NaN': { peso_ingreso_kg: 'NaN' },
+    'peso nulo': { peso_ingreso_kg: null },
+    'fecha de mañana': { fecha_ingreso: manana },
+    'fecha nula': { fecha_ingreso: null },
+    'fecha -infinity': { fecha_ingreso: '-infinity' },
+    'fecha infinity': { fecha_ingreso: 'infinity' },
+    'nacimiento futuro': { fecha_nacimiento: manana },
+    'categoría incoherente': { sexo: 'Hembra', categoria: 'novillo' },
+  };
+  const resultados = {};
+  const rotos = [];
+  let i = 0;
+  for (const [nombre, cambio] of Object.entries(casos)) {
+    const numero = `${PREFIJO}-AT-${++i}`;
+    const { error } = await supabase.rpc('registrar_animal', { datos: { ...base, ...cambio, numero_interno: numero, chapeta_ica: `${numero}-CH` } });
+    const { data: filas } = await supabase.from('animales').select('id, fecha_ingreso, peso_ingreso_kg, pesajes(fecha, peso_kg)').eq('numero_interno', numero);
+    const a = filas?.[0];
+    resultados[nombre] = error ? `rechazado ${error.code}` : `creado (ingreso ${a?.fecha_ingreso}, ${a?.peso_ingreso_kg} kg, ${a?.pesajes.length} pesaje)`;
+    const coherente = error
+      ? filas.length === 0
+      : filas.length === 1 && a.pesajes.length === 1 && a.pesajes[0].fecha === a.fecha_ingreso && a.pesajes[0].peso_kg === a.peso_ingreso_kg;
+    if (!coherente) rotos.push(nombre);
+    if (a) await supabase.from('animales').delete().eq('id', a.id);
+  }
+  console.log('Barrido registrar_animal:', JSON.stringify(resultados, null, 1));
+  test.info().annotations.push({ type: 'barrido', description: JSON.stringify(resultados) });
+  expect(rotos, 'casos que dejaron un animal a medias').toEqual([]);
+});
+
+test('VRF R5 (0500): la BD rechaza al EDITAR una fecha de nacimiento futura y una categoría que no corresponde al sexo', async () => {
+  const supabase = await clientePrueba();
+  const { data: a } = await supabase.from('animales').select('id, sexo, categoria, fecha_nacimiento').eq('numero_interno', ANIMAL_PESO).single();
+  const f = await supabase.from('animales').update({ fecha_nacimiento: mananaBogota() }).eq('id', a.id).select('id');
+  const otra = a.sexo === 'Macho' ? 'vientre' : 'novillo';
+  const c = await supabase.from('animales').update({ categoria: otra }).eq('id', a.id).select('id');
+  // Restaurar por si alguna se aceptó.
+  await supabase.from('animales').update({ fecha_nacimiento: a.fecha_nacimiento, categoria: a.categoria }).eq('id', a.id);
+  expect([f.error?.code, c.error?.code]).toEqual(['23514', '23514']);
 });
 
 test('VRF animal: la función registrar_animal no está disponible sin sesión', async () => {
