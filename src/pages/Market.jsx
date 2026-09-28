@@ -6,6 +6,7 @@ import { ConDatos } from '../components/EstadoCarga';
 import { mensajeError } from '../lib/errores';
 import { useAuth } from '../context/AuthContext';
 import PriceChart from '../components/PriceChart';
+import { EstadoPasto, ParametrosVenta } from '../components/PastoYParametros';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -113,6 +114,11 @@ function MercadoContenido({ precios, precioActual }) {
         </div>
         <PriceChart precios={precios} />
       </Card>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <EstadoPasto />
+        <ParametrosVenta />
+      </div>
     </div>
   );
 }

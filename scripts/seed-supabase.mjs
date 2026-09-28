@@ -19,6 +19,7 @@ const PROYECTO_DEV = 'eiszvbwwpqcqognkcfew';
 // semilla no llena (jornadas, movimientos, costos…): hay que vaciarlas porque apuntan a lotes,
 // fincas y animales, y sin eso la recarga falla por las llaves foráneas.
 const TABLAS = [
+  'condicion_pasto',
   'visita_animales',
   'visitas_verificacion',
   'costos',
