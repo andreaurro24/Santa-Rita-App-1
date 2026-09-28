@@ -3,7 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import { expect, test } from '@playwright/test';
 import { clientePrueba, iniciarSesion } from './helpers';
 
-// Pruebas del VERIFICADOR para la spec 004 (jornada de pesaje por lote y GDP), ronda 1.
+// Pruebas del VERIFICADOR para la spec 004 (jornada de pesaje por lote y GDP), rondas 1 y 2.
+// Ronda 2: la BD ata el pesaje a su jornada (migración 1100), la alerta suma la caída > 8 kg y la
+// ficha pide confirmación > 15 %; las expectativas se actualizaron al comportamiento corregido.
 // - Corral en el celular (375×812): abrir, validar, pesar con coma, variación, saltar, retomar el
 //   saltado, doble toque, red caída, cerrar con pendientes e historial.
 // - Integridad en la BD: una jornada abierta por lote, un pesaje por animal y jornada, RLS, cierres.
@@ -247,6 +249,11 @@ test('VRF 004 BD: una jornada abierta por lote, un pesaje por animal y jornada, 
   const j3 = await supabase.from('jornadas_pesaje').insert({ lote_id: loteA, fecha: hoyBogota() }).select('id').single();
   const reabrir = await supabase.from('jornadas_pesaje').update({ estado: 'abierta' }).eq('id', j1.data.id).select('id');
   r.reabrirConOtraAbierta = reabrir.error?.code ?? 'ACEPTADO';
+  // Ronda 2: ¿se puede cambiar el peso de un pesaje de la jornada ya cerrada?
+  const { data: p1fila } = await supabase.from('pesajes').select('id').eq('jornada_id', j1.data.id).eq('animal_id', animalA.id).single();
+  const editar = await supabase.from('pesajes').update({ peso_kg: 999 }).eq('id', p1fila.id).select('id');
+  r.editarPesoEnJornadaCerrada = editar.error?.code ?? (editar.data?.length ? 'ACEPTADO' : 'sin filas');
+  await supabase.from('pesajes').update({ peso_kg: 250 }).eq('id', p1fila.id);
   const futura = await supabase.from('jornadas_pesaje').update({ fecha: '2099-01-01' }).eq('id', j3.data.id).select('id');
   r.fechaFuturaAlEditar = futura.error?.code ?? 'ACEPTADO';
   const estadoRaro = await supabase.from('jornadas_pesaje').update({ estado: 'pausada' }).eq('id', j3.data.id).select('id');
@@ -270,6 +277,11 @@ test('VRF 004 BD: una jornada abierta por lote, un pesaje por animal y jornada, 
   expect(r.reabrirConOtraAbierta).toBe('23505');
   expect(r.fechaFuturaAlEditar).toBe('23514');
   expect(r.estadoInvalido).toBe('23514');
+  // Ronda 2 (migración 1100): la BD ata el pesaje a su jornada.
+  expect(r.pesajeDeAnimalDeOtroLote).toBe('23514');
+  expect(r.pesajeConFechaDistintaALaJornada).toBe('23514');
+  expect(r.pesajeEnJornadaCerrada).toBe('23514');
+  if (r.editarPesoEnJornadaCerrada === 'ACEPTADO') registrar('HALLAZGO 004 BD (ronda 2)', 'se puede cambiar el peso de un pesaje de una jornada cerrada');
 });
 
 test('VRF 004 R1: dos teléfonos abren la jornada del mismo lote a la vez → ambos quedan en la misma', async ({ browser }) => {
@@ -304,9 +316,13 @@ test('VRF 004 R1: dos teléfonos abren la jornada del mismo lote a la vez → am
   expect(count).toBe(1);
 });
 
-test('VRF 004 R5/R7: 300 → 290 marca pérdida; casos que la regla de 14 días deja sin alerta; R3 fuera de la jornada', async ({ page }) => {
-  test.setTimeout(120_000);
+test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ronda 1, bordes y R3 en la ficha', async ({ page }) => {
+  test.setTimeout(150_000);
   const supabase = await clientePrueba();
+  // Ronda 2: antes de crear nada, el panel no debe marcar reses de la semilla (falsas alarmas).
+  await iniciarSesion(page);
+  await page.goto('/#/');
+  const panelSemilla = await page.locator('section', { hasText: 'Pierden peso' }).innerText();
   const { data: lote } = await supabase.from('lotes').insert({ codigo: `${PREFIJO}-LOTE`, nombre: `${PREFIJO} lote`, tipo: 'ceba', peso_meta_kg: 400 }).select('id').single();
   const crear = async (sufijo, pesos) => {
     const numero = `${PREFIJO}-${sufijo}`;
@@ -324,16 +340,21 @@ test('VRF 004 R5/R7: 300 → 290 marca pérdida; casos que la regla de 14 días 
   const casos = {
     // Criterio de aceptación: 300 → 290 con un mes de diferencia.
     A: await crear('A', [[haceDias(30), 300], [hoyBogota(), 290]]),
-    // 300 → 290 en una semana (animal recién comprado que se enferma).
-    B: await crear('B', [[haceDias(7), 300], [hoyBogota(), 290]]),
-    // Subía bien y en los últimos 12 días perdió 20 kg (p. ej. visita de verificación al tenedor).
-    C: await crear('C', [[haceDias(40), 300], [haceDias(12), 330], [hoyBogota(), 310]]),
-    // Pesaje mensual y una segunda pesada 10 días después con 15 kg menos.
-    D: await crear('D', [[haceDias(70), 280], [haceDias(40), 305], [haceDias(10), 330], [hoyBogota(), 315]]),
+    // Casos de la ronda 1 que la regla de 14 días dejaba sin alerta:
+    B: await crear('B', [[haceDias(7), 300], [hoyBogota(), 290]]), // −10 kg en 7 días (recién comprado)
+    C: await crear('C', [[haceDias(40), 300], [haceDias(12), 330], [hoyBogota(), 310]]), // −20 kg en 12 días (visita al tenedor)
+    D: await crear('D', [[haceDias(70), 280], [haceDias(40), 305], [haceDias(10), 330], [hoyBogota(), 315]]), // −15 kg en 10 días
+    // Ronda 2, bordes de la regla nueva:
+    // E: pérdida sostenida de 16 kg en 13 días, en dos caídas de 8 kg (jornada + dos visitas seguidas).
+    E: await crear('E', [[haceDias(60), 300], [haceDias(13), 340], [haceDias(6), 332], [hoyBogota(), 324]]),
+    // F: exactamente 8 kg en 7 días (−1,14 kg/día en todo el ciclo).
+    F: await crear('F', [[haceDias(7), 300], [hoyBogota(), 292]]),
+    // G: 8,1 kg en 3 días (apenas sobre el umbral).
+    G: await crear('G', [[haceDias(40), 300], [haceDias(3), 330], [hoyBogota(), 321.9]]),
   };
 
-  await iniciarSesion(page);
-  const r = {};
+  const r = { panelSemilla: panelSemilla.replace(/\s+/g, ' ') };
+  await page.reload(); // el hato quedó en caché antes de crear los animales de prueba
   for (const [k, { id, numero }] of Object.entries(casos)) {
     await page.goto(`/#/animales/${id}`);
     await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
@@ -343,40 +364,54 @@ test('VRF 004 R5/R7: 300 → 290 marca pérdida; casos que la regla de 14 días 
       total: await stat('Ganancia diaria (todo el ciclo)'),
       reciente: await stat('Ganancia diaria (último periodo)'),
     };
-    await page.screenshot({ path: `${DIR}/gdp-${k}.png` });
+    await page.screenshot({ path: `${DIR}/r2-gdp-${k}.png` });
   }
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(`${PREFIJO}-A`);
-  // En escritorio el hato es una tabla: la alerta es un ícono con aria-label junto al peso.
-  const filaA = page.getByRole('row', { name: new RegExp(`${PREFIJO}-A`) });
-  r.A.alertaHato = {
-    icono: await filaA.locator('[aria-label="Pierde peso"]').count(),
-    rolIcono: await filaA.locator('[aria-label="Pierde peso"]').first().evaluate((el) => `${el.tagName} role=${el.getAttribute('role')} aria-hidden=${el.getAttribute('aria-hidden')}`).catch(() => null),
-    nombreAccesibleDeLaCelda: await filaA.getByRole('img', { name: 'Pierde peso' }).count(),
-  };
+  await page.getByPlaceholder(/Buscar por número interno/).fill(`${PREFIJO}-`);
+  r.hato = {};
+  for (const k of Object.keys(casos)) {
+    const fila = page.getByRole('row', { name: new RegExp(`${PREFIJO}-${k}\\b`) });
+    r.hato[k] = await fila.locator('[aria-label="Pierde peso"]').count();
+  }
   await page.goto('/#/');
   const panel = page.locator('section', { hasText: 'Pierden peso' });
-  r.panel = await panel.innerText();
+  r.panel = (await panel.innerText()).replace(/\s+/g, ' ');
 
-  // R3 fuera de la jornada: "Registrar peso" en la ficha con +55 % ¿pide confirmación?
+  // R3 en "Registrar peso" de la ficha (corregido): +55 % pide confirmación; "Guardar igual" guarda una vez.
   await page.goto(`/#/animales/${casos.A.id}`);
   await page.getByRole('button', { name: 'Registrar peso' }).click();
   const d = page.getByRole('dialog', { name: 'Registrar peso' });
   await d.getByLabel('Peso (kg)').fill('450');
   await d.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1200);
+  const cuenta450 = async () => (await supabase.from('pesajes').select('id').eq('animal_id', casos.A.id).eq('peso_kg', 450)).data.length;
   r.fichaMas55 = {
-    pidioConfirmacion: (await page.getByRole('dialog', { name: /correcto/ }).count()) > 0,
-    guardado: (await supabase.from('pesajes').select('id').eq('animal_id', casos.A.id).eq('peso_kg', 450)).data.length,
+    aviso: (await d.getByRole('alert').count()) ? (await d.getByRole('alert').first().innerText()).replace(/\s+/g, ' ') : null,
+    boton: await d.getByRole('button', { name: /Guardar/ }).last().innerText(),
+    guardadoSinConfirmar: await cuenta450(),
   };
+  await page.screenshot({ path: `${DIR}/r2-ficha-r3.png` });
+  // Cambiar el número quita el aviso; volver a 450 lo pide otra vez.
+  await d.getByLabel('Peso (kg)').fill('291');
+  r.fichaMas55.avisoTrasCorregir = await d.getByRole('alert').count();
+  await d.getByLabel('Peso (kg)').fill('450');
+  await d.getByRole('button', { name: 'Guardar' }).click();
+  await d.getByRole('button', { name: 'Guardar igual' }).dblclick();
+  await expect(d).toHaveCount(0);
+  r.fichaMas55.guardadoTrasConfirmar = await cuenta450();
 
-  registrar('GDP y alertas', r);
+  registrar('GDP y alertas (ronda 2)', r);
+  expect(r.panelSemilla, 'la semilla no debe tener falsas alarmas').toMatch(/Ningún animal activo perdió peso/);
   expect(r.A.alertaFicha).toBe(true);
-  expect(r.A.alertaHato.icono).toBe(1);
-  expect(r.panel).toContain(`${PREFIJO}-A`);
-  expect.soft(r.B.alertaFicha, 'B: 300 → 290 en 7 días no marca pérdida').toBe(true);
-  expect.soft(r.C.alertaFicha, 'C: −20 kg en 12 días no marca pérdida').toBe(true);
-  expect.soft(r.D.alertaFicha, 'D: −15 kg en 10 días no marca pérdida').toBe(true);
-  // Hallazgo Medio (R3 no se aplica en "Registrar peso" de la ficha): anotación, no falla.
-  if (!r.fichaMas55.pidioConfirmacion) registrar('HALLAZGO 004 R3 ficha', 'la ficha guarda +55 % sin pedir confirmación');
+  for (const k of ['A', 'B', 'C', 'D', 'G']) {
+    expect.soft(r[k].alertaFicha, `${k}: alerta en la ficha`).toBe(true);
+    expect.soft(r.hato[k], `${k}: alerta en el hato`).toBe(1);
+    expect.soft(r.panel, `${k}: alerta en el panel`).toContain(`${PREFIJO}-${k}`);
+  }
+  expect(r.fichaMas55.guardadoSinConfirmar).toBe(0);
+  expect(r.fichaMas55.aviso).toMatch(/Guardar igual/);
+  expect(r.fichaMas55.guardadoTrasConfirmar).toBe(1);
+  // Hallazgos de la ronda 2 (bordes que la regla deja pasar): anotaciones, no fallas.
+  if (!r.E.alertaFicha) registrar('HALLAZGO 004 R7 (ronda 2)', 'E: −16 kg en 13 días en dos caídas de 8 kg no marca pérdida');
+  if (!r.F.alertaFicha) registrar('HALLAZGO 004 R7 borde', `F: −8 kg en 7 días no marca pérdida y la ficha muestra ${r.F.total}`);
 });

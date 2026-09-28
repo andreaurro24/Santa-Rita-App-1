@@ -192,20 +192,25 @@ test.describe('celular 375×812', () => {
     const ultima = page.getByRole('article').last();
     await ultima.getByRole('button', { name: 'Agregar potrero' }).scrollIntoViewIfNeeded();
     await ultima.getByRole('button', { name: 'Agregar potrero' }).click();
-    const dialogoPotrero = await page.getByRole('dialog').count();
-    r['potrero (última finca)'] = { esDialogo: dialogoPotrero > 0, guardar: await aLaVista(ultima.getByRole('button', { name: 'Guardar potrero' })) };
+    // Premisa corregida en la 006 (verificación 004 ronda 2): el potrero ahora es una hoja inferior.
+    d = page.getByRole('dialog', { name: /^Nuevo potrero en / });
+    const dialogoPotrero = await d.count();
+    r['potrero (última finca)'] = { esDialogo: dialogoPotrero > 0, ...(dialogoPotrero ? await hoja(d) : {}), guardar: await aLaVista(page.getByRole('button', { name: 'Guardar potrero' })) };
     await page.screenshot({ path: `${DIR}/movil-potrero-form.png` });
+    await page.keyboard.press('Escape');
+    await expect(d).toHaveCount(0);
     const primera = page.getByRole('article').first();
     await page.evaluate(() => scrollTo(0, 0));
     await primera.getByRole('button', { name: 'Agregar potrero' }).click();
-    r['potrero (primera finca)'] = { guardar: await aLaVista(primera.getByRole('button', { name: 'Guardar potrero' })) };
+    r['potrero (primera finca)'] = { guardar: await aLaVista(page.getByRole('button', { name: 'Guardar potrero' })) };
 
     registrar('R9 formularios Sprint 1', r);
     // Hallazgo Medio de la spec 006 (no de la 002): el formulario de potrero es en línea, no una hoja
     // inferior, aunque Guardar queda a la vista. Se deja como anotación, no como falla.
     if (!r['potrero (última finca)'].esDialogo) registrar('HALLAZGO 006 R9 potrero', 'formulario en línea, no hoja inferior');
     expect(r['potrero (última finca)'].guardar.dentro && !r['potrero (última finca)'].guardar.tapado).toBe(true);
-    for (const k of ['nuevo lote', 'mover', 'cerrar jornada']) {
+    expect(r['potrero (última finca)'].esDialogo).toBe(true);
+    for (const k of ['nuevo lote', 'mover', 'cerrar jornada', 'potrero (última finca)']) {
       expect(r[k].x).toBe(0);
       expect(r[k].ancho).toBe(375);
       expect(r[k].abajo).toBe(812);
