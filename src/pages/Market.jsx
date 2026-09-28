@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 import { CloudSun, Droplets, Banknote, DollarSign, Plus } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { usePrecios, useAddPrecio } from '../data/precios';
+import { ConDatos } from '../components/EstadoCarga';
+import { mensajeError } from '../lib/errores';
+import { hoyISO } from '../utils/format';
 import { useAuth } from '../context/AuthContext';
 import PriceChart from '../components/PriceChart';
 import { fetchClimaFinca, describeWeatherCode } from '../api/weather';
 import { fetchTRM } from '../api/trm';
-import { formatCOP } from '../utils/breakeven';
+import { formatCOP } from '../domain/breakeven';
 import { formatFecha } from '../utils/format';
 import { UBICACION_FINCA, PERDIDA_REVALUACION_COP_POR_KG } from '../data/seedMercado';
 
 export default function Market() {
-  const { precios, precioActual, addPrecio } = useData();
+  const preciosQuery = usePrecios();
+  return <ConDatos queries={preciosQuery}>{() => <MercadoContenido {...preciosQuery.data} />}</ConDatos>;
+}
+
+function MercadoContenido({ precios, precioActual }) {
   const { user } = useAuth();
   const [clima, setClima] = useState(null);
   const [trm, setTrm] = useState(null);
@@ -136,13 +143,7 @@ export default function Market() {
           boletines — igual que hoy, pero centralizado para todos.
         </p>
         {showForm && (
-          <PrecioForm
-            onCancel={() => setShowForm(false)}
-            onSave={(registro) => {
-              addPrecio(registro);
-              setShowForm(false);
-            }}
-          />
+          <PrecioForm onCancel={() => setShowForm(false)} onSaved={() => setShowForm(false)} />
         )}
         <div className="mb-3 flex items-baseline gap-2">
           <p className="text-3xl font-semibold text-gray-900">${precioActual ? formatCOP(precioActual.precioCOP) : '—'}</p>
@@ -154,30 +155,46 @@ export default function Market() {
   );
 }
 
-function PrecioForm({ onSave, onCancel }) {
-  const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
+function PrecioForm({ onSaved, onCancel }) {
+  const [fecha, setFecha] = useState(hoyISO());
   const [precioCOP, setPrecioCOP] = useState('');
+  const [error, setError] = useState('');
+  const addPrecio = useAddPrecio();
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const precio = Number(precioCOP);
+    if (!Number.isInteger(precio) || precio <= 0) return setError('El precio debe ser un número entero mayor que cero.');
+    if (!fecha || fecha > hoyISO()) return setError('La fecha del boletín no puede ser futura.');
+    setError('');
+    addPrecio.mutate(
+      { fecha, precioCOP: precio, fuente: 'Registro manual (Fedegán/SIPSA)' },
+      { onSuccess: onSaved, onError: (err) => setError(mensajeError(err)) },
+    );
+  }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!precioCOP) return;
-        onSave({ fecha, precioCOP: Number(precioCOP), fuente: 'Registro manual (Fedegán/SIPSA)' });
-      }}
-      className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3"
-    >
+    <form onSubmit={handleSubmit} className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Fecha del boletín</span>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" />
+        <input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} className="input" required />
       </label>
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Precio (COP/kg)</span>
-        <input type="number" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} className="input" required />
+        <input type="number" min="1" step="1" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} className="input" required />
       </label>
-      <button type="submit" className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-        Guardar
+      <button
+        type="submit"
+        disabled={addPrecio.isPending}
+        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+      >
+        {addPrecio.isPending ? 'Guardando…' : 'Guardar'}
       </button>
+      {error && (
+        <p role="alert" className="w-full text-sm text-red-600">
+          {error}
+        </p>
+      )}
       <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700">
         Cancelar
       </button>

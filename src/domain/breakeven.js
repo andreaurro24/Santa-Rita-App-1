@@ -10,15 +10,19 @@
 // positivo. La recomendación final también considera qué tan cerca está el lote de su
 // meta de peso pactada y el riesgo climático de corto plazo (lluvias fuertes / sequía).
 
+// Orden cronológico de pesajes. Si hay dos el mismo día, vale el último registrado (`creado`).
+export function ordenarPesajes(pesos = []) {
+  return [...pesos].sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.creado ?? '').localeCompare(b.creado ?? ''));
+}
+
 export function pesoActual(animal) {
   if (!animal.pesos?.length) return animal.pesoIngreso;
-  const ultimo = [...animal.pesos].sort((a, b) => a.fecha.localeCompare(b.fecha)).at(-1);
-  return ultimo.pesoKg;
+  return ordenarPesajes(animal.pesos).at(-1).pesoKg;
 }
 
 export function fechaUltimoPesaje(animal) {
   if (!animal.pesos?.length) return null;
-  return [...animal.pesos].sort((a, b) => a.fecha.localeCompare(b.fecha)).at(-1).fecha;
+  return ordenarPesajes(animal.pesos).at(-1).fecha;
 }
 
 export function analizarLote(animales, { precioMercadoCOP, clima }) {

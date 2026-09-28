@@ -56,6 +56,31 @@ que hacen.
   (shadcn, MUI), para no sumar dependencias y controlar al detalle la identidad visual y los
   tamaños táctiles.
 
+### Plan de diseño (revisado con la skill `frontend-design`)
+- **Ajuste de color:** la skill señala dos patrones típicos de diseño generado: el fondo crema
+  cercano a `#F4F1EA` y el acento terracota. Por eso el fondo "hueso" pasa a **cal** `#F1F2EC`,
+  el blanco verdoso de la cal de los corrales, y la "brasa" se oscurece a `#B4441B`, el hierro al
+  rojo. Se mantiene la identidad aprobada.
+- **Tokens:**
+  - potrero `#2E4A2A` (navegación y acción principal)
+  - cuero `#8A5A2B` ("Al partir")
+  - cal `#F1F2EC` (fondo)
+  - brasa `#B4441B` (alertas)
+  - chapeta `#F2C230` (el amarillo de las chapetas ICA)
+  - tinta `#1C2419` y tinta suave `#55604F` (texto)
+  - línea `#D9DDD2` (bordes)
+- **El elemento memorable (uno solo):** el número interno se muestra como una **chapeta**, es
+  decir, la etiqueta amarilla de oreja con su perforación y el número en Archivo negrita. Es lo
+  que Miguel reconoce en el corral. Aparece en el hato, en la ficha y en la jornada de pesaje.
+  Todo lo demás es sobrio: superficies blancas, bordes finos y sin degradados.
+- **Layout:**
+  - Celular: barra superior con la marca SR y el título, contenido a una columna y navegación
+    inferior (Inicio, Hato, Venta, Más). "Más" abre una hoja con el resto de secciones.
+  - Escritorio: barra lateral color potrero con la marca de hierro.
+  - Texto alineado a la izquierda; cifras alineadas a la derecha en tablas.
+- **Tono del texto:** verbos en infinitivo o imperativo ("Registrar peso"), frases en
+  minúscula inicial, sin etiquetas en mayúsculas sostenidas.
+
 ## Tareas
 - [ ] T1 Tokens y fuentes en `index.css` / `index.html` — verifica: `npm run build`
 - [ ] T2 Marca SR (componente + favicon) — verifica: revisión visual
@@ -74,4 +99,4 @@ que hacen.
 - `grep` de `#[0-9a-fA-F]{6}` en `src/components` y `src/pages` no da resultados.
 
 ## Aprobación
-- [ ] Aprobada por ______ el ______ — antes de implementar
+- [x] Aprobada por Andrés Sánchez en el chat el 2026-09-27 ("Hierro y sabana": "me gusta"; luego aprobó todas las specs y planes de sprint)

@@ -43,11 +43,21 @@ verificar automáticamente.
 ## 2. Bitácora
 | Fecha | Spec / tarea | Resultado | Notas y desvíos |
 |---|---|---|---|
-| 2026-09-27 | 001 · T1 | Proyecto `santa-rita-dev` creado (org GuardIA, us-east-1, plan gratuito, $0/mes) | — |
+| 2026-09-27 | 001 · T1 | Proyecto `santa-rita-dev` creado (org GuardIA, us-east-1, plan gratuito, $0/mes); `.env.example` | — |
+| 2026-09-27 | 001 · T2 | 2 migraciones aplicadas (esquema + RLS); asesor de seguridad sin alertas; anónimo recibe `permission denied` | Sin trigger de perfil automático (seguridad) |
+| 2026-09-27 | 001 · T3 | `npm run db:seed`: 140 animales, 4 lotes, 9 precios, 1050 pesajes, 508 eventos | La semilla entra como usuario de prueba, no con `service_role` |
+| 2026-09-27 | 001 · T4 | Supabase Auth; `seedUsers.js` borrado; `dist/` sin `service_role` ni contraseñas | Login por correo |
+| 2026-09-27 | 001 · T5–T6 | `useHato`/`usePrecios` + mutaciones; 6 páginas migradas; `ConDatos` para carga y error | `DataContext` borrado; validaciones en formularios |
+| 2026-09-27 | 001 · T7 | Motor movido a `src/domain/`; `npm test`: 13/13 | — |
+| 2026-09-27 | 001 · T8 | Playwright; `npm run test:e2e`: 11/11 | Solo proyecto escritorio; el móvil entra con la spec 002 |
+| 2026-09-28 | 001 · correcciones ronda 1 | Todos los Alto y Medio corregidos, y 4 de 6 Bajos. `npm test` 21/21; E2E 27/29 | Las 2 que fallan: "animal a medias" (su premisa cambió con `registrar_animal`) y la de celular (es de la spec 002). Bug propio en el trigger de fecha futura (AND sin cortocircuito), corregido con la migración 0400 |
+| 2026-09-28 | 001 · T9 | Push al repo del equipo bloqueado por los permisos de Claude Code (lo cuenta como publicación). T9 queda para el usuario | — |
+| 2026-09-27 | 001 · T9 | **Pendiente**: requiere decidir cómo desplegar (push al repo del equipo o subida directa a Vercel) | Se consulta al usuario |
 
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
+| 001 | 1 | RECHAZADO (1 Alto, 5 Medios, 6 Bajos; R7 no cumple; R11 sin evidencia) | [001-2026-09-27](../reports/verificacion/001-2026-09-27.md) |
 
 ## 4. Cierre
 

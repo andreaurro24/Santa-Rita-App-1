@@ -1,6 +1,6 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatFecha } from '../utils/format';
-import { formatCOP } from '../utils/breakeven';
+import { formatCOP } from '../domain/breakeven';
 
 // Serie única (precio del kilo en pie): hue categórico slot 1 (azul) de la paleta de
 // referencia, distinto del verde usado para peso, para que ambos gráficos nunca se

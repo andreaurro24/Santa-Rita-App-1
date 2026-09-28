@@ -1,12 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TrendingUp, Info } from 'lucide-react';
-import { useData } from '../context/DataContext';
-import { analizarLote, formatCOP } from '../utils/breakeven';
+import { useHato } from '../data/hato';
+import { usePrecios } from '../data/precios';
+import { ConDatos } from '../components/EstadoCarga';
+import { analizarLote, formatCOP } from '../domain/breakeven';
 import { fetchClimaFinca } from '../api/weather';
 import RecomendacionBadge from '../components/RecomendacionBadge';
 
 export default function SaleRecommendation() {
-  const { lotes, precioActual } = useData();
+  const hato = useHato();
+  const precios = usePrecios();
+  return (
+    <ConDatos queries={[hato, precios]}>
+      {() => <RecomendacionContenido lotes={hato.data.lotes} precioActual={precios.data.precioActual} />}
+    </ConDatos>
+  );
+}
+
+function RecomendacionContenido({ lotes, precioActual }) {
   const [loteCodigo, setLoteCodigo] = useState(lotes[0]?.codigo ?? '');
   const [precioManual, setPrecioManual] = useState('');
   const [clima, setClima] = useState(null);

@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Printer, Sprout } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useHato } from '../data/hato';
+import { usePrecios } from '../data/precios';
+import { ConDatos } from '../components/EstadoCarga';
 import { useAuth } from '../context/AuthContext';
-import { analizarLote, formatCOP } from '../utils/breakeven';
+import { analizarLote, formatCOP } from '../domain/breakeven';
 import { fetchClimaFinca, describeWeatherCode } from '../api/weather';
 import { fetchTRM } from '../api/trm';
-import { formatFecha } from '../utils/format';
+import { formatFecha, hoyISO } from '../utils/format';
 import RecomendacionBadge from '../components/RecomendacionBadge';
 
 export default function Report() {
-  const { lotes, precioActual } = useData();
+  const hato = useHato();
+  const precios = usePrecios();
+  return (
+    <ConDatos queries={[hato, precios]}>
+      {() => <ReporteContenido lotes={hato.data.lotes} precioActual={precios.data.precioActual} />}
+    </ConDatos>
+  );
+}
+
+function ReporteContenido({ lotes, precioActual }) {
   const { user } = useAuth();
   const [loteCodigo, setLoteCodigo] = useState(lotes[0]?.codigo ?? '');
   const [clima, setClima] = useState(null);
@@ -29,7 +40,7 @@ export default function Report() {
     return analizarLote(lote.animales, { precioMercadoCOP: precioActual?.precioCOP ?? 0, clima });
   }, [lote, precioActual, clima]);
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = hoyISO();
 
   return (
     <div className="space-y-5">

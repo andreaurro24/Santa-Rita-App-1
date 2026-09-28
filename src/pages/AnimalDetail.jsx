@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Syringe, ScaleIcon, Tag } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
+import { ConDatos } from '../components/EstadoCarga';
+import { mensajeError } from '../lib/errores';
 import { useAuth } from '../context/AuthContext';
 import WeightChart from '../components/WeightChart';
-import { pesoActual, fechaUltimoPesaje } from '../utils/breakeven';
-import { formatFecha, diasHasta } from '../utils/format';
-import { formatCOP } from '../utils/breakeven';
+import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
+import { formatFecha, diasHasta, hoyISO } from '../utils/format';
+import { formatCOP } from '../domain/breakeven';
 
 export default function AnimalDetail() {
+  const hato = useHato();
+  return <ConDatos queries={hato}>{() => <FichaAnimal animales={hato.data.animales} />}</ConDatos>;
+}
+
+function FichaAnimal({ animales }) {
   const { id } = useParams();
-  const { animales, addPeso, addSanidad } = useData();
   const { user } = useAuth();
   const animal = animales.find((a) => a.id === id);
   const [showPesoForm, setShowPesoForm] = useState(false);
@@ -18,7 +24,8 @@ export default function AnimalDetail() {
 
   if (!animal) return <Navigate to="/animales" replace />;
 
-  const puedeRegistrar = user?.rol === 'administrador';
+  // Mientras solo Miguel use la app, todo miembro con perfil puede registrar (docs/plan.md §2).
+  const puedeRegistrar = Boolean(user?.rol);
   const avance = Math.round((pesoActual(animal) / animal.pesoObjetivo) * 100);
 
   const sanidadOrdenada = [...(animal.sanidad ?? [])].sort((a, b) =>
@@ -54,7 +61,7 @@ export default function AnimalDetail() {
             <Row label="Origen" value={animal.origen} />
             <Row label="Fecha de ingreso" value={formatFecha(animal.fechaIngreso)} />
             <Row label="Peso de ingreso" value={`${animal.pesoIngreso} kg`} />
-            {animal.costoCompra && <Row label="Costo de compra" value={`$${formatCOP(animal.costoCompra)} COP`} />}
+            {animal.costoCompra != null && <Row label="Costo de compra" value={`$${formatCOP(animal.costoCompra)} COP`} />}
             <Row
               label="Esquema"
               value={
@@ -81,13 +88,7 @@ export default function AnimalDetail() {
             )}
           </div>
           {showPesoForm && (
-            <PesoForm
-              onCancel={() => setShowPesoForm(false)}
-              onSave={(registro) => {
-                addPeso(animal.id, registro);
-                setShowPesoForm(false);
-              }}
-            />
+            <PesoForm animalId={animal.id} onCancel={() => setShowPesoForm(false)} onSaved={() => setShowPesoForm(false)} />
           )}
           <WeightChart pesos={animal.pesos} pesoObjetivo={animal.pesoObjetivo} />
           <p className="mt-1 text-xs text-gray-400">Último pesaje: {formatFecha(fechaUltimoPesaje(animal))}</p>
@@ -109,13 +110,7 @@ export default function AnimalDetail() {
           )}
         </div>
         {showSanidadForm && (
-          <SanidadForm
-            onCancel={() => setShowSanidadForm(false)}
-            onSave={(evento) => {
-              addSanidad(animal.id, evento);
-              setShowSanidadForm(false);
-            }}
-          />
+          <SanidadForm animalId={animal.id} onCancel={() => setShowSanidadForm(false)} onSaved={() => setShowSanidadForm(false)} />
         )}
         <table className="w-full text-sm">
           <thead>
@@ -126,8 +121,8 @@ export default function AnimalDetail() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {sanidadOrdenada.map((s, i) => (
-              <tr key={i}>
+            {sanidadOrdenada.map((s) => (
+              <tr key={s.id}>
                 <td className="py-2 pr-4 text-gray-600">
                   {s.pendiente ? (
                     <span className={diasHasta(s.proximaFecha) < 0 ? 'text-red-600 font-medium' : 'text-amber-600 font-medium'}>
@@ -159,72 +154,104 @@ function Row({ label, value }) {
   );
 }
 
-function PesoForm({ onSave, onCancel }) {
-  const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
+function PesoForm({ animalId, onSaved, onCancel }) {
+  const addPeso = useAddPeso();
+  const [fecha, setFecha] = useState(hoyISO());
   const [pesoKg, setPesoKg] = useState('');
+  const [error, setError] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const peso = Number(pesoKg);
+    if (!(peso > 0 && peso < 1500)) return setError('El peso debe estar entre 0,1 y 1.499 kg.');
+    if (!fecha || fecha > hoyISO()) return setError('La fecha del pesaje no puede ser futura.');
+    setError('');
+    addPeso.mutate(
+      { animalId, fecha, pesoKg: Math.round(peso * 10) / 10 },
+      { onSuccess: onSaved, onError: (err) => setError(mensajeError(err)) },
+    );
+  }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!pesoKg) return;
-        onSave({ fecha, pesoKg: Number(pesoKg) });
-      }}
-      className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3"
-    >
+    <form onSubmit={handleSubmit} noValidate className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Fecha</span>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" />
+        <input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} className="input" />
       </label>
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Peso (kg)</span>
-        <input type="number" value={pesoKg} onChange={(e) => setPesoKg(e.target.value)} className="input" required />
+        <input type="number" min="0.1" step="0.1" inputMode="decimal" value={pesoKg} onChange={(e) => setPesoKg(e.target.value)} className="input" />
       </label>
-      <button type="submit" className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-        Guardar
+      <button
+        type="submit"
+        disabled={addPeso.isPending}
+        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+      >
+        {addPeso.isPending ? 'Guardando…' : 'Guardar'}
       </button>
       <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700">
         Cancelar
       </button>
+      {error && (
+        <p role="alert" className="w-full text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
 
-function SanidadForm({ onSave, onCancel }) {
-  const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
-  const [tipo, setTipo] = useState('Vacuna');
+function SanidadForm({ animalId, onSaved, onCancel }) {
+  const addSanidad = useAddSanidad();
+  const [fecha, setFecha] = useState(hoyISO());
+  const [tipo, setTipo] = useState('vacuna');
   const [descripcion, setDescripcion] = useState('');
+  const [error, setError] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!descripcion.trim()) return setError('Describe la vacuna o el tratamiento aplicado.');
+    if (!fecha || fecha > hoyISO()) return setError('La fecha de aplicación no puede ser futura.');
+    setError('');
+    addSanidad.mutate(
+      { animalId, fecha, tipo, descripcion },
+      { onSuccess: onSaved, onError: (err) => setError(mensajeError(err)) },
+    );
+  }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!descripcion) return;
-        onSave({ fecha, tipo, descripcion });
-      }}
-      className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3"
-    >
+    <form onSubmit={handleSubmit} noValidate className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Fecha</span>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" />
+        <input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} className="input" />
       </label>
       <label className="text-sm">
         <span className="mb-1 block text-gray-600">Tipo</span>
         <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="input">
-          <option>Vacuna</option>
-          <option>Tratamiento</option>
+          <option value="vacuna">Vacuna</option>
+          <option value="tratamiento">Tratamiento</option>
+          <option value="desparasitacion">Desparasitación</option>
         </select>
       </label>
       <label className="text-sm flex-1 min-w-[180px]">
         <span className="mb-1 block text-gray-600">Descripción</span>
-        <input value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className="input" required />
+        <input value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className="input" />
       </label>
-      <button type="submit" className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-        Guardar
+      <button
+        type="submit"
+        disabled={addSanidad.isPending}
+        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+      >
+        {addSanidad.isPending ? 'Guardando…' : 'Guardar'}
       </button>
       <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700">
         Cancelar
       </button>
+      {error && (
+        <p role="alert" className="w-full text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </form>
   );
 }

@@ -33,3 +33,6 @@ test-results/
 playwright-report/
 blob-report/
 coverage/
+
+# Semilla generada (npm run db:seed -- --sql)
+supabase/seed.sql

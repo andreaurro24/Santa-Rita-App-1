@@ -9,16 +9,27 @@ import {
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useHato } from '../data/hato';
+import { usePrecios } from '../data/precios';
+import { ConDatos } from '../components/EstadoCarga';
 import { useAuth } from '../context/AuthContext';
 import StatCard from '../components/StatCard';
 import { fetchClimaFinca, describeWeatherCode } from '../api/weather';
 import { fetchTRM } from '../api/trm';
-import { formatCOP } from '../utils/breakeven';
-import { formatFecha, diasHasta } from '../utils/format';
+import { formatCOP } from '../domain/breakeven';
+import { formatFecha, diasHasta, hoyISO } from '../utils/format';
 
 export default function Dashboard() {
-  const { animales, lotes, precioActual } = useData();
+  const hato = useHato();
+  const precios = usePrecios();
+  return (
+    <ConDatos queries={[hato, precios]}>
+      {() => <DashboardContenido {...hato.data} precioActual={precios.data.precioActual} />}
+    </ConDatos>
+  );
+}
+
+function DashboardContenido({ animales, lotes, precioActual }) {
   const { user } = useAuth();
   const [clima, setClima] = useState(null);
   const [trm, setTrm] = useState(null);
@@ -66,7 +77,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Hola, {user?.nombre?.split(' ')[0]}</h1>
         <p className="text-sm text-gray-500">
-          Panel general de trazabilidad — Finca Santa Rita, Badillo (Cesar). {formatFecha(new Date().toISOString().slice(0, 10))}
+          Panel general de trazabilidad — Finca Santa Rita, Badillo (Cesar). {formatFecha(hoyISO())}
         </p>
       </div>
 

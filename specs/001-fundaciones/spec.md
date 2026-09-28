@@ -71,15 +71,39 @@ los sprints siguientes.
 - **Dependencias nuevas (requieren aprobación):** `@supabase/supabase-js`,
   `@tanstack/react-query`, `vitest`, `@playwright/test`.
 
+### Desvíos durante la implementación (2026-09-27)
+- **Sin trigger de perfil automático.** Si cualquier registro en Auth creara un perfil,
+  cualquiera podría registrarse y ver los datos de la finca. Los perfiles se crean a mano
+  (SQL o Dashboard) y RLS exige un perfil activo.
+- **La semilla no usa `service_role`.** `npm run db:seed` entra con la llave pública y el
+  usuario de prueba (rol `dueno`), respetando RLS. La llave de servicio no se necesita en
+  ningún archivo. Con `--sql` genera `supabase/seed.sql` para el SQL Editor.
+- **Vista `v_animales_estado` pospuesta.** El hato completo (140 reses) se trae en una sola
+  consulta y el peso actual se calcula en `src/domain/`. La vista se crea cuando haga falta
+  paginar o filtrar en el servidor.
+- **Hooks:** en vez de `useAnimales`/`useAnimal`/`useLotes` separados hay un solo `useHato()`
+  que devuelve `{ animales, lotes }` con la forma del MVP, para cambiar lo mínimo en las páginas.
+- **Correcciones de la verificación ronda 1** (`reports/verificacion/001-2026-09-27.md`):
+  - El login espera el perfil y explica cuándo no hay acceso (sin perfil o sin red).
+  - Chapeta y número interno son únicos sin distinguir mayúsculas ni espacios.
+  - El alta del animal es atómica con la función `registrar_animal`.
+  - La base de datos rechaza pesajes y eventos aplicados con fecha futura (hora de Bogotá).
+  - El peso actual desempata por la hora de registro.
+  - Sin reintentos automáticos, para que el error aparezca en segundos.
+  - Se agregó la categoría al formulario de alta, se muestra el costo de compra cero y hay una
+    pantalla que explica cuando faltan las variables de entorno.
+- **Registrar datos:** mientras solo Miguel use la app, cualquier miembro con perfil puede
+  registrar (antes solo el rol `administrador`, que hoy no tiene usuarios).
+
 ## Tareas
-- [ ] T1 Crear el proyecto Supabase de desarrollo y `.env.example` — verifica: la app lee la URL desde `import.meta.env`
-- [ ] T2 Migraciones del esquema, constraints, RLS, trigger de perfil y vista — verifica: `get_advisors` de Supabase sin alertas de seguridad
-- [ ] T3 Script de semilla — verifica: conteos 140 animales / 4 lotes / 9 precios en desarrollo
-- [ ] T4 Cliente Supabase y `AuthContext` con Supabase Auth; borrar `seedUsers.js` — verifica: `grep` sin contraseñas en `dist/`
-- [ ] T5 Hooks de datos con TanStack Query y migración de las 6 páginas — verifica: recorrido manual de las 6 pantallas
-- [ ] T6 Estados de carga y error compartidos — verifica: cortar la red en DevTools muestra el mensaje de error
-- [ ] T7 Mover el motor a `src/domain/` + Vitest — verifica: `npm test`
-- [ ] T8 Playwright: login correcto, login incorrecto, ruta protegida y registro de pesaje — verifica: `npm run test:e2e`
+- [x] T1 Crear el proyecto Supabase de desarrollo y `.env.example` — verifica: la app lee la URL desde `import.meta.env`
+- [x] T2 Migraciones del esquema, constraints y RLS (trigger de perfil y vista omitidos: ver desvíos) — verifica: `get_advisors` de seguridad: 0 alertas de base de datos (2026-09-27 y 2026-09-28; solo avisa de la protección de contraseñas filtradas de Auth, que se configura en el Dashboard)
+- [x] T3 Script de semilla — verifica: conteos 140 animales / 4 lotes / 9 precios en desarrollo
+- [x] T4 Cliente Supabase y `AuthContext` con Supabase Auth; borrar `seedUsers.js` — verifica: `grep` sin contraseñas en `dist/`
+- [x] T5 Hooks de datos con TanStack Query y migración de las 6 páginas — verifica: recorrido manual de las 6 pantallas
+- [x] T6 Estados de carga y error compartidos — verifica: cortar la red en DevTools muestra el mensaje de error
+- [x] T7 Mover el motor a `src/domain/` + Vitest — verifica: `npm test`
+- [x] T8 Playwright: login correcto, login incorrecto, ruta protegida y registro de pesaje — verifica: `npm run test:e2e`
 - [ ] T9 Proyecto en Vercel con variables de entorno — verifica: URL de preview funcionando
 - [ ] T10 Correr el `verificador` sobre esta spec
 
