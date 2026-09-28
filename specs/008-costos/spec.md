@@ -1,6 +1,6 @@
 # Spec 008 — Insumos y costos por lote y por animal
 
-- Estado: en-progreso
+- Estado: en-verificacion
 - Sprint: 2
 - Módulos del plan: M8
 
@@ -45,11 +45,11 @@ calcula el costo acumulado de cada animal y de cada lote según D9. La recomenda
   pertenencia histórica desde `movimientos`.
 
 ## Tareas
-- [ ] T1 Migración `costos` + RLS + validaciones
-- [ ] T2 Dominio de reparto y acumulado + pruebas
-- [ ] T3 Registro, edición y borrado de gastos en `/costos`
-- [ ] T4 Costos en la ficha y en el detalle del lote
-- [ ] T5 E2E
+- [x] T1 Migración `costos` + RLS + validaciones
+- [x] T2 Dominio de reparto y acumulado + pruebas
+- [x] T3 Registro, edición y borrado de gastos en `/costos`
+- [x] T4 Costos en la ficha y en el detalle del lote
+- [x] T5 E2E
 - [ ] T6 Verificador
 
 ## Criterios de aceptación para el verificador

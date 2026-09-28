@@ -18,7 +18,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje, formatCOP } from '../domain/breakeven';
-import { gdpReciente, gdpTotal, pierdePeso } from '../domain/gdp';
+import { gdpReciente, gdpTotal, pierdePeso, variacionSospechosa } from '../domain/gdp';
 import Stat from '../components/ui/Stat';
 import { formatFecha, diasHasta, hoyISO, formatoGdp } from '../utils/format';
 
@@ -115,7 +115,7 @@ function FichaAnimal({ animales, costos }) {
           }
         >
           {showPesoForm && (
-            <PesoForm animalId={animal.id} onCancel={() => setShowPesoForm(false)} onSaved={() => setShowPesoForm(false)} />
+            <PesoForm animalId={animal.id} pesoAnterior={peso} onCancel={() => setShowPesoForm(false)} onSaved={() => setShowPesoForm(false)} />
           )}
           <div className="mb-3 grid grid-cols-2 gap-4">
             <Stat label="Ganancia diaria (todo el ciclo)" value={formatoGdp(gdpTotal(animal.pesos))} />
@@ -252,11 +252,12 @@ function Row({ label, value }) {
   );
 }
 
-function PesoForm({ animalId, onSaved, onCancel }) {
+function PesoForm({ animalId, pesoAnterior, onSaved, onCancel }) {
   const addPeso = useAddPeso();
   const [fecha, setFecha] = useState(hoyISO());
   const [pesoKg, setPesoKg] = useState('');
   const [error, setError] = useState('');
+  const [aviso, setAviso] = useState(null); // peso con variación > 15 % pendiente de confirmar
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -264,8 +265,14 @@ function PesoForm({ animalId, onSaved, onCancel }) {
     if (!(peso > 0 && peso < 1500)) return setError('El peso debe estar entre 0,1 y 1.499 kg.');
     if (!fecha || fecha > hoyISO()) return setError('La fecha del pesaje no puede ser futura.');
     setError('');
+    const valor = Math.round(peso * 10) / 10;
+    // Spec 004 · R3: más de 15 % de diferencia con el último peso pide confirmación (segundo toque).
+    if (variacionSospechosa(valor, pesoAnterior) && aviso !== valor) {
+      setAviso(valor);
+      return;
+    }
     addPeso.mutate(
-      { animalId, fecha, pesoKg: Math.round(peso * 10) / 10 },
+      { animalId, fecha, pesoKg: valor },
       { onSuccess: onSaved, onError: (err) => setError(mensajeError(err)) },
     );
   }
@@ -281,18 +288,33 @@ function PesoForm({ animalId, onSaved, onCancel }) {
             Cancelar
           </Button>
           <Button type="submit" form="form-peso" disabled={addPeso.isPending}>
-            {addPeso.isPending ? 'Guardando…' : 'Guardar'}
+            {addPeso.isPending ? 'Guardando…' : aviso != null ? 'Guardar igual' : 'Guardar'}
           </Button>
         </>
       }
     >
       <form id="form-peso" onSubmit={handleSubmit} noValidate className="grid grid-cols-2 gap-3">
         <Field label="Peso (kg)">
-          <Input type="text" inputMode="decimal" autoComplete="off" value={pesoKg} onChange={(e) => setPesoKg(e.target.value)} />
+          <Input
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            value={pesoKg}
+            onChange={(e) => {
+              setPesoKg(e.target.value);
+              setAviso(null);
+            }}
+          />
         </Field>
         <Field label="Fecha">
           <Input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} />
         </Field>
+        {aviso != null && (
+          <p role="alert" className="col-span-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
+            Pesaba {pesoAnterior} kg y escribiste {aviso} kg ({aviso > pesoAnterior ? '+' : ''}
+            {Math.round(((aviso - pesoAnterior) / pesoAnterior) * 100)} %). ¿Es correcto? Revisa el número o toca "Guardar igual".
+          </p>
+        )}
         <div className="col-span-2">
           <FormError>{error}</FormError>
         </div>

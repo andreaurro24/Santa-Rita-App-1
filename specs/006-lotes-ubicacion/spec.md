@@ -1,6 +1,6 @@
 # Spec 006 — Lotes, ciclos de ceba, fincas, potreros y movimientos
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 1
 - Módulos del plan: M5, M6
 
@@ -54,13 +54,19 @@ Miguel necesita saber dónde está cada animal y desde cuándo.
 - **Rutas nuevas:** `/lotes`, `/lotes/:id` y `/fincas`, en "Más" (celular) y en la barra
   lateral (escritorio).
 
+### Correcciones posteriores a la aprobación (Medios de `reports/verificacion/006-2026-09-28.md`)
+- La proyección se cuenta desde la fecha del último pesaje del lote, no desde hoy. Si por la GDP ya debería estar en la meta, lo dice en vez de dar una fecha pasada.
+- D2 incluye terneras además de vientres. Ahora pide confirmación también al cambiar un lote de cría a ceba y al registrar una hembra en un lote de ceba. La base de datos no lo bloquea: lo hará la spec 011 al vender.
+- `mover_animales` rechaza lotes vendidos o cerrados, animales no activos y fechas anteriores al ingreso. El potrero de un animal siempre es de su finca, también en un UPDATE directo (migración 1100).
+- El formulario de potrero es una hoja inferior; los potreros no se repiten aunque cambien las mayúsculas; la fecha de inicio del lote no puede ser futura; "Marcar como listo" muestra su error.
+
 ## Tareas
 - [x] T1 Migración `movimientos` + función `mover_animales`
 - [x] T2 Dominio de resumen de lote y proyección + tests
 - [x] T3 CRUD de lotes y detalle con proyección — verifica: E2E
 - [x] T4 Fincas y potreros — verifica: E2E crear potrero
 - [x] T5 Mover animales (selección múltiple) e historial en la ficha — verifica: E2E
-- [ ] T6 Verificador
+- [x] T6 Verificador (ronda 1 APROBADO)
 
 ## Criterios de aceptación para el verificador
 - Mover 2 animales a un potrero nuevo crea 2 movimientos y la ficha muestra la nueva ubicación.

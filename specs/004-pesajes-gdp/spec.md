@@ -42,12 +42,22 @@ desde el celular y sin perder el hilo, y convertir esos datos en la ganancia dia
 - Archivos: `src/pages/Pesaje.jsx`, `src/data/pesajes.js`, `src/domain/gdp.js`, migración.
 
 ## Desvíos durante la implementación (2026-09-28)
-- **R5, GDP reciente:** en vez de comparar "los dos últimos pesajes", el último periodo
+- **R5, GDP reciente (corregido tras la verificación ronda 1):** en vez de comparar "los dos últimos pesajes", el último periodo
   compara el último pesaje contra el más reciente de **al menos 14 días antes**
   (`DIAS_MINIMOS_PERIODO`). La báscula tiene ±3 kg de error, y con la regla literal 54 de las
   140 reses de ejemplo aparecían "perdiendo peso" solo por dos pesajes separados 2 a 9 días.
   Con 14 días quedan 0, que es lo coherente con la semilla. Si no hay un pesaje de 14 días
-  antes, la GDP reciente es "—" y no hay alerta.
+  antes, la GDP reciente es "—".
+  - **Corrección ronda 1 (Alto):** la regla sola escondía pérdidas reales; por ejemplo, −10 kg en
+    7 días no daba alerta. Ahora también se alerta si entre los dos últimos pesajes cae más de
+    **8 kg** (`UMBRAL_CAIDA_KG`, por encima de la mayor caída por ruido de la semilla, 7,2 kg).
+    Así se detectan los tres casos del verificador sin falsas alarmas en la semilla.
+- **Otras correcciones de la ronda 1:**
+  - "Registrar peso" de la ficha también pide confirmación con una variación > 15 % (R3).
+  - La base de datos rechaza pesajes de jornada si la jornada está cerrada, si el animal es de
+    otro lote o si la fecha no coincide (migración 1100).
+  - La semilla vacía las tablas nuevas.
+  - El texto del panel explica la regla completa.
 - **Ruta y navegación:** "Pesaje" entra a la barra inferior del celular (Inicio, Hato, Pesaje,
   Venta, Más), porque es la tarea de campo más frecuente.
 - **Captura:** el campo de peso es de texto con `inputMode="decimal"` y acepta coma decimal

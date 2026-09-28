@@ -14,7 +14,7 @@ cada animal por día, saber cuándo llegará el lote a la meta y dónde está ca
 | Spec | Módulos | Estado |
 |---|---|---|
 | [004 — Jornada de pesaje por lote y GDP](../specs/004-pesajes-gdp/spec.md) | M3 | en-verificacion |
-| [006 — Lotes, ciclos, fincas, potreros y movimientos](../specs/006-lotes-ubicacion/spec.md) | M5, M6 | en-verificacion |
+| [006 — Lotes, ciclos, fincas, potreros y movimientos](../specs/006-lotes-ubicacion/spec.md) | M5, M6 | hecha |
 | 003 — Gestión del hato (editar, dar de baja) | M2 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
 | 005 — Sanidad (programados, aplicación por lote, ICA) | M4 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
 
@@ -54,9 +54,13 @@ está resumido en `docs/plan.md` (M2 y M4).
 | 2026-09-28 | 006 · T2 | `src/domain/lotes.js` (resumen, proyección, vientres hacia ceba) + 7 pruebas | — |
 | 2026-09-28 | 006 · T3–T5 | `/lotes` (lista con proyección, crear y editar, "Marcar como listo"), `/lotes/:id` (selección y "Mover"), `/fincas` (potreros) y ubicación con historial en la ficha. E2E 4/4 | Selección múltiple en el detalle del lote, no en el hato (ver desvíos). Deuda: decimales con punto en pesos y con coma en GDP |
 
+| 2026-09-28 | 004 y 006 · correcciones | 004: caída > 8 kg alerta, confirmación > 15 % en la ficha, integridad de la jornada en la base de datos. 006: proyección desde el último pesaje, D2 con terneras y confirmaciones, `mover_animales` más estricta y potrero como hoja. Migración 1100. Vitest 104/104; E2E del implementador en verde | 3 pruebas del verificador cambian de premisa a propósito (proyección, fecha de lote 2099, potrero en línea) |
+
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
+| 004 | 1 | RECHAZADO (Alto: la regla de 14 días escondía pérdidas reales; 3 Medios, 3 Bajos) | [004-2026-09-28](../reports/verificacion/004-2026-09-28.md) |
+| 006 | 1 | APROBADO (4 Medios y 5 Bajos; los Medios se corrigieron después) | [006-2026-09-28](../reports/verificacion/006-2026-09-28.md) |
 
 ## 4. Cierre
 

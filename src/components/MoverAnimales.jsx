@@ -103,7 +103,7 @@ export default function MoverAnimales({ animales, onClose, onMovidos }) {
           <Field label="Lote de destino" className="sm:col-span-2">
             <Select value={destino.loteId} onChange={(e) => set('loteId', e.target.value)}>
               <option value="">No cambiar</option>
-              {lotes.data?.map((l) => (
+              {lotes.data?.filter((l) => l.estado !== 'vendido' && l.estado !== 'cerrado').map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.nombre}
                 </option>
@@ -120,8 +120,8 @@ export default function MoverAnimales({ animales, onClose, onMovidos }) {
         {confirmarVientres && (
           <p role="alert" className="flex gap-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-            {vientres.map((v) => v.numeroInterno).join(', ')} {vientres.length === 1 ? 'es un vientre' : 'son vientres'}: las vacas paridas o con potencial
-            reproductivo no se venden, y un lote de ceba es para vender. Confirma solo si es correcto.
+            {vientres.map((v) => v.numeroInterno).join(', ')} {vientres.length === 1 ? 'es una hembra' : 'son hembras'} (vientre o ternera): las vacas paridas o
+            con potencial reproductivo no se venden, y un lote de ceba es para vender. Confirma solo si es correcto.
           </p>
         )}
         <FormError>{error}</FormError>

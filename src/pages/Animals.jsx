@@ -12,6 +12,7 @@ import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { pierdePeso } from '../domain/gdp';
+import { vientresHaciaCeba } from '../domain/lotes';
 import { formatFecha, hoyISO } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
@@ -168,6 +169,7 @@ function NuevoAnimalModal({ lotes, onClose }) {
   const addAnimal = useAddAnimal();
   const contratos = useContratosVigentes();
   const [error, setError] = useState('');
+  const [confirmarHembra, setConfirmarHembra] = useState(false);
   const [form, setForm] = useState({
     numeroInterno: '',
     chapetaICA: '',
@@ -183,6 +185,7 @@ function NuevoAnimalModal({ lotes, onClose }) {
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    setConfirmarHembra(false);
   }
 
   // R5 (spec 001): se valida aquí para dar un mensaje claro, y la base de datos vuelve a validar.
@@ -203,6 +206,12 @@ function NuevoAnimalModal({ lotes, onClose }) {
     e.preventDefault();
     const problema = validar();
     if (problema) return setError(problema);
+    // R8 / D2 (spec 006): una hembra reproductiva en un lote de ceba pide confirmación.
+    const loteElegido = lotes.find((l) => l.id === form.loteId);
+    if (vientresHaciaCeba([{ categoria: form.categoria }], loteElegido).length && !confirmarHembra) {
+      setError('');
+      return setConfirmarHembra(true);
+    }
     setError('');
     const contrato = contratos.data?.find((c) => c.id === form.contratoId);
     addAnimal.mutate(
@@ -298,6 +307,12 @@ function NuevoAnimalModal({ lotes, onClose }) {
               ))}
             </Select>
           </Field>
+        )}
+        {confirmarHembra && (
+          <p role="alert" className="rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900 sm:col-span-2">
+            Vas a registrar una hembra ({form.categoria}) en un lote de ceba, que es para vender. Las hembras con potencial reproductivo no se venden. Toca
+            Guardar otra vez solo si es correcto.
+          </p>
         )}
         <div className="sm:col-span-2">
           <FormError>{error}</FormError>

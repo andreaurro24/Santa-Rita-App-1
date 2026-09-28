@@ -7,7 +7,7 @@ export function mensajeError(error) {
     if (detalle.includes('numero_interno')) return 'Ya existe un animal con ese número interno. Revisa el número o busca el animal en el hato.';
     if (detalle.includes('chapeta_ica')) return 'Ya existe un animal con esa chapeta ICA. Revisa la chapeta o busca el animal en el hato.';
     if (detalle.includes('lotes_codigo_key')) return 'Ya existe un lote con ese código. Usa otro código.';
-    if (detalle.includes('potreros_finca_id_nombre_key')) return 'Esa finca ya tiene un potrero con ese nombre.';
+    if (detalle.includes('potreros_finca_id_nombre_key') || detalle.includes('potreros_nombre_normalizado_key')) return 'Esa finca ya tiene un potrero con ese nombre.';
     if (detalle.includes('pesajes_uno_por_jornada')) return 'Este animal ya se pesó en esta jornada.';
     if (detalle.includes('precios_mercado')) return 'Ya hay un precio registrado para esa fecha y fuente. Cambia la fecha.';
     return 'Ese registro ya existe. Revisa los datos e inténtalo de nuevo.';

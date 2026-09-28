@@ -42,10 +42,23 @@ export function gdpReciente(pesos = []) {
   return redondear((ultimo.pesoKg - anterior.pesoKg) / diasEntre(anterior.fecha, ultimo.fecha));
 }
 
-// R7: pierde peso si la GDP reciente es negativa.
+// Una caída mayor que el error de la báscula (±3 kg por pesaje) entre dos pesajes seguidos no es
+// ruido: en la semilla, la mayor caída por ruido es 7,2 kg (verificación 004, hallazgo Alto).
+export const UMBRAL_CAIDA_KG = 8;
+
+// Kilos perdidos entre los dos últimos días con pesaje (0 si ganó o no hay dos pesajes).
+export function caidaUltimoPesaje(pesos = []) {
+  const serie = unoPorDia(pesos);
+  if (serie.length < 2) return 0;
+  const [anterior, ultimo] = serie.slice(-2);
+  return Math.max(0, redondear(anterior.pesoKg - ultimo.pesoKg, 1));
+}
+
+// R7: pierde peso si la GDP del último periodo (≥ 14 días) es negativa, o si entre los dos
+// últimos pesajes cayó más de 8 kg (un animal recién comprado o revisado en una visita).
 export function pierdePeso(animal) {
   const g = gdpReciente(animal.pesos);
-  return g != null && g < 0;
+  return (g != null && g < 0) || caidaUltimoPesaje(animal.pesos) > UMBRAL_CAIDA_KG;
 }
 
 // R6: promedio de la GDP total de los animales activos que tienen dato.

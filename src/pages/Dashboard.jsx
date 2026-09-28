@@ -144,7 +144,7 @@ function DashboardContenido({ animales, lotes, precioActual }) {
         ) : (
           <>
             <p className="mb-3 text-sm text-gray-600">
-              {perdiendo.length} {perdiendo.length === 1 ? 'animal perdió' : 'animales perdieron'} peso entre sus dos últimos pesajes. Revísalos en el próximo recorrido.
+              {perdiendo.length} {perdiendo.length === 1 ? 'animal perdió' : 'animales perdieron'} peso: bajaron en su último periodo de pesaje o cayeron más de 8 kg de un pesaje al siguiente. Revísalos en el próximo recorrido.
             </p>
             <ul className="flex flex-wrap gap-2">
               {perdiendo.map((a) => (

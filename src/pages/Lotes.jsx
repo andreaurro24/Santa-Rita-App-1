@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, MoveRight, CheckCircle2, Receipt } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useLotes, useGuardarLote } from '../data/lotes';
-import { resumenLote } from '../domain/lotes';
+import { resumenLote, vientresHaciaCeba } from '../domain/lotes';
 import { useCostos } from '../data/costos';
 import { resumenCostosLote } from '../domain/costos';
 import { formatCOP } from '../domain/breakeven';
@@ -42,6 +42,7 @@ function useLotesConAnimales() {
 function textoProyeccion(p) {
   if (p.tipo === 'fecha') return `${formatFecha(p.fecha)} (en ${p.dias} días)`;
   if (p.tipo === 'meta_alcanzada') return 'Meta alcanzada';
+  if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (${formatFecha(p.fecha)}): confírmalo con un pesaje`;
   if (p.tipo === 'sin_animales') return 'Sin animales';
   return 'Sin datos suficientes';
 }
@@ -122,6 +123,7 @@ function DetalleContenido({ lote }) {
   const [seleccion, setSeleccion] = useState(() => new Set());
   const [moviendo, setMoviendo] = useState(false);
   const guardar = useGuardarLote();
+  const [errorListo, setErrorListo] = useState('');
   const r = resumenLote(lote, hoyISO());
   const activos = lote.animales.filter((a) => a.estado === 'Activo').sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
 
@@ -156,9 +158,10 @@ function DetalleContenido({ lote }) {
         <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl border border-ok bg-ok-50 p-4 text-sm text-gray-900">
           <CheckCircle2 size={18} className="text-ok" aria-hidden="true" />
           <span className="mr-auto">El peso promedio ya alcanzó la meta pactada. ¿Marcar el lote como listo para vender?</span>
-          <Button tamano="sm" disabled={guardar.isPending} onClick={() => guardar.mutate({ ...lote, estado: 'listo' })}>
+          <Button tamano="sm" disabled={guardar.isPending} onClick={() => guardar.mutate({ ...lote, estado: 'listo' }, { onError: (err) => setErrorListo(mensajeError(err)) })}>
             Marcar como listo
           </Button>
+          {errorListo && <p role="alert" className="w-full text-peligro">{errorListo}</p>}
         </div>
       )}
 
@@ -248,12 +251,23 @@ function LoteForm({ lote, onClose }) {
     estado: lote?.estado ?? 'activo',
   });
   const [error, setError] = useState('');
-  const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }));
+  const [confirmarHembras, setConfirmarHembras] = useState(false);
+  const set = (campo, valor) => {
+    setForm((f) => ({ ...f, [campo]: valor }));
+    setConfirmarHembras(false);
+  };
+  // R8 / D2: pasar a ceba un lote con vientres o terneras adentro pide confirmación.
+  const hembras = lote && lote.tipo !== 'ceba' ? vientresHaciaCeba(lote.animales.filter((a) => a.estado === 'Activo'), { tipo: form.tipo }) : [];
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!form.codigo.trim() || !form.nombre.trim()) return setError('El código y el nombre del lote son obligatorios.');
     if (form.pesoMeta !== '' && !(Number(form.pesoMeta) > 0 && Number(form.pesoMeta) < 1500)) return setError('La meta de peso debe estar entre 1 y 1.499 kg.');
+    if (form.fechaInicio && form.fechaInicio > hoyISO()) return setError('La fecha de inicio no puede ser futura.');
+    if (hembras.length && !confirmarHembras) {
+      setError('');
+      return setConfirmarHembras(true);
+    }
     setError('');
     guardar.mutate(form, {
       onSuccess: (id) => {
@@ -293,7 +307,7 @@ function LoteForm({ lote, onClose }) {
           <Input value={form.nombre} onChange={(e) => set('nombre', e.target.value)} placeholder="Lote 2027-A (Ceba)" />
         </Field>
         <Field label="Fecha de inicio">
-          <Input type="date" value={form.fechaInicio ?? ''} onChange={(e) => set('fechaInicio', e.target.value)} />
+          <Input type="date" value={form.fechaInicio ?? ''} max={hoyISO()} onChange={(e) => set('fechaInicio', e.target.value)} />
         </Field>
         <Field label="Meta de peso pactada (kg)">
           <Input type="number" min="1" step="1" inputMode="numeric" value={form.pesoMeta} onChange={(e) => set('pesoMeta', e.target.value)} />
@@ -307,6 +321,12 @@ function LoteForm({ lote, onClose }) {
             ))}
           </Select>
         </Field>
+        {confirmarHembras && (
+          <p role="alert" className="rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900 sm:col-span-2">
+            Este lote tiene {hembras.length} {hembras.length === 1 ? 'hembra' : 'hembras'} (vientres o terneras). Un lote de ceba es para vender y esas hembras
+            no se venden. Toca Guardar otra vez solo si es correcto.
+          </p>
+        )}
         <div className="sm:col-span-2">
           <FormError>{error}</FormError>
         </div>

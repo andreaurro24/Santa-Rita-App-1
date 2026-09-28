@@ -24,7 +24,7 @@ describe('resumenLote', () => {
     expect(r.gdp).toBe(0.75);
     expect(r.avancePct).toBe(76.4);
     // (350 − 267,5) / 0,75 = 110 días
-    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 110, fecha: '2027-01-17' });
+    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 110, fecha: '2027-01-17', desde: '2026-09-29' });
   });
 
   it('sin meta del lote usa el promedio de las metas de sus animales', () => {
@@ -35,6 +35,18 @@ describe('resumenLote', () => {
   it('R3: sin dos pesajes o con GDP ≤ 0 no inventa una fecha', () => {
     expect(resumenLote({ pesoMeta: 350, animales: [animal([['2026-09-01', 200]])] }, '2026-09-29').proyeccion).toEqual({ tipo: 'sin_datos' });
     expect(resumenLote({ pesoMeta: 350, animales: [animal([['2026-08-01', 300], ['2026-09-01', 290]])] }, '2026-09-29').proyeccion).toEqual({ tipo: 'sin_datos' });
+  });
+
+  it('la fecha se proyecta desde el último pesaje, no desde hoy', () => {
+    const lote = { pesoMeta: 350, animales: [animal([['2026-07-01', 200], ['2026-08-30', 260]])] }; // 1 kg/día
+    const r = resumenLote(lote, '2026-09-29');
+    // 90 kg desde el 30-ago → 28-nov; faltan 60 días desde hoy
+    expect(r.proyeccion).toEqual({ tipo: 'fecha', dias: 60, fecha: '2026-11-28', desde: '2026-08-30' });
+  });
+
+  it('si por la GDP ya debería estar en la meta, lo dice en vez de dar una fecha pasada', () => {
+    const lote = { pesoMeta: 300, animales: [animal([['2026-06-01', 200], ['2026-07-01', 290]])] }; // 3 kg/día
+    expect(resumenLote(lote, '2026-09-29').proyeccion.tipo).toBe('meta_estimada');
   });
 
   it('R4: con el promedio en la meta o por encima, la meta está alcanzada', () => {
@@ -55,8 +67,9 @@ describe('resumenLote', () => {
 describe('vientresHaciaCeba (R8, D2)', () => {
   const vientre = { categoria: 'vientre' };
   const novillo = { categoria: 'novillo' };
-  it('avisa solo si el destino es un lote de ceba', () => {
-    expect(vientresHaciaCeba([vientre, novillo], { tipo: 'ceba' })).toEqual([vientre]);
+  it('avisa solo si el destino es un lote de ceba, por vientres y terneras', () => {
+    const ternera = { categoria: 'ternera' };
+    expect(vientresHaciaCeba([vientre, novillo, ternera], { tipo: 'ceba' })).toEqual([vientre, ternera]);
     expect(vientresHaciaCeba([vientre], { tipo: 'cria' })).toEqual([]);
     expect(vientresHaciaCeba([vientre], null)).toEqual([]);
   });

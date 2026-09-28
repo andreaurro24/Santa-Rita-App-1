@@ -10,7 +10,7 @@ async function limpiar() {
   const supabase = await clientePrueba();
   await supabase.from('costos').delete().like('descripcion', `${PREFIJO}%`);
 }
-test.beforeAll(limpiar);
+test.beforeEach(limpiar);
 test.afterAll(limpiar);
 
 async function datosLote(supabase) {

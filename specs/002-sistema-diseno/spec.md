@@ -1,6 +1,6 @@
 # Spec 002 — Sistema de diseño "Hierro y sabana" y layout adaptable
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 0
 - Módulos del plan: transversal (identidad visual de `docs/plan.md` §7)
 
@@ -123,7 +123,7 @@ que hacen.
 - [x] T5 Rediseño de Login y Panel — verifica: revisión visual en ambos anchos
 - [x] T6 Rediseño de Hato (tarjetas / tabla) y Ficha del animal — verifica: E2E de pesaje sigue pasando
 - [x] T7 Rediseño de Mercado, Recomendación y Reporte (+ impresión) — verifica: vista previa de impresión
-- [ ] T8 Correr el `verificador` sobre esta spec
+- [x] T8 Correr el `verificador` sobre esta spec (ronda 1 RECHAZADO; ronda 2 APROBADO)
 
 ## Criterios de aceptación para el verificador
 - A 375×812: todas las rutas sin scroll horizontal, la navegación inferior visible y cada

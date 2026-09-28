@@ -15,7 +15,7 @@ verificar automáticamente.
 | Spec | Módulos | Estado |
 |---|---|---|
 | [001 — Supabase, autenticación y esquema](../specs/001-fundaciones/spec.md) | M1 + base de datos | aprobada |
-| [002 — Sistema de diseño y layout adaptable](../specs/002-sistema-diseno/spec.md) | transversal | en-verificacion |
+| [002 — Sistema de diseño y layout adaptable](../specs/002-sistema-diseno/spec.md) | transversal | hecha |
 
 ### Fuera de alcance
 - Módulos nuevos (costos, ciclos, ventas, "Al partir" v2, recomendación v2): Sprints 1–3.
@@ -62,6 +62,7 @@ verificar automáticamente.
 |---|---|---|---|
 | 001 | 1 | RECHAZADO (1 Alto, 5 Medios, 6 Bajos; R7 no cumple; R11 sin evidencia) | [001-2026-09-27](../reports/verificacion/001-2026-09-27.md) |
 | 001 | 2 | BLOQUEADO solo por R11 (despliegue pendiente del push del usuario). R1–R10 cumplen; 0 Críticos, 0 Altos; 1 Medio nuevo (precio con fecha futura) y 6 Bajos | [001-2026-09-28-ronda2](../reports/verificacion/001-2026-09-28-ronda2.md) |
+| 002 | 2 | APROBADO (0 Críticos/Altos; 4 Bajos a deuda) | [002-2026-09-28-ronda2](../reports/verificacion/002-2026-09-28-ronda2.md) |
 | 002 | 1 | RECHAZADO (4 Altos: R3 desborde en la ficha, R9 formularios en línea, R6 dos pares < AA, R5 botón de 38 px; 1 Medio de foco; 8 Bajos) | [002-2026-09-28](../reports/verificacion/002-2026-09-28.md) |
 
 ## 4. Cierre

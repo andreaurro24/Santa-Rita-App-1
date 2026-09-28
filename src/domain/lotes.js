@@ -1,6 +1,6 @@
 // Spec 006 · resumen del lote y fecha proyectada para llegar a la meta pactada (D3).
-import { pesoActual } from './breakeven';
-import { gdpLote } from './gdp';
+import { pesoActual, fechaUltimoPesaje } from './breakeven';
+import { diasEntre, gdpLote } from './gdp';
 
 function sumarDias(iso, dias) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -26,16 +26,23 @@ export function resumenLote(lote, hoy) {
   } else if (gdp == null || gdp <= 0) {
     proyeccion = { tipo: 'sin_datos' }; // R3
   } else {
-    const dias = Math.ceil((meta - pesoPromedio) / gdp);
-    proyeccion = { tipo: 'fecha', dias, fecha: sumarDias(hoy, dias) };
+    // La proyección arranca en la fecha del peso usado (el último pesaje del lote), no en hoy:
+    // si el lote se pesó hace 30 días, ya ganó ese peso (verificación 006, Medio 1).
+    const base = activos.map(fechaUltimoPesaje).filter(Boolean).sort().at(-1) ?? hoy;
+    const fecha = sumarDias(base, Math.ceil((meta - pesoPromedio) / gdp));
+    const dias = diasEntre(hoy, fecha);
+    proyeccion = dias > 0 ? { tipo: 'fecha', dias, fecha, desde: base } : { tipo: 'meta_estimada', fecha, desde: base };
   }
 
   return { nActivos: activos.length, pesoPromedio, meta, avancePct, gdp, proyeccion };
 }
 
-// R8 / D2: animales de categoría "vientre" que se quieren pasar a un lote de ceba (que se vende).
+// R8 / D2: hembras que se quieren pasar a un lote de ceba (que se vende). Incluye vientres y
+// terneras: una ternera puede tener potencial reproductivo, y D2 dice que esas no se venden.
+export const HEMBRAS_REPRODUCTIVAS = ['vientre', 'ternera'];
+
 export function vientresHaciaCeba(animales, loteDestino) {
   if (!loteDestino || loteDestino.tipo !== 'ceba') return [];
-  return animales.filter((a) => a.categoria === 'vientre');
+  return animales.filter((a) => HEMBRAS_REPRODUCTIVAS.includes(a.categoria));
 }
 

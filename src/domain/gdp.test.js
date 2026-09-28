@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diasEntre, gdpLote, gdpReciente, gdpTotal, pierdePeso, variacionSospechosa } from './gdp';
+import { caidaUltimoPesaje, diasEntre, gdpLote, gdpReciente, gdpTotal, pierdePeso, variacionSospechosa } from './gdp';
 
 const p = (fecha, pesoKg, creado) => ({ fecha, pesoKg, creado });
 
@@ -52,6 +52,18 @@ describe('gdpReciente (R5) y pierdePeso (R7)', () => {
     const animal = { pesos: [p('2026-08-01', 300), p('2026-08-31', 290)] };
     expect(gdpReciente(animal.pesos)).toBeLessThan(0);
     expect(pierdePeso(animal)).toBe(true);
+  });
+
+  it('casos de la verificación 004: caídas grandes en pocos días sí alertan', () => {
+    expect(pierdePeso({ pesos: [p('2026-09-01', 300), p('2026-09-08', 290)] })).toBe(true); // −10 kg en 7 días
+    expect(pierdePeso({ pesos: [p('2026-08-01', 280), p('2026-09-01', 300), p('2026-09-13', 280)] })).toBe(true); // −20 kg en 12 días
+    expect(pierdePeso({ pesos: [p('2026-09-01', 300), p('2026-09-11', 285)] })).toBe(true); // −15 kg en 10 días
+  });
+
+  it('el ruido de báscula (≤ 8 kg entre pesajes seguidos) no alerta', () => {
+    expect(caidaUltimoPesaje([p('2026-09-07', 351.3), p('2026-09-16', 344.1)])).toBe(7.2);
+    expect(pierdePeso({ pesos: [p('2026-08-08', 328.4), p('2026-09-07', 351.3), p('2026-09-16', 344.1)] })).toBe(false);
+    expect(caidaUltimoPesaje([p('2026-09-07', 300), p('2026-09-16', 310)])).toBe(0);
   });
 
   it('sin datos suficientes no marca pérdida', () => {

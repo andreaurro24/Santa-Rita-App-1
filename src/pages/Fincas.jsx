@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { Field, Input, FormError } from '../components/ui/Field';
+import Modal from '../components/ui/Modal';
 import { mensajeError } from '../lib/errores';
 
 // Spec 006 · R5: fincas (propia y de tenedores) con sus potreros y cuántos animales tiene cada uno.
@@ -65,18 +66,15 @@ function FincaCard({ finca, animales }) {
           </li>
         )}
       </ul>
-      {agregando ? (
-        <PotreroForm fincaId={finca.id} onClose={() => setAgregando(false)} />
-      ) : (
-        <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setAgregando(true)}>
-          Agregar potrero
-        </Button>
-      )}
+      <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setAgregando(true)}>
+        Agregar potrero
+      </Button>
+      {agregando && <PotreroForm finca={finca} onClose={() => setAgregando(false)} />}
     </Card>
   );
 }
 
-function PotreroForm({ fincaId, onClose }) {
+function PotreroForm({ finca, onClose }) {
   const crear = useCrearPotrero();
   const [nombre, setNombre] = useState('');
   const [areaHa, setAreaHa] = useState('');
@@ -87,28 +85,36 @@ function PotreroForm({ fincaId, onClose }) {
     if (!nombre.trim()) return setError('Escribe el nombre del potrero.');
     if (areaHa !== '' && !(Number(areaHa) > 0)) return setError('El área debe ser mayor que cero.');
     setError('');
-    crear.mutate({ fincaId, nombre, areaHa }, { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) });
+    crear.mutate({ fincaId: finca.id, nombre, areaHa }, { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) });
   }
 
+  // R9 (spec 002): hoja inferior en celular (verificación 006, Medio 4).
   return (
-    <form onSubmit={handleSubmit} noValidate className="grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3">
+    <Modal
+      titulo={`Nuevo potrero en ${finca.nombre}`}
+      onClose={onClose}
+      pie={
+        <>
+          <Button variante="fantasma" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" form={`form-potrero-${finca.id}`} disabled={crear.isPending}>
+            {crear.isPending ? 'Guardando…' : 'Guardar potrero'}
+          </Button>
+        </>
+      }
+    >
+    <form id={`form-potrero-${finca.id}`} onSubmit={handleSubmit} noValidate className="grid grid-cols-2 gap-3">
       <Field label="Nombre del potrero">
         <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="La Ceiba" />
       </Field>
       <Field label="Área (ha)">
         <Input type="number" min="0.1" step="0.1" inputMode="decimal" value={areaHa} onChange={(e) => setAreaHa(e.target.value)} />
       </Field>
-      <div className="col-span-2 flex gap-2">
-        <Button type="submit" disabled={crear.isPending}>
-          {crear.isPending ? 'Guardando…' : 'Guardar potrero'}
-        </Button>
-        <Button variante="fantasma" onClick={onClose}>
-          Cancelar
-        </Button>
-      </div>
       <div className="col-span-2">
         <FormError>{error}</FormError>
       </div>
     </form>
+    </Modal>
   );
 }

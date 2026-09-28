@@ -1,6 +1,6 @@
 # Spec 007 — "Al partir": tenedores, contratos y visitas de verificación
 
-- Estado: en-progreso
+- Estado: en-verificacion
 - Sprint: 2
 - Módulos del plan: M7
 
@@ -42,11 +42,11 @@ tenedores, sus contratos y las visitas, con los pesos que se toman en cada una.
 - **Dominio:** se reutilizan `gdpLote` y `pesoActual`.
 
 ## Tareas
-- [ ] T1 Migración visitas + función de asignación
-- [ ] T2 Tenedores y contratos (crear y editar)
-- [ ] T3 Asignar animales a un contrato
-- [ ] T4 Registrar visita con pesos y "no encontrado"
-- [ ] T5 E2E
+- [x] T1 Migración visitas + función de asignación
+- [x] T2 Tenedores y contratos (crear y editar)
+- [x] T3 Asignar animales a un contrato
+- [x] T4 Registrar visita con pesos y "no encontrado"
+- [x] T5 E2E
 - [ ] T6 Verificador
 
 ## Criterios de aceptación para el verificador

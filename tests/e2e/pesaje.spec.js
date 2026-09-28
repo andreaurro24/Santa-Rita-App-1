@@ -110,6 +110,9 @@ test('R5, R7: un peso más bajo que el de hace 14 días o más marca "Pierde pes
   await page.getByRole('button', { name: 'Registrar peso' }).click();
   await page.getByLabel('Peso (kg)').fill('101.1');
   await page.getByRole('button', { name: 'Guardar' }).click();
+  // −70 %: la ficha pide confirmación (R3) antes de guardar.
+  await expect(page.getByRole('dialog', { name: 'Registrar peso' }).getByRole('alert')).toContainText('¿Es correcto?');
+  await page.getByRole('button', { name: 'Guardar igual' }).click();
   await expect(page.getByText('Pierde peso').first()).toBeVisible();
   await expect(page.getByText(/Ganancia diaria \(último periodo\)/)).toBeVisible();
 
