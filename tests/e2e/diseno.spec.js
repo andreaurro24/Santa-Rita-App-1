@@ -3,7 +3,7 @@ import { iniciarSesion } from './helpers';
 
 // Spec 002 · R3, R4, R5, R9, R10 — layout adaptable y tamaños táctiles.
 
-const RUTAS = ['/#/', '/#/animales', '/#/pesaje', '/#/lotes', '/#/fincas', '/#/mercado', '/#/recomendacion', '/#/reporte'];
+const RUTAS = ['/#/', '/#/animales', '/#/pesaje', '/#/lotes', '/#/fincas', '/#/al-partir', '/#/costos', '/#/mercado', '/#/recomendacion', '/#/reporte'];
 
 test.describe('celular 375×812', () => {
   test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });

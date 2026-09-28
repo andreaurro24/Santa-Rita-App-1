@@ -43,6 +43,7 @@ export function mapAnimal(row) {
     fincaNombre: row.finca?.nombre ?? null,
     potreroId: row.potrero?.id ?? null,
     potreroNombre: row.potrero?.nombre ?? null,
+    contratoId: row.contrato?.id ?? null,
     esquema: row.contrato ? 'Al partir' : 'Propio',
     tenedor: tenedor ? `${tenedor.nombre} – ${tenedor.finca?.nombre ?? 'sin finca'}` : null,
     porcentajeTenedor: row.contrato ? Number(row.contrato.porcentaje_ganancia) : null,

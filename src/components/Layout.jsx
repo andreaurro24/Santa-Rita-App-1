@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Receipt, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
+import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Handshake, Receipt, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MarcaSR from './MarcaSR';
 import useDialogo from './ui/useDialogo';
@@ -13,6 +13,7 @@ const SECCIONES = [
   { to: '/recomendacion', label: 'Venta', icon: TrendingUp, movil: true },
   { to: '/lotes', label: 'Lotes y ciclos', icon: Layers },
   { to: '/fincas', label: 'Fincas y potreros', icon: MapPin },
+  { to: '/al-partir', label: 'Al partir', icon: Handshake },
   { to: '/costos', label: 'Insumos y costos', icon: Receipt },
   { to: '/mercado', label: 'Mercado y clima', icon: CloudSun },
   { to: '/reporte', label: 'Reporte', icon: FileText },
