@@ -12,6 +12,14 @@ git push origin main
 
 El repositorio del equipo es `andreaurro24/Santa-Rita-App-1`.
 
+**Configuración actual (2026-09-28):** Vercel (plan Hobby) solo importa repositorios de la cuenta
+propia, así que el proyecto se despliega desde el fork `andresfsanchez74/Santa-Rita-App-1`. El
+fork debe estar al día con `main` del repositorio del equipo (por ejemplo, con **Sync fork** en
+GitHub) para que Vercel publique los cambios.
+
+- Producción: https://santa-rita-app-1.vercel.app
+- Proyecto en Vercel: `santa-rita-app-1` (equipo `andres-sanchez-s-projects2`)
+
 ## 2. Crear el proyecto en Vercel
 
 1. En https://vercel.com/new importa el repositorio. Vercel detecta Vite solo:

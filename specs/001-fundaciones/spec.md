@@ -104,7 +104,7 @@ los sprints siguientes.
 - [x] T6 Estados de carga y error compartidos — verifica: cortar la red en DevTools muestra el mensaje de error
 - [x] T7 Mover el motor a `src/domain/` + Vitest — verifica: `npm test`
 - [x] T8 Playwright: login correcto, login incorrecto, ruta protegida y registro de pesaje — verifica: `npm run test:e2e`
-- [ ] T9 Proyecto en Vercel con variables de entorno — verifica: URL de preview funcionando
+- [x] T9 Proyecto en Vercel con variables de entorno — verifica: URL de preview funcionando. *Hecho el 2026-09-28: https://santa-rita-app-1.vercel.app desde el fork `andresfsanchez74/Santa-Rita-App-1` (ver `DEPLOY.md`); el paquete servido es el mismo del build local y la llave pública sola recibe 42501.*
 - [ ] T10 Correr el `verificador` sobre esta spec
 
 ## Criterios de aceptación para el verificador

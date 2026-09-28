@@ -96,7 +96,7 @@ como acción del usuario (DT-00-1).
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
-| DT-00-1 | Despliegue en Vercel (T9/R11 de la 001): hacer push de `main` a `andreaurro24/Santa-Rita-App-1`, importar el repo en Vercel y configurar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` | Alta (bloquea el cierre de la 001) | 001 T9 | Acción del usuario |
+| DT-00-1 | Despliegue en Vercel (T9/R11 de la 001): hacer push de `main` a `andreaurro24/Santa-Rita-App-1`, importar el repo en Vercel y configurar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` | Alta (bloquea el cierre de la 001) | 001 T9 | **Resuelta el 2026-09-28:** https://santa-rita-app-1.vercel.app desde el fork (ver `DEPLOY.md`); falta la verificación de R11 |
 | DT-00-2 | Separador decimal inconsistente: punto en kg y %, coma en GDP; en es-CO debería ser coma | Baja | Verificación 002 | 4 |
 | DT-00-3 | En Supabase Auth, desactivar el registro público y activar la protección contra contraseñas filtradas (Dashboard → Authentication) | Baja (mitigado: sin perfil no hay acceso) | Verificaciones 001 | Acción del usuario |
 | DT-00-4 | Crear el usuario real de Miguel en Auth y su fila en `perfiles` (rol `dueno`) | Media | Plan | Acción del usuario, antes del piloto |
