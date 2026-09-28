@@ -1,6 +1,6 @@
 # Spec 012 — Indicadores del proyecto, reportes y formato de cifras
 
-- Estado: aprobada
+- Estado: en-progreso
 - Sprint: 4
 - Módulos del plan: M12 (+ deuda DT-00-2 y DT-00-5)
 
@@ -32,11 +32,25 @@ nota en el celular del campo.
 - Página `/indicadores`, con el dominio en `src/domain/kpis.js` y sus pruebas.
 - Los E2E que buscan textos como "355.5 kg" se actualizan a "355,5 kg".
 
+## Desvíos durante la implementación (2026-09-28)
+- **R3:**
+  - El paquete inicial pasó de 940 kB a 530 kB sin comprimir: **154 KB comprimido (gzip)**.
+    Queda 30 kB por encima de la meta sin comprimir porque supabase-js, React, el router y
+    TanStack Query se necesitan antes de la primera pantalla.
+  - Recharts (352 kB) ya solo se descarga en las pantallas con gráficos.
+  - Se propone medir la meta en tamaño comprimido (< 200 KB), que es lo que se descarga en el
+    campo. Lo decide el humano.
+- **Pantalla de indicadores:** reemplaza la tarjeta "Metas del proyecto" del panel, que ahora
+  enlaza a `/indicadores`.
+- **Acciones de las tarjetas:** en la impresión se ocultan todas (`Card` las marca `no-print`).
+- **Formato es-CO (R2):** pendiente. Se hará después de integrar el Sprint 3 en `main`, porque
+  toca casi todas las pantallas y las pruebas del verificador.
+
 ## Tareas
 - [ ] T1 Formato es-CO en toda la app + pruebas
-- [ ] T2 División del código por rutas
-- [ ] T3 KPI y página de indicadores
-- [ ] T4 Ficha imprimible
+- [x] T2 División del código por rutas
+- [x] T3 KPI y página de indicadores
+- [x] T4 Ficha imprimible
 - [ ] T5 Verificador
 
 ## Aprobación

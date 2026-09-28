@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight, Receipt } from 'lucide-react';
+import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight, Receipt, Printer } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
 import { useMovimientos } from '../data/fincas';
 import { useCostos } from '../data/costos';
@@ -49,9 +49,15 @@ function FichaAnimal({ animales, costos }) {
 
   return (
     <div className="space-y-5">
-      <Link to="/animales" className="inline-flex min-h-12 items-center gap-1 text-sm text-gray-600 hover:text-brand-700 md:min-h-0">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver al hato
-      </Link>
+      <div className="no-print flex flex-wrap items-center justify-between gap-2">
+        <Link to="/animales" className="inline-flex min-h-12 items-center gap-1 text-sm text-gray-600 hover:text-brand-700 md:min-h-0">
+          <ArrowLeft size={16} aria-hidden="true" /> Volver al hato
+        </Link>
+        {/* Spec 012 · R4: ficha imprimible (la navegación y las acciones no se imprimen). */}
+        <Button variante="secundario" tamano="sm" icono={Printer} onClick={() => window.print()}>
+          Imprimir ficha
+        </Button>
+      </div>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">

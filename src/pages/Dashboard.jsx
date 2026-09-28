@@ -30,7 +30,6 @@ function DashboardContenido({ animales, lotes, precioActual }) {
   const { data: trm } = useTRM();
 
   const activos = animales.filter((a) => a.estado === 'Activo');
-  const conHistorial = activos.filter((a) => a.pesos?.length > 0).length;
 
   const alertas = activos
     .flatMap((a) =>
@@ -41,15 +40,6 @@ function DashboardContenido({ animales, lotes, precioActual }) {
   // Spec 004 · R7: animales cuya ganancia reciente es negativa.
   const perdiendo = activos.filter(pierdePeso);
 
-  const metas = [
-    {
-      metrica: 'Hato con registro digital individual',
-      base: '0 % (papel y WhatsApp)',
-      hoy: `${Math.round((conHistorial / (activos.length || 1)) * 100)} % de ${activos.length} reses`,
-    },
-    { metrica: 'Tiempo para conocer el estado de un lote', base: '1 día de pesaje', hoy: 'Minutos, en esta app' },
-    { metrica: 'Fuentes externas en la decisión de venta', base: '0', hoy: 'Precio del kilo, clima y TRM' },
-  ];
 
   return (
     <div className="space-y-6">
@@ -159,17 +149,13 @@ function DashboardContenido({ animales, lotes, precioActual }) {
         )}
       </Card>
 
-      <Card titulo="Metas del proyecto frente al punto de partida">
-        <dl className="divide-y divide-gray-100">
-          {metas.map((m) => (
-            <div key={m.metrica} className="grid gap-1 py-3 md:grid-cols-3 md:gap-4">
-              <dt className="font-medium text-gray-800">{m.metrica}</dt>
-              <dd className="text-sm text-gray-500">Antes: {m.base}</dd>
-              <dd className="text-sm font-semibold text-brand-700">Hoy: {m.hoy}</dd>
-            </div>
-          ))}
-        </dl>
-      </Card>
+      <Link to="/indicadores" className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm hover:border-brand-300">
+        <span>
+          <span className="font-semibold text-gray-900">Indicadores del proyecto</span>
+          <span className="block text-gray-600">Registro digital, historial de peso, fuentes externas y ventas frente a la línea base.</span>
+        </span>
+        <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
+      </Link>
     </div>
   );
 }

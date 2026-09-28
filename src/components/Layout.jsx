@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Handshake, Receipt, BadgeDollarSign, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
+import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Handshake, Receipt, BadgeDollarSign, CloudSun, FileText, Target, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MarcaSR from './MarcaSR';
 import useDialogo from './ui/useDialogo';
@@ -18,6 +18,7 @@ const SECCIONES = [
   { to: '/ventas', label: 'Ventas', icon: BadgeDollarSign },
   { to: '/mercado', label: 'Mercado y clima', icon: CloudSun },
   { to: '/reporte', label: 'Reporte', icon: FileText },
+  { to: '/indicadores', label: 'Indicadores', icon: Target },
 ];
 
 export default function Layout() {

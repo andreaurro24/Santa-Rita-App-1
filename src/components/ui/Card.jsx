@@ -10,7 +10,7 @@ export default function Card({ titulo, icono: Icono, accion, className = '', chi
               {titulo}
             </h2>
           )}
-          {accion}
+          {accion && <div className="no-print">{accion}</div>}
         </div>
       )}
       {children}
