@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, ChevronRight } from 'lucide-react';
+import { Search, Plus, ChevronRight, TrendingDown } from 'lucide-react';
 import { useHato, useAddAnimal, useContratosVigentes } from '../data/hato';
 import { useAuth } from '../context/AuthContext';
 import { ConDatos } from '../components/EstadoCarga';
@@ -11,6 +11,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
+import { pierdePeso } from '../domain/gdp';
 import { formatFecha, hoyISO } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
@@ -86,7 +87,14 @@ function HatoContenido({ animales, lotes }) {
                       <span className="text-gray-500"> de {a.pesoObjetivo} kg</span>
                     </p>
                   </div>
-                  {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                  <div className="flex flex-col items-end gap-1">
+                    {pierdePeso(a) && (
+                      <Badge tono="peligro" icono={TrendingDown}>
+                        Pierde peso
+                      </Badge>
+                    )}
+                    {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                  </div>
                   <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
                 </Link>
               </li>
@@ -124,7 +132,10 @@ function HatoContenido({ animales, lotes }) {
                         <Badge>Propio</Badge>
                       )}
                     </td>
-                    <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">{pesoActual(a)} kg</td>
+                    <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">
+                      {pierdePeso(a) && <TrendingDown size={16} className="mr-1 inline text-peligro" aria-label="Pierde peso" />}
+                      {pesoActual(a)} kg
+                    </td>
                     <td className="whitespace-nowrap px-4 py-2 text-right text-gray-500">{a.pesoObjetivo} kg</td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-600">{formatFecha(fechaUltimoPesaje(a))}</td>
                   </tr>

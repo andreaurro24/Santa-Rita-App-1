@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Home, PawPrint, TrendingUp, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
+import { Home, PawPrint, Scale, TrendingUp, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MarcaSR from './MarcaSR';
 
@@ -8,6 +8,7 @@ import MarcaSR from './MarcaSR';
 const SECCIONES = [
   { to: '/', label: 'Inicio', icon: Home, end: true, movil: true },
   { to: '/animales', label: 'Hato', icon: PawPrint, movil: true },
+  { to: '/pesaje', label: 'Pesaje', icon: Scale, movil: true },
   { to: '/recomendacion', label: 'Venta', icon: TrendingUp, movil: true },
   { to: '/mercado', label: 'Mercado y clima', icon: CloudSun },
   { to: '/reporte', label: 'Reporte', icon: FileText },

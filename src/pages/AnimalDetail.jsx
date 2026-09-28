@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Syringe, Scale, Tag } from 'lucide-react';
+import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
 import { ConDatos } from '../components/EstadoCarga';
 import { mensajeError } from '../lib/errores';
@@ -13,7 +13,9 @@ import Chapeta from '../components/ui/Chapeta';
 import EmptyState from '../components/ui/EmptyState';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje, formatCOP } from '../domain/breakeven';
-import { formatFecha, diasHasta, hoyISO } from '../utils/format';
+import { gdpReciente, gdpTotal, pierdePeso } from '../domain/gdp';
+import Stat from '../components/ui/Stat';
+import { formatFecha, diasHasta, hoyISO, formatoGdp } from '../utils/format';
 
 export default function AnimalDetail() {
   const hato = useHato();
@@ -55,6 +57,11 @@ function FichaAnimal({ animales }) {
             {animal.esquema === 'Al partir' && (
               <Badge tono="cuero" className="ml-2">
                 Al partir
+              </Badge>
+            )}
+            {pierdePeso(animal) && (
+              <Badge tono="peligro" icono={TrendingDown} className="ml-2">
+                Pierde peso
               </Badge>
             )}
           </p>
@@ -103,6 +110,14 @@ function FichaAnimal({ animales }) {
           {showPesoForm && (
             <PesoForm animalId={animal.id} onCancel={() => setShowPesoForm(false)} onSaved={() => setShowPesoForm(false)} />
           )}
+          <div className="mb-3 grid grid-cols-2 gap-4">
+            <Stat label="Ganancia diaria (todo el ciclo)" value={formatoGdp(gdpTotal(animal.pesos))} />
+            <Stat
+              label="Ganancia diaria (último periodo)"
+              value={formatoGdp(gdpReciente(animal.pesos))}
+              tono={pierdePeso(animal) ? 'peligro' : 'neutro'}
+            />
+          </div>
           <WeightChart pesos={animal.pesos} pesoObjetivo={animal.pesoObjetivo} />
           <p className="mt-1 text-sm text-gray-500">Último pesaje: {formatFecha(fechaUltimoPesaje(animal))}</p>
         </Card>

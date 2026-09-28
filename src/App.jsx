@@ -8,6 +8,7 @@ import AnimalDetail from './pages/AnimalDetail';
 import Market from './pages/Market';
 import SaleRecommendation from './pages/SaleRecommendation';
 import Report from './pages/Report';
+import { PesajeInicio, PesajeJornada } from './pages/Pesaje';
 
 export default function App() {
   return (
@@ -24,6 +25,8 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="animales" element={<Animals />} />
         <Route path="animales/:id" element={<AnimalDetail />} />
+        <Route path="pesaje" element={<PesajeInicio />} />
+        <Route path="pesaje/:jornadaId" element={<PesajeJornada />} />
         <Route path="mercado" element={<Market />} />
         <Route path="recomendacion" element={<SaleRecommendation />} />
         <Route path="reporte" element={<Report />} />

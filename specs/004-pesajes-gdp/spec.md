@@ -1,6 +1,6 @@
 # Spec 004 — Jornada de pesaje por lote y ganancia diaria de peso (GDP)
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 1
 - Módulos del plan: M3
 
@@ -41,13 +41,26 @@ desde el celular y sin perder el hilo, y convertir esos datos en la ganancia dia
   `inputMode="decimal"` y los botones Guardar / Saltar.
 - Archivos: `src/pages/Pesaje.jsx`, `src/data/pesajes.js`, `src/domain/gdp.js`, migración.
 
+## Desvíos durante la implementación (2026-09-28)
+- **R5, GDP reciente:** en vez de comparar "los dos últimos pesajes", el último periodo
+  compara el último pesaje contra el más reciente de **al menos 14 días antes**
+  (`DIAS_MINIMOS_PERIODO`). La báscula tiene ±3 kg de error, y con la regla literal 54 de las
+  140 reses de ejemplo aparecían "perdiendo peso" solo por dos pesajes separados 2 a 9 días.
+  Con 14 días quedan 0, que es lo coherente con la semilla. Si no hay un pesaje de 14 días
+  antes, la GDP reciente es "—" y no hay alerta.
+- **Ruta y navegación:** "Pesaje" entra a la barra inferior del celular (Inicio, Hato, Pesaje,
+  Venta, Más), porque es la tarea de campo más frecuente.
+- **Captura:** el campo de peso es de texto con `inputMode="decimal"` y acepta coma decimal
+  ("355,5"), que es lo que escribe un teclado en español; `type="number"` la rechaza en
+  algunos navegadores.
+
 ## Tareas
-- [ ] T1 Migración `jornadas_pesaje` + `pesajes.jornada_id` + RLS
-- [ ] T2 `src/domain/gdp.js` + tests — verifica: `npm test`
-- [ ] T3 Pantalla de jornada (abrir, capturar, saltar, cerrar) — verifica: E2E de 3 animales
-- [ ] T4 Confirmación por variación > 15 % — verifica: E2E
-- [ ] T5 GDP y alerta de pérdida en la ficha, el hato y el panel — verifica: E2E
-- [ ] T6 Historial de jornadas del lote
+- [x] T1 Migración `jornadas_pesaje` + `pesajes.jornada_id` + RLS
+- [x] T2 `src/domain/gdp.js` + tests — verifica: `npm test`
+- [x] T3 Pantalla de jornada (abrir, capturar, saltar, cerrar) — verifica: E2E de 3 animales
+- [x] T4 Confirmación por variación > 15 % — verifica: E2E
+- [x] T5 GDP y alerta de pérdida en la ficha, el hato y el panel — verifica: E2E
+- [x] T6 Historial de jornadas del lote
 - [ ] T7 Verificador
 
 ## Criterios de aceptación para el verificador

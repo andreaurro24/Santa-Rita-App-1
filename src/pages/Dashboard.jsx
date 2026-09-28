@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PawPrint, Syringe, Banknote, CloudSun, DollarSign, AlertTriangle, ChevronRight } from 'lucide-react';
+import { PawPrint, Syringe, Banknote, CloudSun, DollarSign, AlertTriangle, ChevronRight, TrendingDown } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { usePrecios } from '../data/precios';
 import { useClima, useTRM } from '../data/externos';
@@ -11,6 +11,7 @@ import Chapeta from '../components/ui/Chapeta';
 import EmptyState from '../components/ui/EmptyState';
 import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
+import { pierdePeso } from '../domain/gdp';
 import { formatFecha, diasHasta, hoyISO } from '../utils/format';
 
 export default function Dashboard() {
@@ -37,6 +38,8 @@ function DashboardContenido({ animales, lotes, precioActual }) {
     )
     .sort((a, b) => a.diasRestantes - b.diasRestantes);
   const alertasVencidasOProximas = alertas.filter((a) => a.diasRestantes <= 15);
+  // Spec 004 · R7: animales cuya ganancia reciente es negativa.
+  const perdiendo = activos.filter(pierdePeso);
 
   const metas = [
     {
@@ -134,6 +137,27 @@ function DashboardContenido({ animales, lotes, precioActual }) {
           </ul>
         </Card>
       </div>
+
+      <Card titulo="Pierden peso" icono={TrendingDown}>
+        {perdiendo.length === 0 ? (
+          <p className="text-sm text-gray-600">Ningún animal activo perdió peso en su último periodo de pesaje.</p>
+        ) : (
+          <>
+            <p className="mb-3 text-sm text-gray-600">
+              {perdiendo.length} {perdiendo.length === 1 ? 'animal perdió' : 'animales perdieron'} peso entre sus dos últimos pesajes. Revísalos en el próximo recorrido.
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {perdiendo.map((a) => (
+                <li key={a.id}>
+                  <Link to={`/animales/${a.id}`} className="inline-flex min-h-12 items-center rounded-lg px-1 hover:bg-gray-50">
+                    <Chapeta numero={a.numeroInterno} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Card>
 
       <Card titulo="Metas del proyecto frente al punto de partida">
         <dl className="divide-y divide-gray-100">

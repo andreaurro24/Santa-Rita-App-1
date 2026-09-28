@@ -4,7 +4,8 @@ export function Field({ label, required, ayuda, className = '', children }) {
   return (
     <label className={`block text-sm ${className}`}>
       <span className="mb-1 block font-medium text-gray-700">
-        {label} {required && <span className="text-peligro">*</span>}
+        {label}
+        {required && <span className="text-peligro"> *</span>}
       </span>
       {children}
       {ayuda && <span className="mt-1 block text-xs text-gray-500">{ayuda}</span>}

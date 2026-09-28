@@ -3,7 +3,7 @@ import { iniciarSesion } from './helpers';
 
 // Spec 002 · R3, R4, R5, R9, R10 — layout adaptable y tamaños táctiles.
 
-const RUTAS = ['/#/', '/#/animales', '/#/mercado', '/#/recomendacion', '/#/reporte'];
+const RUTAS = ['/#/', '/#/animales', '/#/pesaje', '/#/mercado', '/#/recomendacion', '/#/reporte'];
 
 test.describe('celular 375×812', () => {
   test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
@@ -25,7 +25,7 @@ test.describe('celular 375×812', () => {
 
   test('R5: los controles visibles miden al menos 48 px de alto', async ({ page }) => {
     await iniciarSesion(page);
-    for (const ruta of ['/#/', '/#/animales', '/#/recomendacion']) {
+    for (const ruta of ['/#/', '/#/animales', '/#/pesaje', '/#/recomendacion']) {
       await page.goto(ruta);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const pequenos = await page.evaluate(() =>

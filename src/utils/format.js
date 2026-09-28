@@ -24,3 +24,8 @@ export function diasHasta(iso) {
   const d = new Date(iso + 'T00:00:00');
   return Math.round((d.getTime() - Date.now()) / 86400000);
 }
+
+// Ganancia diaria de peso: 2 decimales con coma ("0,78 kg/día"); "—" sin datos suficientes.
+export function formatoGdp(g) {
+  return g == null ? '—' : `${g.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg/día`;
+}
