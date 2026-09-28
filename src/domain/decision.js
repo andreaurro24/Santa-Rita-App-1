@@ -106,6 +106,12 @@ export function analizarLoteV2({ animales, costos, precioKg, destarePct = 0, met
   } else if (metaAlcanzada) {
     recomendacion = 'VENDER';
     razones.unshift(`El lote llegó a la meta pactada (${Math.round(avancePct)} %) con un margen neto de ${pesos(hoyR.margenNeto)}.`);
+    // D3: se vende al peso pactado con el comprador, aunque engordar más pudiera dar más margen.
+    if (mejorFuturo.margenNeto > hoyR.margenNeto) {
+      razones.push(
+        `Si el comprador acepta animales más pesados, esperar ${mejorFuturo.semanas} semanas daría ${pesos(mejorFuturo.margenNeto)} (${pesos(mejorFuturo.margenNeto - hoyR.margenNeto)} más). La meta pactada ya se cumplió.`,
+      );
+    }
   } else if (riesgoPasto) {
     recomendacion = 'VENDER_ANTICIPADO';
     razones.unshift(

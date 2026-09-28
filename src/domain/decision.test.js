@@ -86,6 +86,7 @@ describe('analizarLoteV2 · recomendación (R5–R7)', () => {
   it('VENDER cuando el promedio llegó a la meta con margen positivo', () => {
     const r = analizarLoteV2(base({ metaKg: 300 }));
     expect(r.recomendacion).toBe('VENDER');
+    expect(r.razones.join(' ')).toMatch(/Si el comprador acepta animales más pesados, esperar 8 semanas/);
   });
 
   it('VENDER_ANTICIPADO con el pasto en rojo y margen positivo', () => {
