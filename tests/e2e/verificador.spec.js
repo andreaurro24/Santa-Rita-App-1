@@ -3,6 +3,8 @@ import { clientePrueba, entrar, iniciarSesion } from './helpers';
 
 // Pruebas del VERIFICADOR para la spec 001 (criterios que las pruebas del implementador no cubren).
 // Todo dato creado lleva el prefijo VRF-E2E y se borra en afterAll.
+// Ronda 2 (2026-09-28): la prueba del "animal a medias" se rehízo para el RPC registrar_animal y
+// se añadieron regresiones del nuevo flujo de login/perfil, fechas futuras, índices y desempate.
 
 const PREFIJO = 'VRF-E2E';
 const ANIMAL_PESO = '0103';
@@ -11,6 +13,13 @@ const FECHA_PRECIO = '2020-01-15';
 const FUENTE_MANUAL = 'Registro manual (Fedegán/SIPSA)';
 const DESC_SANIDAD = `${PREFIJO} vacuna de prueba`;
 const STORAGE_KEY = 'sb-eiszvbwwpqcqognkcfew-auth-token';
+const ANIMAL_EMPATE = '0104';
+const PESOS_EMPATE = [391.1, 382.2]; // mismo día; 382.2 se registra DESPUÉS (created_at mayor)
+const FUENTE_FUTURA = 'VRF-E2E precio futuro';
+
+// Hoy y mañana en America/Bogota (D12), como 'AAAA-MM-DD'.
+const hoyBogota = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+const mananaBogota = () => new Date(Date.parse(`${hoyBogota()}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
@@ -40,6 +49,9 @@ test.afterAll(async () => {
   await supabase.from('pesajes').delete().eq('animal_id', a103.id).eq('peso_kg', PESO_DOBLE_CLIC);
   await supabase.from('eventos_sanitarios').delete().eq('descripcion', DESC_SANIDAD);
   await supabase.from('precios_mercado').delete().eq('fecha', FECHA_PRECIO).eq('fuente', FUENTE_MANUAL);
+  await supabase.from('precios_mercado').delete().eq('fuente', FUENTE_FUTURA);
+  const { data: a104 } = await supabase.from('animales').select('id').eq('numero_interno', ANIMAL_EMPATE).single();
+  await supabase.from('pesajes').delete().eq('animal_id', a104.id).in('peso_kg', PESOS_EMPATE);
 });
 
 test('VRF R2: una ruta profunda (#/animales/:id) vuelve a esa ficha tras entrar', async ({ page }) => {
@@ -113,17 +125,65 @@ test('VRF R7: sin red hacia la base de datos, el hato muestra error con qué hac
 
 test('VRF R7: si falla la consulta del perfil, el mensaje no culpa a la cuenta', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto('/#/login');
+  await page.goto('/#/animales');
   await page.route('**/rest/v1/perfiles**', (route) => route.abort('internetdisconnected'));
-  await entrar(page);
   const t0 = Date.now();
-  await page.waitForTimeout(3000);
-  await page.screenshot({ path: 'test-results/vrf-perfil-sin-red-3s.png' });
-  console.log('R7 perfil: a los 3 s la pantalla muestra el formulario de login?', await page.getByRole('button', { name: 'Ingresar' }).isVisible());
+  await entrar(page);
+  // Ronda 1: a los 3 s volvía el formulario vacío. Ahora debe explicarse en pocos segundos.
   await expect(page.getByText('No hay conexión con el servidor', { exact: false })).toBeVisible({ timeout: 30_000 });
-  console.log('R7 perfil: segundos hasta el mensaje:', ((Date.now() - t0) / 1000).toFixed(1));
+  const seg = (Date.now() - t0) / 1000;
+  console.log('R7 perfil: segundos hasta el mensaje:', seg.toFixed(1));
+  expect.soft(seg, 'segundos hasta explicar el fallo del perfil').toBeLessThan(8);
+  await expect(page.getByRole('button', { name: 'Ingresar' })).toHaveCount(0);
   // El encabezado no debería decir que la cuenta no tiene acceso cuando el problema es la red.
   await expect(page.getByText('Tu cuenta no tiene acceso a los datos de la finca')).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/vrf-perfil-sin-red.png' });
+  // Vuelve la red: Reintentar entra y lleva a la ruta pedida (R2).
+  await page.unroute('**/rest/v1/perfiles**');
+  await page.getByRole('button', { name: 'Reintentar' }).click();
+  await expect(page.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible({ timeout: 15_000 });
+});
+
+test('VRF R4/R7: una cuenta sin perfil ve "pide acceso", no ve datos y puede cerrar sesión', async ({ page }) => {
+  const pedidosHato = [];
+  page.on('request', (r) => {
+    if (r.url().includes('/rest/v1/animales')) pedidosHato.push(r.url());
+  });
+  // Simula una cuenta de Auth sin fila en `perfiles` (no se permite crear usuarios reales).
+  await page.route('**/rest/v1/perfiles**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  );
+  await page.goto('/#/login');
+  await entrar(page);
+  await expect(page.getByText('Tu cuenta no tiene acceso a los datos de la finca')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('Pídele al dueño que te dé acceso', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reintentar' })).toHaveCount(0);
+  // Una ruta protegida tampoco muestra datos, ni tras recargar.
+  await page.goto('/#/animales');
+  await page.reload();
+  await expect(page.getByText('Tu cuenta no tiene acceso a los datos de la finca')).toBeVisible({ timeout: 10_000 });
+  expect(pedidosHato, 'la app pidió el hato para una cuenta sin perfil').toEqual([]);
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  await expect(page.getByRole('button', { name: 'Ingresar' })).toBeVisible();
+});
+
+test('VRF R3: iniciar sesión en otra pestaña se refleja en esta (como ya pasa al cerrar sesión)', async ({ context }) => {
+  const a = await context.newPage();
+  await a.goto('/#/login');
+  await expect(a.getByRole('button', { name: 'Ingresar' })).toBeVisible();
+  const b = await context.newPage();
+  await iniciarSesion(b);
+  await a.bringToFront();
+  await a.waitForTimeout(3000);
+  const sigueEnLogin = await a.getByRole('button', { name: 'Ingresar' }).isVisible();
+  console.log('Pestaña A sigue en el formulario de login tras entrar en B:', sigueEnLogin);
+  // Simétrico: cerrar sesión en B sí saca a A (comprobación de control).
+  await a.goto('/#/animales');
+  await a.reload(); // recarga completa: la sesión compartida se restaura con INITIAL_SESSION
+  await expect(a.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible({ timeout: 15_000 });
+  await b.getByRole('button', { name: 'Cerrar sesión' }).click();
+  await expect(a).toHaveURL(/#\/login/, { timeout: 15_000 });
+  expect.soft(sigueEnLogin, 'la pestaña A no se enteró del inicio de sesión en B').toBe(false);
 });
 
 test('VRF pesaje: fecha futura y peso vacío se rechazan en el formulario', async ({ page }) => {
@@ -228,10 +288,26 @@ test('VRF animal: chapeta ICA duplicada escrita en minúsculas también se recha
   const dialogo = await abrirNuevoAnimal(page);
   await llenarAnimal(dialogo, { numero: `${PREFIJO}-3`, chapeta: 'col-ces-265093' }); // la del 0101 en minúsculas
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForTimeout(2000);
+  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con esa chapeta ICA/, { timeout: 15_000 });
   const supabase = await clientePrueba();
   const { count } = await supabase.from('animales').select('id', { count: 'exact', head: true }).eq('numero_interno', `${PREFIJO}-3`);
   expect(count, 'la base de datos aceptó una chapeta que solo cambia en mayúsculas/minúsculas').toBe(0);
+});
+
+test('VRF animal: número interno repetido con espacios y chapeta con espacios también se rechazan', async ({ page }) => {
+  await iniciarSesion(page);
+  const dialogo = await abrirNuevoAnimal(page);
+  await llenarAnimal(dialogo, { numero: ' 0101 ', chapeta: `${PREFIJO}-CH-6` });
+  await dialogo.getByRole('button', { name: 'Guardar' }).click();
+  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con ese número interno/, { timeout: 15_000 });
+  // Y saltando la interfaz (API directa, sin el trim del cliente):
+  const supabase = await clientePrueba();
+  const { data: a101 } = await supabase.from('animales').select('lote_id, chapeta_ica').eq('numero_interno', '0101').single();
+  const base = { sexo: 'Macho', origen: 'compra', fecha_ingreso: '2026-09-01', peso_ingreso_kg: 200, peso_objetivo_kg: 350, lote_id: a101.lote_id };
+  const r1 = await supabase.from('animales').insert({ ...base, numero_interno: '0101 ', chapeta_ica: `${PREFIJO}-CH-7` });
+  const r2 = await supabase.from('animales').insert({ ...base, numero_interno: `${PREFIJO}-8`, chapeta_ica: ` ${a101.chapeta_ica.toLowerCase()} ` });
+  if (!r1.error) await supabase.from('animales').delete().eq('chapeta_ica', `${PREFIJO}-CH-7`);
+  expect([r1.error?.code, r2.error?.code]).toEqual(['23505', '23505']);
 });
 
 test('VRF animal: doble clic en Guardar no deja un mensaje de error falso', async ({ page }) => {
@@ -247,27 +323,93 @@ test('VRF animal: doble clic en Guardar no deja un mensaje de error falso', asyn
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
-test('VRF animal: si falla el pesaje inicial, no queda un animal a medias', async ({ page }) => {
+// Ronda 2: el alta ya no hace dos POST (animales + pesajes) sino un solo POST a
+// rpc/registrar_animal. Para probar la atomicidad hay que hacer fallar el pesaje DENTRO de la
+// función, después de que el INSERT del animal ya tuvo éxito: se reescribe la petición para que
+// fecha_ingreso sea mañana. `animales.fecha_ingreso` no tiene CHECK de fecha (el INSERT del animal
+// pasa) y el trigger de `pesajes` rechaza la fecha futura (el segundo INSERT falla).
+test('VRF animal: si falla el pesaje inicial dentro de registrar_animal, no queda un animal a medias', async ({ page }) => {
   await iniciarSesion(page);
   const dialogo = await abrirNuevoAnimal(page);
   await llenarAnimal(dialogo, { numero: `${PREFIJO}-5`, chapeta: `${PREFIJO}-CH-5` });
-  // Se corta la red solo para el INSERT del pesaje inicial (el del animal pasa).
-  await page.route('**/rest/v1/pesajes**', (route) =>
-    route.request().method() === 'POST' ? route.abort('internetdisconnected') : route.continue(),
-  );
+  const manana = mananaBogota();
+  let reescritas = 0;
+  await page.route('**/rest/v1/rpc/registrar_animal', async (route) => {
+    const body = route.request().postDataJSON();
+    body.datos.fecha_ingreso = manana;
+    reescritas++;
+    await route.continue({ postData: JSON.stringify(body) });
+  });
+  const respuesta = page.waitForResponse('**/rest/v1/rpc/registrar_animal');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await expect(dialogo.getByRole('alert')).toBeVisible({ timeout: 30_000 });
-  const mensaje = await dialogo.getByRole('alert').innerText();
-  await page.unroute('**/rest/v1/pesajes**');
+  const r = await respuesta;
+  const cuerpo = await r.json();
+  console.log('RPC con pesaje fallido:', r.status(), JSON.stringify(cuerpo));
+  expect(reescritas).toBe(1);
+  expect(cuerpo.message, 'el fallo debe venir del pesaje (segundo INSERT de la función)').toMatch(/fecha_futura: el pesaje/);
+  await expect(dialogo.getByRole('alert')).toBeVisible();
   const supabase = await clientePrueba();
-  const { data } = await supabase.from('animales').select('id, pesajes(id)').eq('numero_interno', `${PREFIJO}-5`);
-  console.log('Animal a medias:', JSON.stringify({ mensaje, filas: data }));
-  // Reintentar desde el mismo formulario:
+  const { data } = await supabase.from('animales').select('id').eq('numero_interno', `${PREFIJO}-5`);
+  expect(data, 'el INSERT del animal no se revirtió al fallar el pesaje').toHaveLength(0);
+
+  // Reintentar con la red normal: se guarda (sin el "Ya existe…" de la ronda 1) con su pesaje.
+  await page.unroute('**/rest/v1/rpc/registrar_animal');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForTimeout(2000);
-  const segundo = (await dialogo.getByRole('alert').count()) ? await dialogo.getByRole('alert').innerText() : '(sin mensaje)';
-  console.log('Mensaje al reintentar:', segundo);
-  expect(data, 'el animal quedó creado aunque la app dijo que hubo un error').toHaveLength(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 15_000 });
+  const { data: creado } = await supabase
+    .from('animales')
+    .select('id, fecha_ingreso, pesajes(fecha, peso_kg)')
+    .eq('numero_interno', `${PREFIJO}-5`);
+  expect(creado).toHaveLength(1);
+  expect(creado[0].pesajes).toEqual([{ fecha: hoyBogota(), peso_kg: 200 }]);
+});
+
+test('VRF animal: la función registrar_animal no está disponible sin sesión', async () => {
+  const { createClient } = await import('@supabase/supabase-js');
+  const anon = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+  const { error } = await anon.rpc('registrar_animal', { datos: { numero_interno: `${PREFIJO}-anon`, chapeta_ica: `${PREFIJO}-anon` } });
+  expect(error?.code).toBe('42501');
+});
+
+test('VRF R5: la base de datos rechaza fechas futuras (Bogotá) en pesajes y sanidad aplicada, no en sanidad programada', async () => {
+  const supabase = await clientePrueba();
+  const { data: a } = await supabase.from('animales').select('id').eq('numero_interno', ANIMAL_PESO).single();
+  const manana = mananaBogota();
+  const p = await supabase.from('pesajes').insert({ animal_id: a.id, fecha: manana, peso_kg: 300 });
+  const e = await supabase
+    .from('eventos_sanitarios')
+    .insert({ animal_id: a.id, tipo: 'vacuna', descripcion: DESC_SANIDAD, estado: 'aplicado', fecha_aplicada: manana });
+  const prog = await supabase
+    .from('eventos_sanitarios')
+    .insert({ animal_id: a.id, tipo: 'vacuna', descripcion: DESC_SANIDAD, estado: 'programado', fecha_programada: '2027-01-15' })
+    .select('id');
+  if (prog.data?.[0]) await supabase.from('eventos_sanitarios').delete().eq('id', prog.data[0].id);
+  expect([p.error?.code, e.error?.code, prog.error?.code ?? 'ok']).toEqual(['23514', '23514', 'ok']);
+});
+
+test('VRF R5: la base de datos rechaza un precio de mercado con fecha futura', async () => {
+  // El formulario de Mercado lo valida (Market.jsx:168), pero `precios_mercado.fecha` no tiene
+  // CHECK ni trigger. El precio con la fecha mayor es el "precio vigente" (precios.js:17).
+  const supabase = await clientePrueba();
+  const { data, error } = await supabase
+    .from('precios_mercado')
+    .insert({ fecha: '2030-01-01', precio_kg_cop: 1, fuente: FUENTE_FUTURA })
+    .select('id');
+  if (data?.[0]) await supabase.from('precios_mercado').delete().eq('id', data[0].id);
+  expect(error?.code, 'se aceptó un precio de 2030 que pasaría a ser el precio vigente').toBe('23514');
+});
+
+test('VRF peso actual: con dos pesajes el mismo día vale el último registrado', async ({ page }) => {
+  const supabase = await clientePrueba();
+  const { data: a } = await supabase.from('animales').select('id').eq('numero_interno', ANIMAL_EMPATE).single();
+  const hoy = hoyBogota();
+  // Se inserta PRIMERO el que se registró después, para que el orden físico no coincida con created_at.
+  const r1 = await supabase.from('pesajes').insert({ animal_id: a.id, fecha: hoy, peso_kg: PESOS_EMPATE[1], created_at: `${hoy}T15:00:00Z` });
+  const r2 = await supabase.from('pesajes').insert({ animal_id: a.id, fecha: hoy, peso_kg: PESOS_EMPATE[0], created_at: `${hoy}T14:00:00Z` });
+  expect([r1.error, r2.error]).toEqual([null, null]);
+  await iniciarSesion(page);
+  await abrirAnimal(page, ANIMAL_EMPATE);
+  await expect(page.getByText(`${PESOS_EMPATE[1]} kg`, { exact: true })).toBeVisible();
 });
 
 test('VRF sanidad: descripción vacía, fecha futura y registro válido persistente', async ({ page }) => {
