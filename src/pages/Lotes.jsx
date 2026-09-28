@@ -18,7 +18,7 @@ import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
-import { formatFecha, formatoGdp, hoyISO, formatKg, formatPct } from '../utils/format';
+import { formatFecha, formatoGdp, hoyISO, formatKg, formatPct, cantidad } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 const ESTADO_LOTE = {
@@ -40,7 +40,7 @@ function useLotesConAnimales() {
 }
 
 function textoProyeccion(p) {
-  if (p.tipo === 'fecha') return `${formatFecha(p.fecha)} (en ${p.dias} días)`;
+  if (p.tipo === 'fecha') return `${formatFecha(p.fecha)} (en ${cantidad(p.dias, 'día', 'días')})`;
   if (p.tipo === 'meta_alcanzada') return 'Meta alcanzada';
   if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (peso estimado ${formatKg(p.pesoEstimadoHoy)}): confírmalo con un pesaje`;
   if (p.tipo === 'sin_animales') return 'Sin animales';

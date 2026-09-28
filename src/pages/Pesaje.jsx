@@ -355,7 +355,7 @@ function CerrarJornada({ jornada, pendientes, onClose }) {
       <div className="space-y-3">
         {pendientes.length > 0 ? (
           <>
-            <p className="text-gray-800">Quedan {pendientes.length} animales sin pesar. Quedarán anotados en la jornada:</p>
+            <p className="text-gray-800">{pendientes.length === 1 ? 'Queda 1 animal sin pesar. Quedará anotado' : `Quedan ${pendientes.length} animales sin pesar. Quedarán anotados`} en la jornada:</p>
             <ul className="flex flex-wrap gap-2">
               {pendientes.map((a) => (
                 <li key={a.id}>

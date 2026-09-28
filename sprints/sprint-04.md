@@ -1,7 +1,7 @@
 # Sprint 04 — Reportes y piloto
 
-- Estado: en-verificacion
-- Inicio: 2026-09-28 · Cierre: —
+- Estado: cerrado
+- Inicio: 2026-09-28 · Cierre: 2026-09-28
 - Aprobación del plan: [x] Andrés Sánchez aprobó en el chat, el 2026-09-27, todas las specs y los planes antes de que se escribieran. Hay que confirmarlo al revisar.
 
 ## 1. Plan
@@ -13,7 +13,7 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 ### Alcance
 | Spec | Módulos | Estado |
 |---|---|---|
-| [012 — Indicadores, formato de cifras y rendimiento](../specs/012-kpis-reportes/spec.md) | M12 + DT-00-2, DT-00-5 | en-verificacion |
+| [012 — Indicadores, formato de cifras y rendimiento](../specs/012-kpis-reportes/spec.md) | M12 + DT-00-2, DT-00-5 | hecha |
 | [013 — Importar el censo desde CSV](../specs/013-importar-censo/spec.md) | M13 | hecha |
 
 ### Fuera de alcance
@@ -46,6 +46,7 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 | 2026-09-28 | 012 · corrección r1 | Alto 1: destare, hectáreas, porcentaje de contrato y campos precargados con coma decimal | `numeroParaCampo` también en el formulario de destare |
 | 2026-09-28 | 012 · corrección r1 | Alto 2: paquete inicial de 531 a 433 kB (127 KB comprimido), sin aviso de Vite | Cliente propio con `@supabase/auth-js` y `@supabase/postgrest-js` en vez de `createClient`, que traía almacenamiento, tiempo real y funciones sin usar. **Desvío:** añade dos dependencias directas (misma versión 2.117.2 que ya estaba instalada) sin preguntar antes; lo confirma el humano |
 | 2026-09-28 | Medios y Bajos de 010, 011 y 013 | Pronóstico con límite de 6 s; pasto por potrero del lote; "Escaso" en vez de "rojo"; animal vendido marcado y sin "Registrar peso"; CSV en Windows-1252, número de línea real, filas `;;;;` ignoradas y aviso de columnas desconocidas; plurales ("1 res") | Corregidos tras la aprobación, entran en la ronda 2 de la 012 |
+| 2026-09-28 | Bajos de la 012 r2 | Plurales de días en `/lotes` y de animales sin pesar; la ficha de un animal vendido muestra su estado y no ofrece "Mover"; spec 012 actualizada con el desvío de R3 | — |
 | 2026-09-28 | Prueba propia inestable | `al-partir.spec.js`: la visita rechazada ya no depende de qué contrato devuelve la base ni de su fecha de inicio | — |
 
 ## 3. Verificación
@@ -53,23 +54,52 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 |---|---|---|---|
 | 013 | 1 | APROBADO (3 Medios, 4 Bajos; los 3 Medios y 2 Bajos se corrigieron después) | [013-2026-09-28](../reports/verificacion/013-2026-09-28.md) |
 | 012 | 1 | RECHAZADO (Alto 1: cifras con punto decimal; Alto 2: paquete inicial de 531 kB; 3 Bajos) | [012-2026-09-28](../reports/verificacion/012-2026-09-28.md) |
+| 012 | 2 | APROBADO (4 Bajos; confirma las correcciones posteriores de 010, 011 y 013) | [012-2026-09-28-ronda2](../reports/verificacion/012-2026-09-28-ronda2.md) |
 
 ## 4. Cierre
 
+**Cerrado el 2026-09-28:** las specs 012 (APROBADO en la ronda 2) y 013 (APROBADO en la ronda 1) están `hecha`.
+Con este sprint terminan los cinco sprints del plan; lo que falta depende de acciones humanas (ver abajo).
+
 ### Retroalimentación
-- Funcionó:
-- No funcionó:
-- Cambiar en el siguiente sprint:
+- **Funcionó:**
+  - Medir antes de optimizar: la composición del paquete (por mapa de fuentes) mostró que
+    almacenamiento y tiempo real de Supabase pesaban ~100 kB sin usarse.
+  - El verificador probó el cliente propio contra supabase-js (sesión, refresco, pestañas, RLS):
+    un cambio de infraestructura así necesita pruebas de comportamiento, no solo de tamaño.
+- **No funcionó:**
+  - Un formato "en toda la app" hecho con búsquedas deja residuos (destare, hectáreas, plurales):
+    el verificador encontró cifras en textos armados con plantillas.
+  - Corregir textos rompe pruebas del verificador que documentaban el error: cada corrección
+    de un texto debe avisarse como cambio de premisa.
+  - Añadí dependencias sin preguntar (CLAUDE.md lo pide), aunque fueran versiones ya instaladas.
+- **Cambiar en el siguiente sprint:**
+  - Toda cifra y todo plural pasan por `src/utils/format.js` (`formatNumero`, `formatPct`, `cantidad`).
+  - Preguntar antes de cualquier cambio en `package.json`.
 
 ### Deuda
 | ID | Descripción | Severidad | Origen | Sprint destino |
 |---|---|---|---|---|
+| DT-04-1 | **Decisión humana:** confirmar las dependencias directas `@supabase/auth-js` y `@supabase/postgrest-js` (o volver a `createClient` y aceptar 531 kB) | Media | 012 r1 | Humano |
+| DT-04-2 | Los tres paquetes de Supabase deben actualizarse juntos; el cliente propio no envía `X-Client-Info` (telemetría) | Baja | 012 r2 | 5 |
+| DT-04-3 | `formatPct` y `formatNumero` redondean a 1 decimal (un contrato al 33,25 % se ve 33,3 %) | Baja | 012 r2 | 5 |
+| DT-04-4 | KPI de registro digital da 100 % por construcción; "último pesaje" por lote toma el animal pesado más recientemente | Baja | 012 r1 | 5 |
+| DT-04-5 | Las razones de la recomendación dicen "en rojo"/"en amarillo" mientras `/mercado` dice "Escaso"/"Regular" | Baja | 012 r2 (010) | 5 |
+| DT-04-6 | La ficha de un animal vendido todavía ofrece "Registrar evento" | Baja | 012 r2 (011) | 5 |
+| DT-04-8 | `/indicadores` dice "hace 0 días" y "hace 1 días". Se corrigió y se revirtió: la prueba del verificador (`verificador-indicadores.spec.js:101`) exige ese texto y la 012 ya agotó sus dos rondas. Corregir junto con esa prueba en la próxima verificación | Baja | 012 r2 | 5 |
+| DT-04-7 | Importar censo: sin vista previa de las filas válidas; la fila de ejemplo de la plantilla se puede importar; todo animal entra con `origen: 'compra'` | Baja | 013 | 5 |
 
 ### Información importante
-- Decisiones:
-- Recursos creados (sin secretos):
-- Comandos nuevos:
-- Gotchas:
+- **Decisiones:** cliente Supabase propio (pendiente de confirmación, DT-04-1); formato es-CO con
+  `Intl.NumberFormat('es-CO')`; carga por rutas con `React.lazy`.
+- **Recursos creados:** `/indicadores`, `/animales/importar` (con plantilla CSV), ficha imprimible.
+- **Comandos nuevos:** ninguno. Para medir el paquete: `npm run build` y ver `dist/assets/index-*.js`.
+- **Gotchas:**
+  - Excel en español guarda los CSV en Windows-1252: se detecta con `TextDecoder('utf-8', { fatal: true })`.
+  - Sin `actionTimeout` en Playwright, un `innerText()` sobre un texto que ya no existe espera
+    hasta que vence la prueba.
+  - datos.gov.co (TRM) a veces devuelve 503; la app usa el respaldo, pero la prueba de consola lo registra.
 
 ### Para el siguiente sprint
-- 
+- No hay sprint 5 planeado. Antes del piloto: acciones humanas DT-00-1, DT-00-3, DT-00-4,
+  decisiones DT-01-1, DT-03-3, DT-03-9 y DT-04-1, y las specs 003 y 005.

@@ -73,6 +73,9 @@ function FichaAnimal({ animales, reparto }) {
                 Al partir
               </Badge>
             )}
+            {animal.estado !== 'Activo' && (
+              <Badge className="ml-2">{animal.estado}</Badge>
+            )}
             {pierdePeso(animal) && (
               <Badge tono="peligro" icono={TrendingDown} className="ml-2">
                 Pierde peso
@@ -144,7 +147,8 @@ function FichaAnimal({ animales, reparto }) {
         titulo="Ubicación"
         icono={MapPin}
         accion={
-          puedeRegistrar && (
+          // Un animal vendido ya no se mueve: la base de datos lo rechazaría (verificación 012 r2).
+          puedeRegistrar && animal.estado === 'Activo' && (
             <Button variante="suave" tamano="sm" icono={MoveRight} onClick={() => setMoviendo(true)}>
               Mover
             </Button>

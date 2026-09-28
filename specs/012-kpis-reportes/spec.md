@@ -1,6 +1,6 @@
 # Spec 012 — Indicadores del proyecto, reportes y formato de cifras
 
-- Estado: en-verificacion
+- Estado: hecha
 - Sprint: 4
 - Módulos del plan: M12 (+ deuda DT-00-2 y DT-00-5)
 
@@ -34,12 +34,13 @@ nota en el celular del campo.
 
 ## Desvíos durante la implementación (2026-09-28)
 - **R3:**
-  - El paquete inicial pasó de 940 kB a 530 kB sin comprimir: **154 KB comprimido (gzip)**.
-    Queda 30 kB por encima de la meta sin comprimir porque supabase-js, React, el router y
-    TanStack Query se necesitan antes de la primera pantalla.
+  - El paquete inicial pasó de 940 kB a 433 kB sin comprimir (127 KB con gzip): **cumple la meta**.
   - Recharts (352 kB) ya solo se descarga en las pantallas con gráficos.
-  - Se propone medir la meta en tamaño comprimido (< 200 KB), que es lo que se descarga en el
-    campo. Lo decide el humano.
+  - Para lograrlo, `src/lib/supabase.js` arma el cliente con `@supabase/auth-js` y
+    `@supabase/postgrest-js` en vez de `createClient`, que traía almacenamiento, tiempo real y
+    funciones sin usar. Las dos se añadieron como dependencias directas (versión 2.117.2, la
+    misma que ya instalaba supabase-js). **Desvío:** CLAUDE.md pide preguntar antes de añadir
+    dependencias; lo confirma el humano. Los tres paquetes de Supabase se actualizan juntos.
 - **Pantalla de indicadores:** reemplaza la tarjeta "Metas del proyecto" del panel, que ahora
   enlaza a `/indicadores`.
 - **Acciones de las tarjetas:** en la impresión se ocultan todas (`Card` las marca `no-print`).
