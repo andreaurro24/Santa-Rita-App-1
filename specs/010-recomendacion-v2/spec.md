@@ -1,6 +1,6 @@
 # Spec 010 — Recomendación de venta v2: costo real, participación del tenedor y escenarios
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 3
 - Módulos del plan: M10
 
@@ -47,10 +47,10 @@ esa pregunta con números explicables.
   tabla de escenarios y la de sensibilidad, y las razones.
 
 ## Tareas
-- [ ] T1 Dominio v2 + pruebas
-- [ ] T2 Pantalla de recomendación v2
-- [ ] T3 Reporte v2
-- [ ] T4 E2E
+- [x] T1 Dominio v2 + pruebas
+- [x] T2 Pantalla de recomendación v2
+- [x] T3 Reporte v2
+- [x] T4 E2E
 - [ ] T5 Verificador
 
 ## Criterios de aceptación para el verificador

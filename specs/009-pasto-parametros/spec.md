@@ -1,6 +1,6 @@
 # Spec 009 — Estado del pasto y parámetros de venta
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 3
 - Módulos del plan: M9
 
@@ -32,10 +32,10 @@ debe ser un parámetro de la finca, no un número escrito en el código.
   pruebas.
 
 ## Tareas
-- [ ] T1 Migración y RLS
-- [ ] T2 Registro y visualización del pasto
-- [ ] T3 Parámetro de destare
-- [ ] T4 E2E
+- [x] T1 Migración y RLS
+- [x] T2 Registro y visualización del pasto
+- [x] T3 Parámetro de destare
+- [x] T4 E2E
 - [ ] T5 Verificador
 
 ## Aprobación

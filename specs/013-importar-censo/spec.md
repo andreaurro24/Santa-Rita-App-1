@@ -1,6 +1,6 @@
 # Spec 013 — Importar el censo desde CSV
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 4
 - Módulos del plan: M13
 
@@ -36,10 +36,10 @@ puede guardar como CSV, así que no hace falta ninguna dependencia nueva.
   medias. Al final se muestra el conteo.
 
 ## Tareas
-- [ ] T1 Dominio de lectura y validación + pruebas
-- [ ] T2 Pantalla con vista previa e importación
-- [ ] T3 Plantilla descargable
-- [ ] T4 E2E
+- [x] T1 Dominio de lectura y validación + pruebas
+- [x] T2 Pantalla con vista previa e importación
+- [x] T3 Plantilla descargable
+- [x] T4 E2E
 - [ ] T5 Verificador
 
 ## Aprobación

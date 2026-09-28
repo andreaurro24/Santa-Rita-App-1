@@ -1,6 +1,6 @@
 # Spec 011 — Venta real y cierre del ciclo
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 3
 - Módulos del plan: M11
 
@@ -39,10 +39,10 @@ toca a cada tenedor "Al partir".
   pruebas.
 
 ## Tareas
-- [ ] T1 Migración, función y RLS
-- [ ] T2 Asistente de venta
-- [ ] T3 Detalle, comparación y liquidación
-- [ ] T4 E2E
+- [x] T1 Migración, función y RLS
+- [x] T2 Asistente de venta
+- [x] T3 Detalle, comparación y liquidación
+- [x] T4 E2E
 - [ ] T5 Verificador
 
 ## Aprobación
