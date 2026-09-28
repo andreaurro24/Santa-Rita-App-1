@@ -227,7 +227,7 @@ describe('analizarLoteV2 · peso estimado de hoy (verificación 010, Alto)', () 
   });
 });
 
-describe('liquidación acumulada por contrato (D8, DT-04-9)', () => {
+describe('liquidación acumulada por contrato (011 R5, 010 R2, D8, DT-04-9)', () => {
   // Contrato C1 al 50 %. A $8.000/kg: 300 kg con costo 600.000 gana 1.800.000; 150 kg con costo 1.800.000 pierde 600.000.
   const gana = { pesoKg: 300, costoCop: 600_000, contratoId: 'C1', porcentajeTenedor: 50 };
   const pierde = { pesoKg: 150, costoCop: 1_800_000, contratoId: 'C1', porcentajeTenedor: 50 };
@@ -254,7 +254,36 @@ describe('liquidación acumulada por contrato (D8, DT-04-9)', () => {
     expect(segunda.liquidaciones[0]).toMatchObject({ gananciaAcumulada: 1_200_000, pagadoAntes: 0, saldoAFavor: 0 });
   });
 
-  it('ordena por fecha y hora de registro, sin importar el orden de la lista', () => {
+  it('011 R5: una venta registrada después con fecha pasada no cambia lo ya liquidado (queda saldo a favor)', () => {
+    // T1 (gana) registrada primero con fecha de hoy; T2 (pierde) registrada después con fecha anterior.
+    const ventas = [venta('t2', '2026-09-05', [pierde], '2026-09-10T12:00Z'), venta('t1', '2026-09-10', [gana], '2026-09-10T09:00Z')];
+    expect(resultadoVenta([gana], ventas[1], estadoContratos(ventas, { antesDe: 't1' })).participacion).toBe(900_000);
+    const t2 = resultadoVenta([pierde], ventas[0], estadoContratos(ventas, { antesDe: 't2' }));
+    expect(t2.liquidaciones[0]).toMatchObject({ pagadoAntes: 900_000, monto: 0, saldoAFavor: 300_000 });
+  });
+
+  it('un saldo a favor se absorbe con la ganancia de la venta siguiente, en parte o del todo', () => {
+    const ventas = [venta('v1', '2026-09-01', [gana], '1'), venta('v2', '2026-09-02', [pierde], '2')];
+    const chica = { pesoKg: 200, costoCop: 1_200_000, contratoId: 'C1', porcentajeTenedor: 50 }; // gana 400.000
+    // Acumulado 1.600.000: le tocan 800.000 y ya se pagaron 900.000; no paga y el saldo baja a 100.000.
+    expect(resultadoVenta([chica], { precioKg: 8_000 }, estadoContratos(ventas)).liquidaciones[0]).toMatchObject({ monto: 0, saldoAFavor: 100_000 });
+    // Acumulado 3.000.000: le tocan 1.500.000 y ya se pagaron 900.000; paga 600.000 y el saldo queda en 0.
+    expect(resultadoVenta([gana], { precioKg: 8_000 }, estadoContratos(ventas)).liquidaciones[0]).toMatchObject({ monto: 600_000, saldoAFavor: 0 });
+  });
+
+  it('si el porcentaje del contrato cambia entre ventas, cada animal cuenta con el % de su venta', () => {
+    const ventas = [venta('v1', '2026-09-01', [{ ...gana, porcentajeTenedor: 40 }], '1')];
+    // Ya se pagaron 720.000 (40 % de 1.800.000); ahora gana 1.800.000 al 50 %: 720.000 + 900.000 − 720.000.
+    expect(resultadoVenta([gana], { precioKg: 8_000 }, estadoContratos(ventas)).participacion).toBe(900_000);
+  });
+
+  it('un contrato al 0 % acumula sin pagar ni dejar saldo', () => {
+    const cero = (a) => ({ ...a, porcentajeTenedor: 0 });
+    const ventas = [venta('v1', '2026-09-01', [cero(gana)], '1')];
+    expect(resultadoVenta([cero(pierde)], { precioKg: 8_000 }, estadoContratos(ventas)).liquidaciones[0]).toMatchObject({ monto: 0, saldoAFavor: 0, gananciaAcumulada: 1_200_000 });
+  });
+
+  it('ordena por hora de registro, sin importar el orden de la lista', () => {
     const ventas = [venta('b', '2026-09-01', [gana], '2026-09-01T11:00Z'), venta('a', '2026-09-01', [pierde], '2026-09-01T10:00Z')];
     expect(estadoContratos(ventas, { antesDe: 'b' }).get('C1')).toEqual({ ganancia: -600_000, parte: -300_000, pagado: 0 });
     expect(estadoContratos(ventas).get('C1')).toEqual({ ganancia: 1_200_000, parte: 600_000, pagado: 600_000 });

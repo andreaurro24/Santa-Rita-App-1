@@ -148,8 +148,8 @@ function NuevaVentaContenido({ datos }) {
       porcentajeTenedor: f.animal.porcentajeTenedor,
     })),
     { precioKg: precio || 0, destarePct: destare || 0 },
-    // D8 acumulado: cuentan las ventas registradas hasta la fecha de esta (DT-04-9).
-    estadoContratos(datos.ventas.data, { hasta: form.fecha }),
+    // D8 acumulado (011 R5): cuentan todas las ventas ya registradas, sea cual sea la fecha de esta.
+    estadoContratos(datos.ventas.data),
   );
   const terneras = incluidos.filter((f) => HEMBRAS_REPRODUCTIVAS.includes(f.animal.categoria)).length;
 
@@ -261,7 +261,11 @@ function NuevaVentaContenido({ datos }) {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Stat label="Ingreso" value={pesos(vista.ingreso)} />
             <Stat label="Costo acumulado" value={pesos(vista.costo)} />
-            <Stat label="A los tenedores" value={pesos(vista.participacion)} />
+            <Stat
+              label="A los tenedores"
+              value={pesos(vista.participacion)}
+              sub={vista.liquidaciones.some((l) => l.pagadoAntes > 0 || l.gananciaAcumulada !== l.ganancia) ? 'Con lo acumulado y lo ya pagado del contrato' : undefined}
+            />
             <Stat label="Margen neto" value={pesos(vista.margenNeto)} tono={tono(vista.margenNeto)} />
           </div>
         </Card>

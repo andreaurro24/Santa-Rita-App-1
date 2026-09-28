@@ -44,7 +44,8 @@ export function partesTenedores(items, previo = new Map()) {
     l.parteAcumulada = p.parte + l.parte;
     l.pagadoAntes = p.pagado;
     l.monto = Math.max(0, Math.max(0, l.parteAcumulada) - p.pagado);
-    l.saldoAFavor = Math.max(0, p.pagado + l.monto - Math.max(0, l.parteAcumulada));
+    const saldo = p.pagado + l.monto - Math.max(0, l.parteAcumulada);
+    l.saldoAFavor = saldo >= 1 ? saldo : 0; // menos de $1 es residuo de redondeo
   }
   return porContrato;
 }
@@ -56,16 +57,17 @@ const gananciasVenta = (animales, { precioKg, destarePct = 0 }) =>
     ganancia: a.pesoKg * (1 - destarePct / 100) * precioKg - a.costoCop,
   }));
 
-// Orden en que se liquidan las ventas: por fecha y, el mismo día, por hora de registro.
-const ordenVentas = (a, b) => a.fecha.localeCompare(b.fecha) || (a.creado ?? '').localeCompare(b.creado ?? '') || a.id.localeCompare(b.id);
+// 011 R5: las ventas se liquidan en el ORDEN EN QUE SE REGISTRARON (created_at), no por su fecha.
+// Así una liquidación ya pagada nunca cambia: una venta registrada después con fecha pasada se
+// liquida después y, si hace falta, deja saldo a favor (verificación D8 acumulado, Alto).
+const ordenVentas = (a, b) => (a.creado ?? '').localeCompare(b.creado ?? '') || a.id.localeCompare(b.id);
 
 // Estado de cada contrato después de liquidar las ventas en orden. Con `antesDe` (id de una venta)
-// solo cuenta las anteriores a esa; con `hasta` (fecha) las de esa fecha o antes.
-export function estadoContratos(ventas, { antesDe = null, hasta = null } = {}) {
+// solo cuenta las registradas antes de esa; sin él, todas (para una venta nueva o la recomendación).
+export function estadoContratos(ventas, { antesDe = null } = {}) {
   const estado = new Map();
   for (const v of [...ventas].sort(ordenVentas)) {
     if (v.id === antesDe) break;
-    if (hasta && v.fecha > hasta) break;
     for (const l of partesTenedores(gananciasVenta(v.animales, v), estado).values()) {
       estado.set(l.contratoId, { ganancia: l.gananciaAcumulada, parte: l.parteAcumulada, pagado: l.pagadoAntes + l.monto });
     }

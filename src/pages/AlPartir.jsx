@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, UserPlus, UserPen, ClipboardCheck, Handshake, AlertTriangle } from 'lucide-react';
 import { useHato } from '../data/hato';
+import { useVentas } from '../data/ventas';
+import { estadoContratos } from '../domain/decision';
 import { useFincas } from '../data/fincas';
 import {
   useContratos,
@@ -90,12 +92,13 @@ export function ContratoDetalle() {
   const { contratoId } = useParams();
   const contratos = useContratos();
   const hato = useHato();
+  const ventas = useVentas();
   return (
-    <ConDatos queries={[contratos, hato]}>
+    <ConDatos queries={[contratos, hato, ventas]}>
       {() => {
         const contrato = contratos.data.find((c) => c.id === contratoId);
         return contrato ? (
-          <DetalleContrato contrato={contrato} animales={hato.data.animales} />
+          <DetalleContrato contrato={contrato} animales={hato.data.animales} liquidado={estadoContratos(ventas.data).get(contrato.id) ?? null} />
         ) : (
           <EmptyState titulo="Ese contrato no existe" accion={<Link to="/al-partir" className="font-medium text-brand-700">Ver contratos</Link>} />
         );
@@ -104,7 +107,26 @@ export function ContratoDetalle() {
   );
 }
 
-function DetalleContrato({ contrato, animales }) {
+function LiquidacionContrato({ liquidado }) {
+  const saldo = liquidado.pagado - Math.max(0, liquidado.parte);
+  const pesos = (n) => `$${formatCOP(Math.round(n))}`;
+  return (
+    <Card titulo="Liquidación acumulada">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <Stat label="Ganancia neta vendida" value={pesos(liquidado.ganancia)} sub="Todas las ventas del contrato" />
+        <Stat label="Pagado al tenedor" value={pesos(liquidado.pagado)} />
+        <Stat
+          label="Saldo a favor de Santa Rita"
+          value={pesos(saldo >= 1 ? saldo : 0)}
+          tono={saldo >= 1 ? 'peligro' : 'neutro'}
+          sub="Se descuenta de las próximas ventas o se cobra al cerrar el contrato"
+        />
+      </div>
+    </Card>
+  );
+}
+
+function DetalleContrato({ contrato, animales, liquidado }) {
   const [editando, setEditando] = useState(false);
   const [editandoTenedor, setEditandoTenedor] = useState(false);
   const [asignando, setAsignando] = useState(false);
@@ -155,6 +177,9 @@ function DetalleContrato({ contrato, animales }) {
           <Stat label="Ganancia diaria" value={formatoGdp(gdpLote(suyos))} />
         </div>
       </Card>
+
+      {/* 011 R5 · D8 acumulado: lo liquidado al tenedor en todas las ventas del contrato (verificación D8, Medio). */}
+      {liquidado && <LiquidacionContrato liquidado={liquidado} />}
 
       <Card titulo={`Animales (${suyos.length})`}>
         {suyos.length === 0 ? (
