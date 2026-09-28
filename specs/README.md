@@ -1,0 +1,47 @@
+# Specs (Spec-Driven Development)
+
+Cada feature no trivial se describe aquí **antes** de programarla. La spec es el contrato
+entre quien pide (el equipo o Miguel Ángel), quien construye (el agente principal) y quien
+verifica (el subagente `verificador`).
+
+## Cuándo escribir una spec
+- La feature toca más de ~3 archivos, el esquema de base de datos o una regla de negocio.
+- Hay más de una forma razonable de hacerla y hay que elegir.
+
+Los bugs puntuales y los cambios de texto o estilo no necesitan spec.
+
+## Estructura
+```
+specs/
+  _plantilla.md          plantilla a copiar
+  NNN-nombre/spec.md     una carpeta por feature, numerada en orden de creación
+```
+
+## Estados
+| Estado | Significa |
+|---|---|
+| `borrador` | En redacción. No se programa nada todavía. |
+| `aprobada` | Un humano marcó la casilla de aprobación. Se puede implementar. |
+| `en-progreso` | Hay tareas en curso. |
+| `en-verificacion` | Tareas terminadas; el `verificador` está revisando. |
+| `hecha` | El verificador dio `APROBADO` y un humano lo confirmó. |
+
+## Requisitos en formato EARS
+Cada requisito lleva un ID (`R1`, `R2`…) para poder rastrearlo en código, tests y reportes.
+
+| Tipo | Forma |
+|---|---|
+| Siempre | El sistema deberá … |
+| Evento | Cuando <evento>, el sistema deberá … |
+| Estado | Mientras <estado>, el sistema deberá … |
+| No deseado | Si <error o condición>, el sistema deberá … |
+| Opcional | Donde <característica esté activa>, el sistema deberá … |
+
+Un requisito que no se puede verificar (ni con un test, ni con un paso manual concreto)
+está mal escrito: reescríbelo.
+
+## Índice
+| Spec | Estado | Sprint |
+|---|---|---|
+| [001 — Fundaciones: Supabase, autenticación y esquema](001-fundaciones/spec.md) | en-progreso | 0 |
+| [002 — Sistema de diseño y layout adaptable](002-sistema-diseno/spec.md) | borrador | 0 |

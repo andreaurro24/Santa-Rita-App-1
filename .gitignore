@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secretos y entornos (solo se versiona .env.example)
+.env
+.env.*
+!.env.example
+
+# Artefactos de pruebas
+test-results/
+playwright-report/
+blob-report/
+coverage/
