@@ -13,6 +13,7 @@ export function mensajeError(error) {
     return 'Ese registro ya existe. Revisa los datos e inténtalo de nuevo.';
   }
   if (error.code === '23514' && detalle.includes('categoria_sexo')) return 'La categoría no corresponde al sexo: vientre y ternera son hembras; novillo, ternero y reproductor son machos.';
+  if (error.code === '23514' && detalle.includes('_razonable')) return 'La fecha no es válida: revisa el año (debe ser del 2000 en adelante).';
   if (error.code === '23514' && detalle.includes('fecha_futura')) return 'La fecha no puede ser futura. Revisa la fecha e inténtalo de nuevo.';
   // Errores de reglas escritos en las funciones SQL como 'codigo: explicación'.
   const regla = /^[a-z_]+: (.+)$/.exec(error.message ?? '');

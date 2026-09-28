@@ -96,6 +96,25 @@ que hacen.
   `animales_categoria_sexo_check` (migración 0500, hallazgo de la verificación 001 ronda 2).
 - `playwright.config.js` acepta `E2E_PORT`, para correr dos suites a la vez sin compartir servidor.
 
+### Correcciones de la verificación ronda 1 (`reports/verificacion/002-2026-09-28.md`)
+- **R3:** en el historial sanitario, en celular la descripción baja a su propia línea. "Desparasitación interna" desbordaba la ficha 20 px.
+- **R9:** Registrar peso, Registrar evento y Actualizar precio son ahora hojas inferiores (`Modal`) con Guardar siempre visible.
+- **R6:**
+  - El badge "ok" usa texto `brand-800` (antes daba 4,44:1).
+  - Los placeholders usan `gray-400` (5,3:1).
+  - El contorno de campos y botones secundarios usa el token nuevo `borde-control` (3,2:1).
+- **R5:** el botón "Cerrar" de las hojas usa `shrink-0` (medía 38 px).
+- **Foco (Medio):** hook `useDialogo` compartido por `Modal` y la hoja "Más".
+  - El foco entra al diálogo y queda atrapado en Tab.
+  - Escape lo cierra y el foco vuelve al botón que lo abrió.
+- **Foco en la barra lateral:** el anillo es amarillo chapeta y los enlaces ya no animan `outline`.
+- **Brasa:** ahora se usa en las vacunas vencidas del panel y de la ficha.
+- **Panel:** la descripción de las alertas ocupa hasta 2 líneas en vez de cortarse a 8 caracteres.
+- **Residuo de la 001:** migración 0800, fechas del negocio desde 2000 (`-infinity` ya no pasa).
+- **Instrumento de pruebas:** `helpers.js` reutiliza una sola sesión por proceso, para no chocar con el límite de inicios de sesión de Supabase Auth. El flujo real de login sigue probándose con `entrar()`.
+- **Cierre de sesión:** ahora es local al dispositivo (`scope: 'local'`); salir en el celular no cierra la sesión del computador.
+- **R8:** `ErrorState` es `ErrorCarga` (`EstadoCarga.jsx`); solo cambia el nombre.
+
 ## Tareas
 - [x] T1 Tokens y fuentes en `index.css` / `index.html` — verifica: `npm run build`
 - [x] T2 Marca SR (componente + favicon) — verifica: revisión visual

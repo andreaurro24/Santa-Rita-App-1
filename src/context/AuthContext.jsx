@@ -80,7 +80,9 @@ export function AuthProvider({ children }) {
   async function logout() {
     queryClient.clear();
     setUser(null);
-    await supabase.auth.signOut();
+    // Solo cierra la sesión de este dispositivo: salir en el celular no debe sacar a Miguel
+    // del computador. (Con scope 'global' se revocan todas sus sesiones.)
+    await supabase.auth.signOut({ scope: 'local' });
   }
 
   return (

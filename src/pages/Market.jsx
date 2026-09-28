@@ -10,6 +10,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Skeleton from '../components/ui/Skeleton';
+import Modal from '../components/ui/Modal';
 import { Field, Input, FormError } from '../components/ui/Field';
 import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
@@ -96,7 +97,7 @@ function MercadoContenido({ precios, precioActual }) {
         icono={Banknote}
         accion={
           puedeEditar && (
-            <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setShowForm((s) => !s)}>
+            <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setShowForm(true)}>
               Actualizar precio
             </Button>
           )
@@ -134,25 +135,33 @@ function PrecioForm({ onSaved, onCancel }) {
     );
   }
 
+  // R9 (spec 002): hoja inferior en celular, con Guardar siempre visible.
   return (
-    <form onSubmit={handleSubmit} noValidate className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 md:flex md:flex-wrap md:items-end">
-      <Field label="Fecha del boletín">
-        <Input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} required />
-      </Field>
-      <Field label="Precio (COP/kg)">
-        <Input type="number" min="1" step="1" inputMode="numeric" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} required />
-      </Field>
-      <div className="col-span-2 flex gap-2">
-        <Button type="submit" disabled={addPrecio.isPending}>
-          {addPrecio.isPending ? 'Guardando…' : 'Guardar'}
-        </Button>
-        <Button variante="fantasma" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-      <div className="col-span-2 md:w-full">
-        <FormError>{error}</FormError>
-      </div>
-    </form>
+    <Modal
+      titulo="Actualizar precio del kilo en pie"
+      onClose={onCancel}
+      pie={
+        <>
+          <Button variante="fantasma" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="form-precio" disabled={addPrecio.isPending}>
+            {addPrecio.isPending ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </>
+      }
+    >
+      <form id="form-precio" onSubmit={handleSubmit} noValidate className="grid grid-cols-2 gap-3">
+        <Field label="Precio (COP/kg)">
+          <Input type="number" min="1" step="1" inputMode="numeric" value={precioCOP} onChange={(e) => setPrecioCOP(e.target.value)} />
+        </Field>
+        <Field label="Fecha del boletín">
+          <Input type="date" value={fecha} max={hoyISO()} onChange={(e) => setFecha(e.target.value)} />
+        </Field>
+        <div className="col-span-2">
+          <FormError>{error}</FormError>
+        </div>
+      </form>
+    </Modal>
   );
 }

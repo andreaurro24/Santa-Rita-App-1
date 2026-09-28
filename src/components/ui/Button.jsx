@@ -1,7 +1,7 @@
 // Botón del sistema. En celular mide al menos 48 px de alto (R5).
 const VARIANTES = {
   primario: 'bg-brand-700 text-white hover:bg-brand-800 disabled:bg-brand-400',
-  secundario: 'bg-white text-brand-800 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+  secundario: 'bg-white text-brand-800 ring-1 ring-inset ring-borde-control hover:bg-gray-50',
   suave: 'bg-brand-50 text-brand-800 hover:bg-brand-100',
   fantasma: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
   peligro: 'bg-peligro text-white hover:brightness-95',

@@ -107,11 +107,11 @@ function DashboardContenido({ animales, lotes, precioActual }) {
                     <AlertTriangle
                       size={16}
                       aria-hidden="true"
-                      className={a.diasRestantes < 0 ? 'shrink-0 text-peligro' : 'shrink-0 text-alerta'}
+                      className={a.diasRestantes < 0 ? 'shrink-0 text-brasa' : 'shrink-0 text-alerta'}
                     />
                     <Chapeta numero={a.animal.numeroInterno} />
-                    <span className="min-w-0 flex-1 truncate text-sm text-gray-700">{a.descripcion}</span>
-                    <span className={`shrink-0 text-xs font-semibold ${a.diasRestantes < 0 ? 'text-peligro' : 'text-gray-600'}`}>
+                    <span className="line-clamp-2 min-w-0 flex-1 text-sm text-gray-700">{a.descripcion}</span>
+                    <span className={`shrink-0 text-xs font-semibold ${a.diasRestantes < 0 ? 'text-brasa' : 'text-gray-600'}`}>
                       {a.diasRestantes < 0 ? `Vencida hace ${Math.abs(a.diasRestantes)} d` : `En ${a.diasRestantes} d`}
                     </span>
                   </Link>

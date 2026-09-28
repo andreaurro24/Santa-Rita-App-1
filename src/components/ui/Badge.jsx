@@ -2,7 +2,7 @@ const TONOS = {
   neutro: 'bg-gray-100 text-gray-700',
   potrero: 'bg-brand-50 text-brand-800',
   cuero: 'bg-earth-100 text-earth-700',
-  ok: 'bg-ok-50 text-ok',
+  ok: 'bg-ok-50 text-brand-800', // text-ok sobre ok-50 daba 4,44:1 (verificación 002)
   alerta: 'bg-alerta-50 text-alerta-900',
   peligro: 'bg-peligro-50 text-peligro',
 };

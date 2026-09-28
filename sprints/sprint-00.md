@@ -54,6 +54,7 @@ verificar automáticamente.
 | 2026-09-28 | 001 · T9 | Push al repo del equipo bloqueado por los permisos de Claude Code (lo cuenta como publicación). T9 queda para el usuario | — |
 | 2026-09-28 | 001 · hallazgos ronda 2 | Migración 0500: sin fechas futuras en precios ni en animales; categoría acorde al sexo (D2). Además: SIGNED_IN en otra pestaña, orden del gráfico de peso, `created_at` explícito en la semilla | La prueba de atomicidad del verificador depende de una fecha futura en el animal, que ahora se rechaza: el verificador debe ajustar su instrumento |
 | 2026-09-28 | 002 · T1–T7 | Tokens, marca SR, componentes `ui/`, layout adaptable y 7 pantallas rediseñadas. Vitest 48/48 (incluye la prueba de tokens de R1). E2E de diseño 6/6. Suite completa 41/42 | Trabajado en un git worktree mientras corría la ronda 2 de la 001. Revisión visual a 375 y 1280 px. Corregido `.input` (sin capa CSS) que tapaba el ícono de búsqueda |
+| 2026-09-28 | 002 · correcciones ronda 1 | Todos los Altos y el Medio corregidos, y 6 de 8 Bajos. Suite E2E completa 61/61 sin límite de Auth; Vitest 74/74 | El separador decimal (punto en kg) queda como deuda |
 | 2026-09-27 | 001 · T9 | **Pendiente**: requiere decidir cómo desplegar (push al repo del equipo o subida directa a Vercel) | Se consulta al usuario |
 
 ## 3. Verificación
@@ -61,6 +62,7 @@ verificar automáticamente.
 |---|---|---|---|
 | 001 | 1 | RECHAZADO (1 Alto, 5 Medios, 6 Bajos; R7 no cumple; R11 sin evidencia) | [001-2026-09-27](../reports/verificacion/001-2026-09-27.md) |
 | 001 | 2 | BLOQUEADO solo por R11 (despliegue pendiente del push del usuario). R1–R10 cumplen; 0 Críticos, 0 Altos; 1 Medio nuevo (precio con fecha futura) y 6 Bajos | [001-2026-09-28-ronda2](../reports/verificacion/001-2026-09-28-ronda2.md) |
+| 002 | 1 | RECHAZADO (4 Altos: R3 desborde en la ficha, R9 formularios en línea, R6 dos pares < AA, R5 botón de 38 px; 1 Medio de foco; 8 Bajos) | [002-2026-09-28](../reports/verificacion/002-2026-09-28.md) |
 
 ## 4. Cierre
 

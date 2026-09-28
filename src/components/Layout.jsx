@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, CloudSun, FileText, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MarcaSR from './MarcaSR';
+import useDialogo from './ui/useDialogo';
 
 // Secciones de la app. `movil: true` = va en la barra inferior; el resto queda en "Más".
 const SECCIONES = [
@@ -50,7 +51,7 @@ function SideNav() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-[color,background-color] ${
                 isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-700 hover:text-white'
               }`
             }
@@ -65,7 +66,7 @@ function SideNav() {
         <p className="mb-3 text-xs text-brand-200">{user?.rolLabel}</p>
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-700 hover:text-white"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-brand-100 transition-[color,background-color] hover:bg-brand-700 hover:text-white"
         >
           <LogOut size={16} aria-hidden="true" />
           Cerrar sesión
@@ -128,23 +129,27 @@ function BottomNav() {
 
 function HojaMas({ secciones, onClose }) {
   const { user, logout } = useAuth();
+  const ref = useDialogo(onClose);
   return (
     <div className="no-print fixed inset-0 z-50 flex items-end bg-gray-900/50 md:hidden" onClick={onClose}>
       <div
+        ref={ref}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Más secciones"
         onClick={(e) => e.stopPropagation()}
-        className="w-full rounded-t-2xl bg-white px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2"
+        className="w-full rounded-t-2xl bg-white px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 outline-none"
       >
-        <div className="flex items-center justify-between px-2 py-1">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between gap-2 px-2 py-1">
+          <p className="min-w-0 text-sm text-gray-500">
             {user?.nombre}, {user?.rolLabel?.toLowerCase()}
           </p>
-          <button onClick={onClose} aria-label="Cerrar" className="flex size-12 items-center justify-center rounded-lg text-gray-500">
+          <button onClick={onClose} aria-label="Cerrar" className="flex size-12 shrink-0 items-center justify-center rounded-lg text-gray-500">
             <X size={20} />
           </button>
         </div>
+        <div data-dialogo-cuerpo>
         {secciones.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -162,6 +167,7 @@ function HojaMas({ secciones, onClose }) {
           <LogOut size={20} aria-hidden="true" />
           Cerrar sesión
         </button>
+        </div>
       </div>
     </div>
   );

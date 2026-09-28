@@ -39,6 +39,9 @@
   --color-gray-800: #262d22;
   --color-gray-900: #1c2419;
 
+  /* Contorno de campos y botones secundarios: 3,2:1 sobre blanco (WCAG 1.4.11). */
+  --color-borde-control: #8a9385;
+
   --color-cal: #f1f2ec; /* fondo: la cal de los corrales */
   --color-brasa: #b4441b; /* alertas: el hierro al rojo */
   --color-brasa-50: #fbede7;
@@ -97,7 +100,7 @@ table,
     width: 100%;
     min-height: 3rem;
     border-radius: 0.5rem;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--color-borde-control);
     background-color: #fff;
     padding: 0.5rem 0.75rem;
     font-size: 1rem;
@@ -109,6 +112,11 @@ table,
       font-size: 0.875rem;
     }
   }
+  /* Placeholder con AA (5,3:1): en el buscador es la única pista de qué hace el campo. */
+  .input::placeholder {
+    color: var(--color-gray-400);
+    opacity: 1;
+  }
   .input:focus {
     outline: none;
     border-color: var(--color-brand-500);
@@ -116,10 +124,14 @@ table,
   }
 }
 
-/* Foco visible para teclado en todos los controles. */
+/* Foco visible para teclado en todos los controles. Sobre la barra lateral oscura el anillo
+   es amarillo chapeta (el verde daba 1,6:1 contra brand-800). */
 :where(a, button, select, input, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--color-brand-600);
   outline-offset: 2px;
+}
+:where(aside, header) :where(a, button):focus-visible {
+  outline-color: var(--color-chapeta);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -55,7 +55,7 @@ function HatoContenido({ animales, lotes }) {
         <label className="relative flex-1">
           <span className="sr-only">Buscar</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
-          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por número interno o chapeta ICA" className="pl-10" />
+          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por número interno o chapeta" className="pl-10" />
         </label>
         <label className="md:w-72">
           <span className="sr-only">Lote</span>
