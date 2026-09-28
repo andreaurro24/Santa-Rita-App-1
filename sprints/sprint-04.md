@@ -51,6 +51,7 @@ legibles, carga rápida en el celular y los indicadores del proyecto medidos con
 | 2026-09-28 | Despliegue | Push de `main` a GitHub | El conector de Vercel no tiene permiso sobre el equipo del usuario (403): la conexión la hace el humano con `DEPLOY.md` |
 | 2026-09-28 | Verificación D8/D11 por contrato | APROBADO ([d11-contrato-2026-09-28](../reports/verificacion/d11-contrato-2026-09-28.md)); Bajos corregidos: contrato al 0 % en la liquidación, pruebas de DT-03-9 y de varios contratos, razón sin "NaN %" | Queda DT-04-9 para decisión humana |
 | 2026-09-28 | DT-04-9 · liquidación acumulada | `estadoContratos()` recorre las ventas en orden (fecha, hora de registro) y `partesTenedores()` paga lo acumulado menos lo ya pagado; saldo a favor si una pérdida llega después; lo usan la recomendación, el asistente, la lista y el detalle | Verificación r1 RECHAZADO (Alto: una venta con fecha pasada reescribía una liquidación ya pagada). Corregido: se liquida en orden de registro; la ficha del contrato muestra la liquidación acumulada y el saldo a favor; el asistente avisa cuando descuenta lo acumulado |
+| 2026-09-28 | D8 acumulado ronda 2 | APROBADO ([d8-acumulado-2026-09-28-ronda2](../reports/verificacion/d8-acumulado-2026-09-28-ronda2.md)); corregido el formato negativo en la ficha del contrato | La prueba `verificador-d8-acumulado.spec.js:521` queda en rojo hasta DT-04-12 |
 | 2026-09-28 | Despliegue y perfil | Vercel publica desde el fork con sincronización cada 15 min (`sincronizar-fork.yml`); perfil `dueno` creado para el usuario del humano | Producción y desarrollo comparten el proyecto de Supabase (DT-04-10) |
 | 2026-09-28 | Prueba propia inestable | `al-partir.spec.js`: la visita rechazada ya no depende de qué contrato devuelve la base ni de su fecha de inicio | — |
 
@@ -95,6 +96,8 @@ Con este sprint terminan los cinco sprints del plan; lo que falta depende de acc
 | DT-04-9 | **Decisión humana:** la parte del tenedor se compensa dentro de cada venta. Si un contrato se vende en varias ventas (varios lotes o ventas parciales), el tenedor puede cobrar más que con la liquidación acumulada del contrato | Media | Verificación D11 | **Resuelta el 2026-09-28:** acumulado por contrato, con saldo a favor (`estadoContratos`) |
 | DT-04-10 | Producción (Vercel) usa el mismo proyecto de Supabase que desarrollo y pruebas: antes del censo real, proyecto aparte o limpieza y pruebas en otro lado | Alta (antes del piloto) | Despliegue | Humano |
 | DT-04-11 | La prueba `verificador-recomendacion.spec.js:194` falla a veces en la suite completa: al recargar datos, `/recomendacion` vuelve al primer lote (`useState(lotes[0])` se reinicia) | Baja | Verificación D11 | 5 |
+| DT-04-12 | La tabla `ventas` acepta una fecha futura por inserción directa (solo `registrar_venta` la valida). Requiere migración: trigger de fecha no futura en `ventas` (pendiente de aprobación humana) | Media | Verificación D8 r2 | 5 |
+| DT-04-13 | "Pagado al tenedor" en la ficha puede diferir en $1 de la suma de los "Pagar" (redondeo total frente a por venta); si falla la consulta de ventas se cae toda la ficha del contrato | Baja | Verificación D8 r2 | 5 |
 | DT-04-7 | Importar censo: sin vista previa de las filas válidas; la fila de ejemplo de la plantilla se puede importar; todo animal entra con `origen: 'compra'` | Baja | 013 | 5 |
 
 ### Información importante

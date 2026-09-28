@@ -109,11 +109,11 @@ export function ContratoDetalle() {
 
 function LiquidacionContrato({ liquidado }) {
   const saldo = liquidado.pagado - Math.max(0, liquidado.parte);
-  const pesos = (n) => `$${formatCOP(Math.round(n))}`;
+  const pesos = (n) => `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`;
   return (
     <Card titulo="Liquidación acumulada">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        <Stat label="Ganancia neta vendida" value={pesos(liquidado.ganancia)} sub="Todas las ventas del contrato" />
+        <Stat label="Ganancia neta vendida" value={pesos(liquidado.ganancia)} tono={liquidado.ganancia < 0 ? 'peligro' : 'neutro'} sub="Todas las ventas del contrato" />
         <Stat label="Pagado al tenedor" value={pesos(liquidado.pagado)} />
         <Stat
           label="Saldo a favor de Santa Rita"
