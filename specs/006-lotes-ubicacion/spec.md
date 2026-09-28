@@ -1,6 +1,6 @@
 # Spec 006 — Lotes, ciclos de ceba, fincas, potreros y movimientos
 
-- Estado: aprobada
+- Estado: en-verificacion
 - Sprint: 1
 - Módulos del plan: M5, M6
 
@@ -41,12 +41,25 @@ Miguel necesita saber dónde está cada animal y desde cuándo.
 - Archivos: `src/pages/Lotes.jsx`, `src/pages/LoteDetalle.jsx`, `src/pages/Fincas.jsx`,
   `src/data/lotes.js`, `src/data/fincas.js`, `src/domain/lotes.js`, migración.
 
+## Desvíos durante la implementación (2026-09-28)
+- **Dónde se selecciona para mover (R6):** la selección múltiple está en el **detalle del
+  lote**, no en el hato. "Mover" también aparece en la ficha para un solo animal. Mover animales
+  casi siempre se hace por lote, y el hato en celular es una lista de tarjetas donde la
+  selección múltiple estorba.
+- **Meta del lote:** si el lote no tiene meta pactada, se usa el promedio de las metas de sus
+  animales.
+- **Mover (R6):** si el destino es un potrero, su finca va implícita; si se cambia de finca sin
+  potrero, el potrero queda vacío. Las reglas viven en la función SQL `mover_animales`
+  (atómica, `security invoker`).
+- **Rutas nuevas:** `/lotes`, `/lotes/:id` y `/fincas`, en "Más" (celular) y en la barra
+  lateral (escritorio).
+
 ## Tareas
-- [ ] T1 Migración `movimientos` + función `mover_animales`
-- [ ] T2 Dominio de resumen de lote y proyección + tests
-- [ ] T3 CRUD de lotes y detalle con proyección — verifica: E2E
-- [ ] T4 Fincas y potreros — verifica: E2E crear potrero
-- [ ] T5 Mover animales (selección múltiple) e historial en la ficha — verifica: E2E
+- [x] T1 Migración `movimientos` + función `mover_animales`
+- [x] T2 Dominio de resumen de lote y proyección + tests
+- [x] T3 CRUD de lotes y detalle con proyección — verifica: E2E
+- [x] T4 Fincas y potreros — verifica: E2E crear potrero
+- [x] T5 Mover animales (selección múltiple) e historial en la ficha — verifica: E2E
 - [ ] T6 Verificador
 
 ## Criterios de aceptación para el verificador

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
+import { useMovimientos } from '../data/fincas';
+import MoverAnimales from '../components/MoverAnimales';
 import { ConDatos } from '../components/EstadoCarga';
 import { mensajeError } from '../lib/errores';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +30,7 @@ function FichaAnimal({ animales }) {
   const animal = animales.find((a) => a.id === id);
   const [showPesoForm, setShowPesoForm] = useState(false);
   const [showSanidadForm, setShowSanidadForm] = useState(false);
+  const [moviendo, setMoviendo] = useState(false);
 
   if (!animal) return <Navigate to="/animales" replace />;
 
@@ -124,6 +127,25 @@ function FichaAnimal({ animales }) {
       </div>
 
       <Card
+        titulo="Ubicación"
+        icono={MapPin}
+        accion={
+          puedeRegistrar && (
+            <Button variante="suave" tamano="sm" icono={MoveRight} onClick={() => setMoviendo(true)}>
+              Mover
+            </Button>
+          )
+        }
+      >
+        <dl className="mb-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+          <Row label="Finca" value={animal.fincaNombre ?? '—'} />
+          <Row label="Potrero" value={animal.potreroNombre ?? 'Sin potrero'} />
+          <Row label="Lote" value={animal.loteNombre} />
+        </dl>
+        <Movimientos animalId={animal.id} />
+      </Card>
+
+      <Card
         titulo="Historial sanitario"
         icono={Syringe}
         accion={
@@ -159,7 +181,32 @@ function FichaAnimal({ animales }) {
           </ul>
         )}
       </Card>
+      {moviendo && <MoverAnimales animales={[animal]} onClose={() => setMoviendo(false)} />}
     </div>
+  );
+}
+
+// Spec 006 · R7: historial de movimientos del animal.
+function Movimientos({ animalId }) {
+  const movimientos = useMovimientos(animalId);
+  if (movimientos.isPending) return null;
+  if (movimientos.isError) return <p className="text-sm text-peligro">No se pudo cargar el historial de movimientos.</p>;
+  if (!movimientos.data.length) return <p className="text-sm text-gray-500">Sin movimientos registrados.</p>;
+  return (
+    <>
+      <h3 className="mb-1 text-sm font-semibold text-gray-700">Movimientos</h3>
+      <ul className="divide-y divide-gray-100 text-sm">
+        {movimientos.data.map((m) => (
+          <li key={m.id} className="py-2">
+            <p className="text-gray-900">
+              <span className="font-medium">{formatFecha(m.fecha)}:</span> {m.desde} → {m.hacia}
+              {m.loteDesde !== m.loteHacia && `, lote ${m.loteDesde ?? '—'} → ${m.loteHacia ?? '—'}`}
+            </p>
+            <p className="text-gray-500">{m.motivo}</p>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

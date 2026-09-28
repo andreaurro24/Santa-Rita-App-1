@@ -14,6 +14,11 @@ describe('mensajeError', () => {
     expect(mensajeError({ code: '23514', message: 'new row violates check constraint "animales_categoria_sexo_check"' })).toMatch(/categoría no corresponde al sexo/);
   });
 
+  it('muestra la explicación de las reglas de las funciones SQL', () => {
+    expect(mensajeError({ code: '23514', message: 'sin_destino: indica una finca, un potrero o un lote de destino' })).toBe('Indica una finca, un potrero o un lote de destino.');
+    expect(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "lotes_codigo_key"' })).toMatch(/lote con ese código/);
+  });
+
   it('reconoce credenciales incorrectas, permisos y falta de red', () => {
     expect(mensajeError({ message: 'Invalid login credentials' })).toBe('Correo o contraseña incorrectos.');
     expect(mensajeError({ code: '42501', message: 'permission denied' })).toMatch(/permiso/);

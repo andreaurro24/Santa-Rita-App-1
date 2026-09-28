@@ -14,7 +14,7 @@ cada animal por día, saber cuándo llegará el lote a la meta y dónde está ca
 | Spec | Módulos | Estado |
 |---|---|---|
 | [004 — Jornada de pesaje por lote y GDP](../specs/004-pesajes-gdp/spec.md) | M3 | en-verificacion |
-| [006 — Lotes, ciclos, fincas, potreros y movimientos](../specs/006-lotes-ubicacion/spec.md) | M5, M6 | aprobada |
+| [006 — Lotes, ciclos, fincas, potreros y movimientos](../specs/006-lotes-ubicacion/spec.md) | M5, M6 | en-verificacion |
 | 003 — Gestión del hato (editar, dar de baja) | M2 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
 | 005 — Sanidad (programados, aplicación por lote, ICA) | M4 | **sin escribir**: el archivo lo bloqueó el control de permisos de Claude Code |
 
@@ -50,6 +50,9 @@ está resumido en `docs/plan.md` (M2 y M4).
 | 2026-09-28 | 004 · T1 | Migración 0600: `jornadas_pesaje` (una abierta por lote), `pesajes.jornada_id` (un pesaje por animal y jornada), RLS y fecha no futura. Asesor de seguridad sin alertas nuevas | — |
 | 2026-09-28 | 004 · T2 | `src/domain/gdp.js` + 15 pruebas | Desvío en R5: el último periodo exige ≥ 14 días entre pesajes (ruido de báscula; con la regla literal, 54/140 falsas alarmas) |
 | 2026-09-28 | 004 · T3–T6 | Pantalla `/pesaje` (abrir o retomar jornada, captura con coma decimal, confirmación > 15 %, saltar, cerrar con pendientes, historial); GDP y "Pierde peso" en ficha, hato y panel. E2E 4/4 | "Pesaje" entra a la barra inferior del celular. Bug propio corregido: `Field` dejaba un espacio al final de la etiqueta |
+| 2026-09-28 | 006 · T1 | Migración 0700: `movimientos` y función atómica `mover_animales` (valida destino, fecha y potrero de la misma finca) | — |
+| 2026-09-28 | 006 · T2 | `src/domain/lotes.js` (resumen, proyección, vientres hacia ceba) + 7 pruebas | — |
+| 2026-09-28 | 006 · T3–T5 | `/lotes` (lista con proyección, crear y editar, "Marcar como listo"), `/lotes/:id` (selección y "Mover"), `/fincas` (potreros) y ubicación con historial en la ficha. E2E 4/4 | Selección múltiple en el detalle del lote, no en el hato (ver desvíos). Deuda: decimales con punto en pesos y con coma en GDP |
 
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
