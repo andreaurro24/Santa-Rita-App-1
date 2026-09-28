@@ -4,6 +4,7 @@ import { clientePrueba, iniciarSesion } from './helpers';
 import { medirControles, medirDesborde } from './verificador-medidas';
 
 // Pruebas del VERIFICADOR para la spec 011 (venta real y cierre del ciclo), ronda 1.
+// 2026-09-28 (commit 186bf8c): cifras del tenedor adaptadas a la regla por contrato (DT-03-3).
 // Prefijo VRF-VT; todo se borra al final (ventas, animales, lotes, contrato, costos).
 // Ronda 2 de la 012 (2026-09-28, HEAD 1f12e28): "1 vientre no aparece: no se vende." en singular (la regex acepta los
 // dos textos y la espera tiene tiempo límite); el Medio 5 de la 011 (animal vendido) pasa a comprobarse.
@@ -17,9 +18,9 @@ import { medirControles, medirDesborde } from './verificador-medidas';
 // Venta de V1, V2, V3 y V5 a los pesos propuestos:
 //   ingreso 2.400.000 × 3 + 1.600.000 = 8.800.000; costo 5.400.000.
 //   Ganancia por animal: V1 1.600.000, V2 1.600.000, V3 −800.000, V5 1.000.000.
-//   Tenedor (010 R2, por animal y solo si es positiva): 50 % × 1.600.000 = 800.000 (V3 aporta 0).
-//   Margen neto 8.800.000 − 5.400.000 − 800.000 = 2.600.000.
-//   Contrato: ganancia neta de sus animales 1.600.000 − 800.000 = 800.000; 50 % de eso serían 400.000.
+//   Tenedor (D8/D11 por contrato desde el 2026-09-28, DT-03-3): ganancia neta del contrato
+//   1.600.000 − 800.000 = 800.000 → 50 % = 400.000. (Con la regla anterior, por animal, eran 800.000.)
+//   Margen neto 8.800.000 − 5.400.000 − 400.000 = 3.000.000.
 
 const DIR = 'test-results/vrf-011';
 mkdirSync(DIR, { recursive: true });
@@ -240,8 +241,8 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   expect(r.asistente.pesos).toEqual(['300', '300', '300', '200']);
   expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('Ingreso') + 1])).toBe(8_800_000);
   expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('Costo acumulado') + 1])).toBe(5_400_000);
-  expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('A los tenedores') + 1])).toBe(800_000);
-  expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('Margen neto') + 1])).toBe(2_600_000);
+  expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('A los tenedores') + 1])).toBe(400_000);
+  expect(num(r.asistente.resultado[r.asistente.resultado.indexOf('Margen neto') + 1])).toBe(3_000_000);
   expect(r.ui.sinComprador).toMatch(/comprador/);
   expect(r.ui.destare20).toMatch(/destare/i);
   expect(r.ui.fechaFutura).toMatch(/futura/);
@@ -258,13 +259,14 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   expect(r.bd.loteV).toBe('activo'); // le queda el vientre V4
   expect(r.bd.venta.recomendacion_sistema).toMatchObject({ recomendacion: expect.any(String), margenNeto: expect.any(Number), equilibrioKg: expect.any(Number) });
   expect(r.detalle).toContain('$8.800.000');
-  expect(r.detalle).toContain('$2.600.000');
+  expect(r.detalle).toContain('$3.000.000');
   // Un gasto del mismo día de la venta: debería cargarlo solo V4 (el único activo) o reflejarse en la venta.
   if (r.fichaV4 !== 1_200_000 || r.fichaV1 !== 800_000) registrar('HALLAZGO 011 gasto del día de la venta', { fichaV4: r.fichaV4, esperadoV4: 1_200_000, fichaV1Vendido: r.fichaV1, copiaEnLaVenta: 800_000 });
   expect(Number(r.activosAntes) - Number(r.activosDespues)).toBe(4);
   expect(r.recomendacionTrasVenta).toMatch(/no tiene animales para vender/);
   const liq = r.detalle.find((l) => /ganancia neta/.test(l));
   registrar('liquidación', { texto: liq, pagar: r.detalle[r.detalle.indexOf(liq) + 1] });
+  expect(r.detalle[r.detalle.indexOf(liq) + 1]).toBe('Pagar $400.000'); // D11 por contrato
   // Ronda 2 (011 Medio 5 y Bajo 1): el vendido se marca en /animales y su ficha no ofrece "Registrar peso".
   expect(r.asistente.vientres).toBe('1 vientre no aparece: no se vende.');
   expect(r.hatoV1).toMatch(/Vendido/);
