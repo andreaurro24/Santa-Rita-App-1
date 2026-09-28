@@ -4,6 +4,9 @@ import { clientePrueba, iniciarSesion } from './helpers';
 import { medirDesborde } from './verificador-medidas';
 
 // Pruebas del VERIFICADOR para la spec 012 (indicadores, formato es-CO, carga por rutas, ficha imprimible), ronda 1.
+// Ronda 2 (2026-09-28, HEAD 1f12e28): la de R2 recorre además los formularios de edición (destare, contrato,
+// lote) y la ficha en modo impresión; una prueba nueva comprueba los plurales y las cifras corregidas.
+// El cliente propio de Supabase (R3) se prueba en verificador-cliente-r2.spec.js.
 // Datos con decimales para cazar cifras con punto decimal (prefijo VRF-KP; todo se borra):
 //   potrero de 12,5 ha; contrato "Al partir" de 33,5 %; destare 2,5 %; un animal de 355,5 kg con GDP 0,78;
 //   un gasto de lote. Se recorren todas las pantallas y se busca "\d.\d" (punto decimal) en el texto visible
@@ -160,6 +163,39 @@ test('VRF 012 R2: ninguna cifra con punto decimal en toda la app (texto visible 
   const conPunto = opciones.filter((o) => /\d\.\d/.test(o));
   if (conPunto.length) hallados['/#/animales · Registrar animal (opciones)'] = conPunto;
   await page.keyboard.press('Escape');
+  // Ronda 2: formularios de edición con cifras decimales precargadas (texto que ve el usuario).
+  // Los <input type=number> guardan "33.5" en .value por norma HTML y Chromium los muestra con la
+  // configuración regional; por eso se registran aparte (visto) y solo cuentan los type=text.
+  const formularios = [
+    ['/#/mercado', 'Cambiar destare', 'Destare (%)'],
+    [`/#/al-partir/${ids.contrato}`, 'Editar contrato', null],
+    [`/#/lotes/${ids.lote}`, 'Editar lote', null],
+  ];
+  const editados = {};
+  for (const [url, boton, etiqueta] of formularios) {
+    await page.goto(url);
+    await page.reload();
+    await page.getByRole('button', { name: boton }).click();
+    const dialogo = page.getByRole('dialog');
+    await expect(dialogo).toBeVisible();
+    const campos = await dialogo.locator('input').evaluateAll((xs) => xs.map((x) => ({ tipo: x.type, valor: x.value })));
+    editados[boton] = { campos: campos.filter((c) => /\d/.test(c.valor)), campo: etiqueta ? await dialogo.getByLabel(etiqueta).inputValue() : null };
+    await page.screenshot({ path: `${DIR}/r2-${boton.replace(/\s+/g, '-')}.png` });
+    const conPuntoTexto = campos.filter((c) => c.tipo === 'text' && /^\d+\.\d+$/.test(c.valor));
+    if (conPuntoTexto.length) hallados[`${url} · ${boton}`] = conPuntoTexto;
+    await page.keyboard.press('Escape');
+  }
+  registrar('formularios de edición (valores)', editados);
+  // Ronda 2: la ficha del animal en modo impresión (R2 + R4).
+  await page.goto(`/#/animales/${ids.animal}`);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Imprimir ficha' })).toBeVisible();
+  await page.waitForTimeout(800);
+  await page.emulateMedia({ media: 'print' });
+  const ficha = await page.locator('main').innerText();
+  const pFicha = [...new Set(ficha.match(decimalConPunto) ?? [])];
+  if (pFicha.length) hallados['ficha (impresa)'] = pFicha.map((p) => ficha.slice(Math.max(0, ficha.indexOf(p) - 50), ficha.indexOf(p) + 20).replace(/\s+/g, ' '));
+  await page.emulateMedia({ media: 'screen' });
   // El reporte impreso.
   await page.goto('/#/reporte');
   await page.reload();
@@ -172,6 +208,41 @@ test('VRF 012 R2: ninguna cifra con punto decimal en toda la app (texto visible 
   await page.emulateMedia({ media: 'screen' });
   registrar('cifras con punto decimal', hallados);
   expect(Object.keys(hallados)).toEqual([]);
+});
+
+test('VRF 012 r2 · Bajo 1: plurales con cantidad() ("1 res") y cifras de la ronda 1 ya corregidas', async ({ page }) => {
+  await page.route('https://api.open-meteo.com/**', (r) =>
+    r.fulfill({ json: { current: { temperature_2m: 30.4, precipitation: 0.3, weather_code: 1 }, daily: { time: [0, 1, 2, 3, 4, 5, 6].map((i) => haceDias(-i)), temperature_2m_max: Array(7).fill(33.6), temperature_2m_min: Array(7).fill(22.2), precipitation_sum: [0.3, 1.2, 0, 0, 2.5, 0, 0.1], weather_code: Array(7).fill(1) } } }),
+  );
+  await iniciarSesion(page);
+  const lineas = async (url) => {
+    await page.goto(url);
+    await page.reload();
+    await page.waitForTimeout(1500);
+    return (await page.locator('main').innerText()).split('\n').map((l) => l.trim()).filter(Boolean);
+  };
+  const r = {};
+  const panel = await lineas('/#/');
+  r.panelLote = panel[panel.indexOf(`${P} A`) + 1];
+  const fincas = await lineas('/#/fincas');
+  r.fincasPotrero = fincas.filter((l) => l.includes(`${P} P1`) || /^\d+ res(es)?$/.test(l)).slice(0, 6);
+  r.fincasTexto = fincas.find((l) => l.startsWith(`${P} P1`));
+  await page.goto('/#/pesaje');
+  await page.reload();
+  await page.waitForTimeout(1200);
+  r.pesajeOpcion = (await page.locator('select option').allInnerTexts()).find((o) => o.startsWith(`${P} A`));
+  await page.goto('/#/recomendacion');
+  await page.reload();
+  await page.locator('select').first().selectOption({ label: `${P} A` });
+  await page.waitForTimeout(800);
+  r.razonDestare = (await page.locator('main').innerText()).split('\n').find((l) => /de destare/.test(l));
+  const ind = await lineas('/#/indicadores');
+  r.indicadoresDias = ind.filter((l) => /^hace \d+ días?/.test(l));
+  registrar('plurales y cifras', r);
+  expect(r.panelLote).toBe('1 res');
+  expect(r.fincasTexto).toContain('(12,5 ha)');
+  expect(r.pesajeOpcion).toBe(`${P} A (1 res)`);
+  expect(r.razonDestare).toContain('2,5 % de destare');
 });
 
 test('VRF 012 R4: ficha del animal imprimible (identificación, pesos, sanidad, ubicación y costos)', async ({ page }) => {

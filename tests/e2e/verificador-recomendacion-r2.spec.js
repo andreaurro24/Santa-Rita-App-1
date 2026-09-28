@@ -4,6 +4,8 @@ import { clientePrueba, iniciarSesion } from './helpers';
 import { medirDesborde } from './verificador-medidas';
 
 // Pruebas del VERIFICADOR para la spec 010 (recomendación v2), RONDA 2.
+// Confirmación en la ronda 2 de la 012 (HEAD 1f12e28): el Medio 4 (potrero ajeno), el Medio 5 (Open-Meteo colgado) y el
+// Bajo 1 ("Pasto: rojo") se corrigieron; las comprobaciones que anotaban HALLAZGO ahora verifican lo corregido.
 // Repite el escenario del Alto de la ronda 1 y confirma o refuta cada Medio y cada Bajo.
 // Lotes de prueba (prefijo VRF-R2, todo se borra al final):
 //   A: igual que en la ronda 1 (A1, A2 novillos, A4 "Al partir" 50 %, A3 vientre; 270 kg hace 30 días →
@@ -306,8 +308,12 @@ test('VRF 010 r2 · Medios y Bajos de la ronda 1', async ({ page }) => {
   expect(r.margenCero.razon).toBe('Vender hoy no dejaría ganancia para Santa Rita.');
   expect(r.esperar.reses.sub).toBe('1 vientre excluido');
   expect(r.esperar.clase).toMatch(/bg-alerta/);
-  if (r.loteEnP1VerdeConP2Rojo.badge === 'Vender antes de la meta') registrar('HALLAZGO 010r2 potrero ajeno en rojo', r.loteEnP1VerdeConP2Rojo);
-  if (r.anticipadoPasto.porQue.some((x) => /Pasto: rojo/.test(x))) registrar('HALLAZGO 010r2 rojo vs Escaso', r.anticipadoPasto.porQue.at(-1));
+  // Confirmación (012 r2): el rojo de P2 no aplica al lote F (en P1); la etiqueta del pasto es la de /mercado.
+  expect(r.loteEnP1VerdeConP2Rojo.badge).not.toBe('Vender antes de la meta');
+  expect(r.anticipadoPasto.porQue.join(' ')).toMatch(/Pasto: escaso/);
+  expect(r.anticipadoPasto.porQue.join(' ')).not.toMatch(/Pasto: rojo/);
+  const colores = [...r.anticipadoPasto.porQue, r.anticipadoPasto.razon].filter((x) => /en (rojo|amarillo)/.test(x ?? ''));
+  if (colores.length) registrar('RESIDUO 010 Bajo 1: la razón todavía nombra el color', colores);
 });
 
 test('VRF 010 r2 · Medio 2: el pronóstico lento y el pronóstico que nunca responde', async ({ page }) => {
@@ -340,6 +346,8 @@ test('VRF 010 r2 · Medio 2: el pronóstico lento y el pronóstico que nunca res
   registrar('clima', r);
   // Antes de que llegue el pronóstico (6 s) no debe verse ninguna recomendación.
   expect(r.lento.filter((x) => parseFloat(x) < 5.5 && !/(cargando|—)$/.test(x))).toEqual([]);
+  // Confirmación (012 r2): con el tiempo límite de 6 s, ninguna pantalla sigue cargando a los 20 s.
+  for (const ruta of ['/#/recomendacion', '/#/ventas/nueva', '/#/reporte']) expect(r[`colgado ${ruta}`], ruta).not.toMatch(/SIGUE CARGANDO/);
 });
 
 test.describe('celular 375×812', () => {

@@ -5,6 +5,8 @@ import { medirControles, medirDesborde } from './verificador-medidas';
 
 // Pruebas del VERIFICADOR para la spec 011 (venta real y cierre del ciclo), ronda 1.
 // Prefijo VRF-VT; todo se borra al final (ventas, animales, lotes, contrato, costos).
+// Ronda 2 de la 012 (2026-09-28, HEAD 1f12e28): "1 vientre no aparece: no se vende." en singular (la regex acepta los
+// dos textos y la espera tiene tiempo límite); el Medio 5 de la 011 (animal vendido) pasa a comprobarse.
 //
 // Lote V (meta 300), precio $8.000/kg, destare 0 %. Gasto de lote $1.000.000 hace 10 días → $200.000 a cada uno de 5.
 //   V1 novillo  compra   600.000 → costo   800.000; 270 → 300 kg hoy.
@@ -151,7 +153,7 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   const main = page.locator('main');
   r.asistente = {
     animales: await page.getByRole('heading', { name: /^Animales \(/ }).innerText(),
-    vientres: await main.getByText(/vientres? no aparecen/).innerText().catch(() => 'SIN AVISO'),
+    vientres: await main.getByText(/vientres? no aparecen?/).innerText({ timeout: 5000 }).catch(() => 'SIN AVISO'),
     ternera: await page.getByRole('status').filter({ hasText: /ternera/ }).innerText().catch(() => 'SIN AVISO'),
     pesos: await main.locator('ul li input[type=text]').evaluateAll((xs) => xs.map((x) => x.value)),
     recomendacion: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' '),
@@ -221,6 +223,8 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   r.fichaV1 = await costoEnFicha(page, ids.v.V1);
   r.fichaV1Texto = (await page.locator('main').innerText()).slice(0, 400).replace(/\s+/g, ' ');
   r.fichaV1OfreceRegistrarPeso = await page.getByRole('button', { name: /Registrar peso/ }).isVisible().catch(() => false);
+  r.fichaV1Acciones = await page.locator('main button').evaluateAll((bs) => bs.filter((b) => b.checkVisibility()).map((b) => b.innerText.trim()).filter(Boolean));
+  r.fichaV1DiceVendido = /vendid/i.test(await page.locator('main').innerText());
   await page.goto('/#/animales');
   await page.getByPlaceholder(/Buscar por número interno/).fill(`${P}-V1`);
   r.hatoV1 = (await page.locator('main table tbody').innerText().catch(() => '')).replace(/\s+/g, ' ');
@@ -261,6 +265,11 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   expect(r.recomendacionTrasVenta).toMatch(/no tiene animales para vender/);
   const liq = r.detalle.find((l) => /ganancia neta/.test(l));
   registrar('liquidación', { texto: liq, pagar: r.detalle[r.detalle.indexOf(liq) + 1] });
+  // Ronda 2 (011 Medio 5 y Bajo 1): el vendido se marca en /animales y su ficha no ofrece "Registrar peso".
+  expect(r.asistente.vientres).toBe('1 vientre no aparece: no se vende.');
+  expect(r.hatoV1).toMatch(/Vendido/);
+  expect(r.fichaV1OfreceRegistrarPeso).toBe(false);
+  expect(r.indicadores.join(' ')).not.toMatch(/(^|\D)1 ventas/);
 });
 
 test('VRF 011 R2/R3: atomicidad y D2 en la base de datos (API)', async () => {
@@ -337,7 +346,7 @@ test('VRF 011: venta con fecha pasada y el peso propuesto (lotes Z y W)', async 
     pesos: await page.locator('main ul li input[type=text]').evaluateAll((xs) => xs.map((x) => x.value)),
     recomendacion: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' '),
     resultado: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) }).innerText()).replace(/\s+/g, ' '),
-    vientres: await page.getByText(/vientres? no aparecen/).innerText().catch(() => 'SIN AVISO'),
+    vientres: await page.getByText(/vientres? no aparecen?/).innerText({ timeout: 5000 }).catch(() => 'SIN AVISO'),
   };
   // Z: gasto de $400.000 hace 5 días; se vende Z1 con fecha de hace 10 días.
   r.fichaZ1Antes = await costoEnFicha(page, ids.z.Z1);
@@ -375,6 +384,11 @@ test.describe('celular 375×812', () => {
     await page.goto('/#/ventas');
     await page.waitForTimeout(800);
     r.lista = { desborde: await page.evaluate(medirDesborde) };
+    // Ronda 2 (011 Medio 5): en las tarjetas del celular el vendido también se marca.
+    await page.goto('/#/animales');
+    await page.getByPlaceholder(/Buscar por número interno/).fill(`${P}-V1`);
+    await page.waitForTimeout(500);
+    r.tarjetaV1 = (await page.locator('main ul li').filter({ hasText: `${P}-V1` }).first().innerText().catch(() => 'SIN TARJETA')).replace(/\s+/g, ' ');
     await page.screenshot({ path: `${DIR}/04-lista-celular.png`, fullPage: true });
     const link = page.getByRole('link').filter({ hasText: `${P} V` }).first();
     if (await link.count()) {
@@ -386,5 +400,6 @@ test.describe('celular 375×812', () => {
     registrar('celular', r);
     expect(r.asistente.desborde.scrollWidth).toBe(375);
     expect(r.lista.desborde.scrollWidth).toBe(375);
+    expect(r.tarjetaV1).toMatch(/Vendido/);
   });
 });

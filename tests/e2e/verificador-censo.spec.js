@@ -8,6 +8,8 @@ import { medirDesborde } from './verificador-medidas';
 // dentro del archivo y contra el hato; filas vacías (también las ";;;;;;;;" que deja Excel); Latin-1; un
 // encabezado distinto; 200 filas; la plantilla; y la red que se cae a mitad de la importación.
 // Prefijo VRF-CN; todo se borra.
+// Ronda 2 de la 012 (2026-09-28, HEAD 1f12e28): se corrigieron los Medios 1–3 y el Bajo 1 de la 013; las comprobaciones
+// que antes anotaban HALLAZGO ahora verifican lo corregido. "1 filas válidas" pasó a "1 fila válida" (cantidad()).
 
 const DIR = 'test-results/vrf-013';
 mkdirSync(DIR, { recursive: true });
@@ -48,14 +50,15 @@ async function vistaPrevia(page) {
   for (const l of texto) {
     const m = /^Fila (\d+)$/.exec(l);
     if (m) fila = m[1];
-    else if (fila && !/^(Importar|Se omitirán|Ninguna fila)/.test(l)) (errores[fila] ??= []).push(l);
-    if (/^(Importar|Se omitirán|Ninguna fila)/.test(l)) fila = null;
+    else if (fila && !/^(Importar|Se omitir|Ninguna fila)/.test(l)) (errores[fila] ??= []).push(l);
+    if (/^(Importar|Se omitir|Ninguna fila)/.test(l)) fila = null;
   }
   return {
-    validas: texto.find((l) => /filas válidas$/.test(l)),
+    validas: texto.find((l) => /(filas válidas|fila válida)$/.test(l)),
     conErrores: texto.find((l) => /con errores$/.test(l)) ?? '0 con errores',
     boton: texto.find((l) => /^Importar \d+/.test(l)),
-    omitir: texto.find((l) => /^Se omitirán/.test(l)),
+    omitir: texto.find((l) => /^Se omitir/.test(l)),
+    ignoradas: texto.find((l) => /^Estas columnas no están en la plantilla/.test(l)) ?? null,
     alerta: (await page.getByRole('alert').count()) ? (await page.getByRole('alert').first().innerText()).trim() : null,
     errores,
   };
@@ -137,8 +140,12 @@ test('VRF 013 R1–R4: CSV de Excel hostil (BOM, ; , CRLF, comillas, fechas, dup
   expect(creados.every((a) => a.pesajes.length === 1)).toBe(true);
   // Número de fila del lote inexistente: está en la línea 17 del archivo (después de una línea en blanco).
   const filaLote = Object.entries(e).find(([, v]) => v.join(' ').includes('NO-EXISTE'))?.[0];
-  if (filaLote !== '17') registrar('HALLAZGO 013 número de fila corrido', { esperado: '17', mostrado: filaLote, filas: Object.keys(e) });
-  if (e['15']) registrar('HALLAZGO 013 fila ;;;;;;;; de Excel como error', e['15']);
+  // Ronda 2: número de línea real y la fila ;;;;;;;; de Excel ignorada (013 Medio 2 y Bajo 1).
+  expect(filaLote).toBe('17');
+  expect(e['15']).toBeUndefined();
+  expect(e['16']).toBeUndefined();
+  expect(Object.values(e).flat().join(' ')).toMatch(/Macho/);
+  expect(e['21']?.join(' ')).toMatch(/vientre/);
 });
 
 test('VRF 013 R1: Latin-1 (CSV de Excel sin UTF-8) y un encabezado de costo distinto', async ({ page }) => {
@@ -169,10 +176,13 @@ test('VRF 013 R1: Latin-1 (CSV de Excel sin UTF-8) y un encabezado de costo dist
   await cargar(page, 'coma.csv', Buffer.from([ENC.replaceAll(';', ','), `${P}-C1,${P}-CH-C1,Macho,novillo,LOTE-2026-A,15/09/2026,"210,5",350,1250000`].join('\n'), 'utf-8'));
   r.separadorComa = await vistaPrevia(page);
   registrar('codificación y encabezados', r);
-  if (r.latin1Texto?.some((t) => t.includes('�'))) registrar('HALLAZGO 013 Latin-1 se importa con caracteres dañados', r.latin1Texto);
-  if (r.encabezadoCosto.validas?.startsWith('1')) registrar('HALLAZGO 013 columna de costo con otro nombre se ignora sin aviso', r.encabezadoCosto);
+  // Ronda 2: Windows-1252 decodificado (013 Medio 1) y aviso de la columna desconocida (013 Medio 3).
+  expect(r.latin1Texto).toEqual([`${P}-Ñ1 | ${P}-CH-Ñ1`]);
+  expect(r.latin1.validas).toBe('1 fila válida');
+  expect(r.encabezadoCosto.ignoradas).toMatch(/costo_compra/);
   expect(r.soloEncabezado.alerta).toMatch(/no tiene filas/);
-  expect(r.separadorComa.validas).toBe('1 filas válidas');
+  expect(r.separadorComa.validas).toBe('1 fila válida');
+  expect(r.separadorComa.ignoradas).toBeNull();
 });
 
 test('VRF 013 R4: archivo de 200 filas', async ({ page }) => {
