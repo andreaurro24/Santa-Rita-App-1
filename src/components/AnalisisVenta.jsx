@@ -1,10 +1,10 @@
 import { formatCOP } from '../domain/breakeven';
-import { formatFecha } from '../utils/format';
+import { formatFecha, formatKg, formatPct, formatNumero } from '../utils/format';
 import RecomendacionBadge from './RecomendacionBadge';
 import Stat from './ui/Stat';
 
 const pesos = (n) => (n == null ? '—' : `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`);
-const kg = (n) => `${Math.round(n).toLocaleString('es-CO')} kg`;
+const kg = (n) => formatKg(Math.round(n));
 const tono = (n) => (n > 0 ? 'ok' : n < 0 ? 'peligro' : 'neutro');
 const cuando = (semanas) => (semanas === 0 ? 'Hoy' : `En ${semanas} semanas`);
 
@@ -35,8 +35,8 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
         <Stat label="Reses para vender" value={r.nAnimales} sub={r.excluidos ? `${r.excluidos} hembras excluidas` : undefined} />
-        <Stat label="Peso promedio" value={kg(r.pesoPromedio)} sub={`${Math.round(r.avancePct)} % de la meta (${kg(r.meta)})`} />
-        <Stat label="Punto de equilibrio real" value={`${pesos(r.hoy.equilibrioKg)}/kg`} sub={`Destare ${destarePct.toLocaleString('es-CO')} %`} />
+        <Stat label="Peso promedio" value={kg(r.pesoPromedio)} sub={`${formatPct(Math.round(r.avancePct))} de la meta (${kg(r.meta)})`} />
+        <Stat label="Punto de equilibrio real" value={`${pesos(r.hoy.equilibrioKg)}/kg`} sub={`Destare ${formatPct(destarePct)}`} />
         <Stat
           label="Precio del kilo"
           value={`${pesos(precioKg)}/kg`}
@@ -89,7 +89,7 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
             <li key={s.variacion} className="rounded-lg bg-gray-50 px-3 py-2 text-sm">
               <p className="text-gray-600">
                 {s.variacion > 0 ? '+' : '−'}
-                {Math.abs(s.variacion * 100)} % ({pesos(s.precioKg)}/kg)
+                {formatPct(Math.abs(s.variacion * 100))} ({pesos(s.precioKg)}/kg)
               </p>
               <p className={`cifra text-base font-bold ${s.margenNeto >= 0 ? 'text-gray-900' : 'text-peligro'}`}>{pesos(s.margenNeto)}</p>
             </li>
@@ -109,7 +109,7 @@ export default function AnalisisVenta({ analisis, compacto = false }) {
           <li className="flex gap-2 text-sm text-gray-600">
             <span className="mt-2 size-1.5 shrink-0 rounded-full bg-gray-400" aria-hidden="true" />
             Pasto: {pasto ? `${pasto.nivel} (registrado el ${formatFecha(pasto.fecha)})` : 'sin registro en los últimos 30 días'}. Lluvia:{' '}
-            {clima ? (clima.isFallback ? 'sin conexión' : `${clima.resumenLluvia7d} mm en 7 días`) : 'consultando'}.
+            {clima ? (clima.isFallback ? 'sin conexión' : `${formatNumero(clima.resumenLluvia7d)} mm en 7 días`) : 'consultando'}.
           </li>
         </ul>
       </div>

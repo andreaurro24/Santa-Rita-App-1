@@ -8,7 +8,7 @@ import {
   Tooltip,
   ReferenceLine,
 } from 'recharts';
-import { formatFecha } from '../utils/format';
+import { formatFecha, formatKg } from '../utils/format';
 import { ordenarPesajes } from '../domain/breakeven';
 import { COLOR } from '../styles/tokens';
 
@@ -23,7 +23,7 @@ function CustomTooltip({ active, payload, label }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-gray-700">{formatFecha(label)}</p>
-      <p className="text-gray-600">{payload[0].value} kg</p>
+      <p className="text-gray-600">{formatKg(payload[0].value)}</p>
     </div>
   );
 }
@@ -57,7 +57,7 @@ export default function WeightChart({ pesos, pesoObjetivo, height = 220 }) {
             y={pesoObjetivo}
             stroke={COLOR.meta}
             strokeDasharray="4 4"
-            label={{ value: `Meta ${pesoObjetivo} kg`, position: 'insideTopRight', fontSize: 11, fill: AXIS_COLOR }}
+            label={{ value: `Meta ${formatKg(pesoObjetivo)}`, position: 'insideTopRight', fontSize: 11, fill: AXIS_COLOR }}
           />
         )}
         <Line

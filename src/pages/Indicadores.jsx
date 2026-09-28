@@ -10,7 +10,7 @@ import { diasEntre } from '../domain/gdp';
 import { ConDatos } from '../components/EstadoCarga';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatPct } from '../utils/format';
 
 // Spec 012 · R1: los KPI del proyecto calculados con los datos reales, frente a la línea base.
 export default function Indicadores() {
@@ -37,8 +37,8 @@ export default function Indicadores() {
           ];
           const k = calcularKpis({ animales: hato.data.animales, lotes: lotes.data, ventas: ventas.data, hoy, fuentes });
           const filas = [
-            { kpi: 'Hato con registro digital individual', base: LINEA_BASE.registroDigital, hoy: `${k.registroDigitalPct ?? 0} % de ${k.activos} reses activas`, cumple: k.registroDigitalPct === 100 },
-            { kpi: 'Historial de peso consolidado (2 o más pesajes)', base: LINEA_BASE.historialPeso, hoy: `${k.historialPesoPct ?? 0} % (${k.conHistorial} reses)`, cumple: k.historialPesoPct >= 90 },
+            { kpi: 'Hato con registro digital individual', base: LINEA_BASE.registroDigital, hoy: `${formatPct(k.registroDigitalPct ?? 0)} de ${k.activos} reses activas`, cumple: k.registroDigitalPct === 100 },
+            { kpi: 'Historial de peso consolidado (2 o más pesajes)', base: LINEA_BASE.historialPeso, hoy: `${formatPct(k.historialPesoPct ?? 0)} (${k.conHistorial} reses)`, cumple: k.historialPesoPct >= 90 },
             { kpi: 'Fuentes externas en la decisión de venta', base: LINEA_BASE.fuentes, hoy: `${k.fuentesActivas} de 3 activas`, cumple: k.fuentesActivas >= 2 },
             {
               kpi: 'Reporte del sistema usado en una venta real',

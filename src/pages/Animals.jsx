@@ -13,7 +13,7 @@ import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { pierdePeso } from '../domain/gdp';
 import { vientresHaciaCeba } from '../domain/lotes';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatKg } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 export default function Animals() {
@@ -93,8 +93,8 @@ function HatoContenido({ animales, lotes }) {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-gray-500">{a.loteNombre}</p>
                     <p className="text-sm">
-                      <span className="cifra text-lg font-bold text-gray-900">{pesoActual(a)} kg</span>
-                      <span className="text-gray-500"> de {a.pesoObjetivo} kg</span>
+                      <span className="cifra text-lg font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
+                      <span className="text-gray-500"> de {formatKg(a.pesoObjetivo)}</span>
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -144,9 +144,9 @@ function HatoContenido({ animales, lotes }) {
                     </td>
                     <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">
                       {pierdePeso(a) && <TrendingDown size={16} className="mr-1 inline text-peligro" aria-label="Pierde peso" />}
-                      {pesoActual(a)} kg
+                      {formatKg(pesoActual(a))}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-right text-gray-500">{a.pesoObjetivo} kg</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-right text-gray-500">{formatKg(a.pesoObjetivo)}</td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-600">{formatFecha(fechaUltimoPesaje(a))}</td>
                   </tr>
                 ))}

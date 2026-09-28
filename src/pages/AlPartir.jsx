@@ -23,7 +23,7 @@ import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
-import { formatFecha, formatoGdp, hoyISO } from '../utils/format';
+import { formatFecha, formatoGdp, hoyISO, formatKg, formatPct } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 const promedio = (xs) => (xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 10) / 10 : null);
@@ -63,13 +63,13 @@ export function AlPartirLista() {
                     <Link to={`/al-partir/${c.id}`} className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-earth-300">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <h2 className="mr-auto text-lg font-bold text-gray-900">{c.tenedor.nombre}</h2>
-                        <Badge tono="cuero">{c.porcentaje} % de la ganancia</Badge>
+                        <Badge tono="cuero">{formatPct(c.porcentaje)} de la ganancia</Badge>
                         <Badge tono={c.estado === 'vigente' ? 'ok' : 'neutro'}>{c.estado === 'vigente' ? 'Vigente' : 'Terminado'}</Badge>
                       </div>
                       <p className="mb-3 text-sm text-gray-600">{c.tenedor.fincaNombre ?? 'Sin finca registrada'}</p>
                       <div className="grid grid-cols-3 gap-3">
                         <Stat label="Reses" value={suyos.length} />
-                        <Stat label="Peso promedio" value={suyos.length ? `${promedio(suyos.map(pesoActual))} kg` : '—'} />
+                        <Stat label="Peso promedio" value={suyos.length ? `${formatKg(promedio(suyos.map(pesoActual)))}` : '—'} />
                         <Stat label="Última visita" value={c.ultimaVisita ? formatFecha(c.ultimaVisita) : 'Ninguna'} />
                       </div>
                     </Link>
@@ -148,10 +148,10 @@ function DetalleContrato({ contrato, animales }) {
 
       <Card titulo="Condiciones y estado" icono={Handshake}>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Stat label="Participación del tenedor" value={`${contrato.porcentaje} %`} sub="de la ganancia neta" />
+          <Stat label="Participación del tenedor" value={`${formatPct(contrato.porcentaje)}`} sub="de la ganancia neta" />
           <Stat label="Precio del animal" value={contrato.precioAnimalCop != null ? `$${formatCOP(contrato.precioAnimalCop)}` : '—'} />
           <Stat label="Precio por kilo" value={contrato.precioKgCop != null ? `$${formatCOP(contrato.precioKgCop)}` : '—'} />
-          <Stat label="Reses" value={suyos.length} sub={suyos.length ? `promedio ${promedio(suyos.map(pesoActual))} kg` : undefined} />
+          <Stat label="Reses" value={suyos.length} sub={suyos.length ? `promedio ${formatKg(promedio(suyos.map(pesoActual)))}` : undefined} />
           <Stat label="Ganancia diaria" value={formatoGdp(gdpLote(suyos))} />
         </div>
       </Card>
@@ -165,7 +165,7 @@ function DetalleContrato({ contrato, animales }) {
               <li key={a.id}>
                 <Link to={`/animales/${a.id}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5 hover:bg-earth-50">
                   <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{pesoActual(a)} kg</span>
+                  <span className="cifra font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
                 </Link>
               </li>
             ))}
@@ -191,7 +191,7 @@ function DetalleContrato({ contrato, animales }) {
                       <p className="flex flex-wrap gap-x-3 gap-y-1 text-gray-700">
                         {v.revisiones.map((r) => (
                           <span key={r.animalId}>
-                            {numero(r.animalId)}: {r.encontrado ? `${r.pesoKg} kg` : 'no encontrado'}
+                            {numero(r.animalId)}: {r.encontrado ? `${formatKg(r.pesoKg)}` : 'no encontrado'}
                           </span>
                         ))}
                       </p>
@@ -471,7 +471,7 @@ function VisitaForm({ contrato, animales, onClose }) {
       }
       const peso = Math.round(Number(String(f.peso).replace(',', '.')) * 10) / 10;
       if (!(peso > 0 && peso < 1500)) return setError(`El peso de ${a.numeroInterno} debe estar entre 0,1 y 1.499 kg.`);
-      if (variacionSospechosa(peso, pesoActual(a))) sospechosos.push(`${a.numeroInterno}: ${pesoActual(a)} → ${peso} kg`);
+      if (variacionSospechosa(peso, pesoActual(a))) sospechosos.push(`${a.numeroInterno}: ${pesoActual(a)} → ${formatKg(peso)}`);
       revisiones.push({ animalId: a.id, pesoKg: peso });
     }
     const firma = JSON.stringify(revisiones);

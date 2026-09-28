@@ -13,7 +13,7 @@ import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje } from '../domain/breakeven';
 import { variacionSospechosa } from '../domain/gdp';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatKg, formatPct } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 // Spec 004 · R1, R8: elegir el lote y abrir (o retomar) una jornada; ver las anteriores.
@@ -89,7 +89,7 @@ function InicioContenido({ lotes }) {
                     <Link to={`/pesaje/${j.id}`} className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-1 py-2 hover:bg-gray-50">
                       <span className="w-28 font-medium text-gray-900">{formatFecha(j.fecha)}</span>
                       <span className="text-sm text-gray-600">{j.nPesados} pesados</span>
-                      <span className="text-sm text-gray-600">{j.pesoPromedio != null ? `promedio ${j.pesoPromedio} kg` : 'sin pesos'}</span>
+                      <span className="text-sm text-gray-600">{j.pesoPromedio != null ? `promedio ${formatKg(j.pesoPromedio)}` : 'sin pesos'}</span>
                       {j.estado === 'abierta' ? <Badge tono="alerta">Abierta</Badge> : <Badge>Cerrada</Badge>}
                     </Link>
                   </li>
@@ -212,11 +212,11 @@ function JornadaContenido({ jornada, lotes }) {
               .map((a) => (
                 <li key={a.id} className="flex items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5">
                   <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{jornada.pesados.get(a.id)} kg</span>
+                  <span className="cifra font-bold text-gray-900">{formatKg(jornada.pesados.get(a.id))}</span>
                 </li>
               ))}
           </ul>
-          {jornada.pesoPromedio != null && <p className="mt-3 text-sm text-gray-600">Peso promedio de la jornada: {jornada.pesoPromedio} kg</p>}
+          {jornada.pesoPromedio != null && <p className="mt-3 text-sm text-gray-600">Peso promedio de la jornada: {formatKg(jornada.pesoPromedio)}</p>}
         </Card>
       )}
 
@@ -268,7 +268,7 @@ function CapturaPeso({ jornada, animal, onSaltar, onGuardado }) {
           <Chapeta numero={animal.numeroInterno} tamano="lg" />
           <div className="text-sm text-gray-600">
             <p>
-              Último peso: <span className="cifra text-lg font-bold text-gray-900">{anterior} kg</span>
+              Último peso: <span className="cifra text-lg font-bold text-gray-900">{formatKg(anterior)}</span>
             </p>
             <p>{formatFecha(fechaUltimoPesaje(animal))}</p>
           </div>
@@ -321,8 +321,8 @@ function CapturaPeso({ jornada, animal, onSaltar, onGuardado }) {
           }
         >
           <p className="text-gray-800">
-            {animal.numeroInterno} pesaba {anterior} kg y ahora escribiste {confirmar} kg: {cambio > 0 ? '+' : ''}
-            {cambio} %. Puede ser un error de digitación.
+            {animal.numeroInterno} pesaba {formatKg(anterior)} y ahora escribiste {formatKg(confirmar)}: {cambio > 0 ? '+' : ''}
+            {formatPct(cambio)}. Puede ser un error de digitación.
           </p>
         </Modal>
       )}

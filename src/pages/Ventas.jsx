@@ -16,7 +16,7 @@ import Chapeta from '../components/ui/Chapeta';
 import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatKg, formatPct, numeroParaCampo } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 const pesos = (n) => (n == null ? '—' : `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`);
@@ -121,14 +121,14 @@ function NuevaVentaContenido({ datos }) {
   const filas = vendibles.map((a) => ({
     animal: a,
     incluido: seleccion ? seleccion.has(a.id) : true,
-    peso: seleccion?.get(a.id) ?? String(pesoActual(a)),
+    peso: seleccion?.get(a.id) ?? numeroParaCampo(pesoActual(a)),
   }));
   const [error, setError] = useState('');
 
   function alternar(a) {
     const m = new Map(seleccion ?? filas.map((f) => [f.animal.id, f.peso]));
     if (m.has(a.id)) m.delete(a.id);
-    else m.set(a.id, String(pesoActual(a)));
+    else m.set(a.id, numeroParaCampo(pesoActual(a)));
     setSeleccion(m);
   }
   function cambiarPeso(a, valor) {
@@ -308,13 +308,13 @@ function DetalleVenta({ venta: v }) {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Venta de {v.lote?.nombre}</h1>
         <p className="text-sm text-gray-600">
-          {formatFecha(v.fecha)}, a {v.comprador}. {pesos(v.precioKg)}/kg con {v.destarePct.toLocaleString('es-CO')} % de destare.
+          {formatFecha(v.fecha)}, a {v.comprador}. {pesos(v.precioKg)}/kg con {formatPct(v.destarePct)} de destare.
         </p>
       </div>
 
       <Card titulo="Resultado real">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Stat label="Reses vendidas" value={v.animales.length} sub={`${Math.round(r.pesoVendible).toLocaleString('es-CO')} kg pagados`} />
+          <Stat label="Reses vendidas" value={v.animales.length} sub={`${formatKg(Math.round(r.pesoVendible))} pagados`} />
           <Stat label="Ingreso" value={pesos(r.ingreso)} />
           <Stat label="Costo acumulado" value={pesos(r.costo)} />
           <Stat label="Margen neto" value={pesos(r.margenNeto)} tono={tono(r.margenNeto)} sub="Para Santa Rita" />
@@ -362,7 +362,7 @@ function DetalleVenta({ venta: v }) {
             <li key={a.animalId}>
               <Link to={`/animales/${a.animalId}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5">
                 <Chapeta numero={a.numeroInterno} />
-                <span className="cifra font-bold text-gray-900">{a.pesoKg} kg</span>
+                <span className="cifra font-bold text-gray-900">{formatKg(a.pesoKg)}</span>
               </Link>
             </li>
           ))}

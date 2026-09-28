@@ -4,7 +4,7 @@ import { useFincas } from '../data/fincas';
 import { useCondicionPasto, useRegistrarPasto, useParametros, useGuardarParametros } from '../data/pasto';
 import { ultimoPorFinca } from '../domain/pasto';
 import { mensajeError } from '../lib/errores';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatPct } from '../utils/format';
 import { ConDatos } from './EstadoCarga';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -167,7 +167,7 @@ export function ParametrosVenta() {
         {() => (
           <Stat
             label="Destare"
-            value={`${parametros.data.destarePct.toLocaleString('es-CO')} %`}
+            value={`${formatPct(parametros.data.destarePct)}`}
             sub="Porcentaje que el comprador descuenta del peso en pie. Se usa en la recomendación de venta."
           />
         )}

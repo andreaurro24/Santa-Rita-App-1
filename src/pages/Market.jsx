@@ -15,7 +15,7 @@ import Modal from '../components/ui/Modal';
 import { Field, Input, FormError } from '../components/ui/Field';
 import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
-import { formatFecha, hoyISO } from '../utils/format';
+import { formatFecha, hoyISO, formatNumero } from '../utils/format';
 import { UBICACION_FINCA, PERDIDA_REVALUACION_COP_POR_KG } from '../data/seedMercado';
 
 export default function Market() {
@@ -54,7 +54,7 @@ function MercadoContenido({ precios, precioActual }) {
                 <div>
                   <p className="font-medium text-gray-800">{describeWeatherCode(clima.actual.codigo)}</p>
                   <p className="flex items-center gap-1 text-sm text-gray-600">
-                    <Droplets size={14} aria-hidden="true" /> {clima.resumenLluvia7d} mm de lluvia en 7 días
+                    <Droplets size={14} aria-hidden="true" /> {formatNumero(clima.resumenLluvia7d)} mm de lluvia en 7 días
                   </p>
                 </div>
               </div>

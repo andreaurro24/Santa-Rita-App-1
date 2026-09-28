@@ -119,7 +119,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     razones.unshift(
       pasto === 'rojo'
         ? `El pasto está en rojo: se recomienda anticipar la venta mientras el margen es positivo (${pesos(hoyR.margenNeto)}).`
-        : `Casi no se pronostica lluvia (${clima.resumenLluvia7d} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
+        : `Casi no se pronostica lluvia (${String(clima.resumenLluvia7d).replace('.', ',')} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
     );
   } else if (mejorFuturo.margenNeto > hoyR.margenNeto) {
     recomendacion = 'ESPERAR';

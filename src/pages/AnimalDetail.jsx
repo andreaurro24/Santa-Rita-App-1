@@ -21,7 +21,7 @@ import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { pesoActual, fechaUltimoPesaje, formatCOP } from '../domain/breakeven';
 import { gdpReciente, gdpTotal, pierdePeso, variacionSospechosa } from '../domain/gdp';
 import Stat from '../components/ui/Stat';
-import { formatFecha, diasHasta, hoyISO, formatoGdp } from '../utils/format';
+import { formatFecha, diasHasta, hoyISO, formatoGdp, formatKg, formatPct } from '../utils/format';
 
 export default function AnimalDetail() {
   const hato = useHato();
@@ -81,9 +81,9 @@ function FichaAnimal({ animales, reparto }) {
           </p>
         </div>
         <div className="md:text-right">
-          <p className="cifra text-4xl font-bold text-brand-800">{peso} kg</p>
+          <p className="cifra text-4xl font-bold text-brand-800">{formatKg(peso)}</p>
           <p className="text-sm text-gray-600">
-            Meta {animal.pesoObjetivo} kg, {avance} % de avance
+            Meta {formatKg(animal.pesoObjetivo)}, {formatPct(avance)} de avance
           </p>
         </div>
       </div>
@@ -100,11 +100,11 @@ function FichaAnimal({ animales, reparto }) {
             <Row label="Sexo" value={animal.sexo} />
             <Row label="Origen" value={animal.origen} />
             <Row label="Fecha de ingreso" value={formatFecha(animal.fechaIngreso)} />
-            <Row label="Peso de ingreso" value={`${animal.pesoIngreso} kg`} />
+            <Row label="Peso de ingreso" value={`${formatKg(animal.pesoIngreso)}`} />
             {animal.costoCompra != null && <Row label="Costo de compra" value={`$${formatCOP(animal.costoCompra)}`} />}
             <Row
               label="Esquema"
-              value={animal.esquema === 'Al partir' ? `${animal.tenedor} (${animal.porcentajeTenedor} %)` : 'Propio'}
+              value={animal.esquema === 'Al partir' ? `${animal.tenedor} (${formatPct(animal.porcentajeTenedor)})` : 'Propio'}
             />
           </dl>
         </Card>
@@ -240,7 +240,7 @@ function VisitasAnimal({ animalId }) {
               {formatFecha(v.fecha)}
               {v.tenedor ? `, finca de ${v.tenedor}` : ''}
             </span>
-            {v.encontrado ? <span className="text-gray-700">{v.pesoKg} kg</span> : <Badge tono="alerta">No encontrado</Badge>}
+            {v.encontrado ? <span className="text-gray-700">{formatKg(v.pesoKg)}</span> : <Badge tono="alerta">No encontrado</Badge>}
           </li>
         ))}
       </ul>
@@ -340,8 +340,8 @@ function PesoForm({ animalId, pesoAnterior, onSaved, onCancel }) {
         </Field>
         {aviso != null && (
           <p role="alert" className="col-span-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
-            Pesaba {pesoAnterior} kg y escribiste {aviso} kg ({aviso > pesoAnterior ? '+' : ''}
-            {Math.round(((aviso - pesoAnterior) / pesoAnterior) * 100)} %). ¿Es correcto? Revisa el número o toca "Guardar igual".
+            Pesaba {formatKg(pesoAnterior)} y escribiste {formatKg(aviso)} ({aviso > pesoAnterior ? '+' : ''}
+            {formatPct(Math.round(((aviso - pesoAnterior) / pesoAnterior) * 100))}). ¿Es correcto? Revisa el número o toca "Guardar igual".
           </p>
         )}
         <div className="col-span-2">

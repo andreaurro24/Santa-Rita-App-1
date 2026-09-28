@@ -29,3 +29,23 @@ export function diasHasta(iso) {
 export function formatoGdp(g) {
   return g == null ? '—' : `${g.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg/día`;
 }
+
+// Spec 012 · R2: cifras con coma decimal y punto de miles (es-CO), en toda la app.
+const num1 = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
+
+export function formatNumero(n) {
+  return n == null || Number.isNaN(Number(n)) ? '—' : num1.format(Number(n));
+}
+
+export function formatKg(n) {
+  return n == null || Number.isNaN(Number(n)) ? '—' : `${num1.format(Number(n))} kg`;
+}
+
+export function formatPct(n) {
+  return n == null || Number.isNaN(Number(n)) ? '—' : `${num1.format(Number(n))} %`;
+}
+
+// Para rellenar un campo de texto con un número editable: "349,8" (sin separador de miles).
+export function numeroParaCampo(n) {
+  return n == null ? '' : String(n).replace('.', ',');
+}

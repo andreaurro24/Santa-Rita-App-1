@@ -65,11 +65,11 @@ test('R2–R6: contrato nuevo, asignar 2 animales, visita con un peso y un no en
   await visita.getByRole('button', { name: 'Guardar visita' }).click();
   await expect(visita).toHaveCount(0);
   await expect(page.getByText(/1 pesados, 1 no encontrados/)).toBeVisible();
-  await expect(page.getByText(`${propios[0].numero_interno}: 333.3 kg`)).toBeVisible();
+  await expect(page.getByText(`${propios[0].numero_interno}: 333,3 kg`)).toBeVisible();
 
   // En la ficha: el peso de la visita y el movimiento a la finca del tenedor
   await page.goto(`/#/animales/${propios[0].id}`);
-  await expect(page.getByText('333.3 kg', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('333,3 kg', { exact: true }).first()).toBeVisible();
   await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) })).toContainText(MOTIVO);
 });
 

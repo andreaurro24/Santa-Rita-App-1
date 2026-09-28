@@ -5,6 +5,7 @@ import { clientePrueba, iniciarSesion } from './helpers';
 
 const ANIMAL = '0102'; // animal de la semilla (npm run db:seed)
 const PESO = '355.5';
+const PESO_ES = '355,5'; // así se muestra (es-CO, spec 012)
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
@@ -27,17 +28,17 @@ test('R4/R6: un pesaje se guarda, sobrevive a la recarga y se ve desde otra sesi
   await page.getByRole('button', { name: 'Registrar peso' }).click();
   await page.getByLabel('Peso (kg)').fill(PESO);
   await page.getByRole('button', { name: 'Guardar' }).click();
-  await expect(page.getByText(`${PESO} kg`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`${PESO_ES} kg`, { exact: true })).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText(`${PESO} kg`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`${PESO_ES} kg`, { exact: true })).toBeVisible();
 
   // Otra sesión, sin compartir almacenamiento con la primera.
   const otra = await browser.newContext();
   const page2 = await otra.newPage();
   await iniciarSesion(page2);
   await abrirAnimal(page2, ANIMAL);
-  await expect(page2.getByText(`${PESO} kg`, { exact: true })).toBeVisible();
+  await expect(page2.getByText(`${PESO_ES} kg`, { exact: true })).toBeVisible();
   await otra.close();
 });
 

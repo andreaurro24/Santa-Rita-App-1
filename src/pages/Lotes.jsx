@@ -18,7 +18,7 @@ import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
-import { formatFecha, formatoGdp, hoyISO } from '../utils/format';
+import { formatFecha, formatoGdp, hoyISO, formatKg, formatPct } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
 const ESTADO_LOTE = {
@@ -42,7 +42,7 @@ function useLotesConAnimales() {
 function textoProyeccion(p) {
   if (p.tipo === 'fecha') return `${formatFecha(p.fecha)} (en ${p.dias} días)`;
   if (p.tipo === 'meta_alcanzada') return 'Meta alcanzada';
-  if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (peso estimado ${p.pesoEstimadoHoy} kg): confírmalo con un pesaje`;
+  if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (peso estimado ${formatKg(p.pesoEstimadoHoy)}): confírmalo con un pesaje`;
   if (p.tipo === 'sin_animales') return 'Sin animales';
   return 'Sin datos suficientes';
 }
@@ -77,8 +77,8 @@ export function LotesLista() {
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                       <Stat label="Reses" value={r.nActivos} />
-                      <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${r.pesoPromedio} kg` : '—'} />
-                      <Stat label="Meta" value={r.meta != null ? `${r.meta} kg` : '—'} />
+                      <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${formatKg(r.pesoPromedio)}` : '—'} />
+                      <Stat label="Meta" value={r.meta != null ? `${formatKg(r.meta)}` : '—'} />
                       <Stat label="Ganancia diaria" value={formatoGdp(r.gdp)} />
                     </div>
                     {r.avancePct != null && (
@@ -168,8 +168,8 @@ function DetalleContenido({ lote }) {
       <Card>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
           <Stat label="Reses activas" value={r.nActivos} />
-          <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${r.pesoPromedio} kg` : '—'} />
-          <Stat label="Meta pactada" value={r.meta != null ? `${r.meta} kg` : '—'} sub={r.avancePct != null ? `${r.avancePct} % de avance` : undefined} />
+          <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${formatKg(r.pesoPromedio)}` : '—'} />
+          <Stat label="Meta pactada" value={r.meta != null ? `${formatKg(r.meta)}` : '—'} sub={r.avancePct != null ? `${formatPct(r.avancePct)} de avance` : undefined} />
           <Stat label="Ganancia diaria del lote" value={formatoGdp(r.gdp)} />
           <Stat label="Llega a la meta" value={textoProyeccion(r.proyeccion)} />
         </div>
@@ -194,7 +194,7 @@ function DetalleContenido({ lote }) {
                 <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
                   <input type="checkbox" className="size-5 accent-brand-700" checked={seleccion.has(a.id)} onChange={() => alternar(a.id)} aria-label={`Seleccionar ${a.numeroInterno}`} />
                   <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{pesoActual(a)} kg</span>
+                  <span className="cifra font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
                   <span className="ml-auto truncate text-xs text-gray-500">{[a.fincaNombre, a.potreroNombre].filter(Boolean).join(', ')}</span>
                 </label>
               </li>

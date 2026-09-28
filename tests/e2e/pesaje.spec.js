@@ -28,7 +28,7 @@ test.afterAll(limpiar);
 
 async function ultimoPeso(page) {
   const texto = await page.getByText(/^Último peso:/).innerText();
-  return Number(texto.match(/([\d.]+) kg/)[1]);
+  return Number(texto.match(/([\d.,]+) kg/)[1].replace(/\./g, '').replace(',', '.'));
 }
 
 test('R1–R4, R8: jornada de 3 animales con confirmación por variación, cierre e historial', async ({ page }) => {

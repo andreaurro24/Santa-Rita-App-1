@@ -1,6 +1,6 @@
 # Spec 012 — Indicadores del proyecto, reportes y formato de cifras
 
-- Estado: en-progreso
+- Estado: en-verificacion
 - Sprint: 4
 - Módulos del plan: M12 (+ deuda DT-00-2 y DT-00-5)
 
@@ -43,11 +43,12 @@ nota en el celular del campo.
 - **Pantalla de indicadores:** reemplaza la tarjeta "Metas del proyecto" del panel, que ahora
   enlaza a `/indicadores`.
 - **Acciones de las tarjetas:** en la impresión se ocultan todas (`Card` las marca `no-print`).
-- **Formato es-CO (R2):** pendiente. Se hará después de integrar el Sprint 3 en `main`, porque
-  toca casi todas las pantallas y las pruebas del verificador.
+- **Formato es-CO (R2):** hecho con `formatKg`, `formatPct` y `formatNumero` (`src/utils/format.js`)
+  en 43 lugares. Los campos editables se precargan con coma (`numeroParaCampo`). Las pruebas del
+  verificador que buscan "355.5 kg" cambian de premisa a propósito.
 
 ## Tareas
-- [ ] T1 Formato es-CO en toda la app + pruebas
+- [x] T1 Formato es-CO en toda la app + pruebas
 - [x] T2 División del código por rutas
 - [x] T3 KPI y página de indicadores
 - [x] T4 Ficha imprimible
