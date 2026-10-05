@@ -1,6 +1,6 @@
 # Spec 014 — Base limpia, guardas y bitácora
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: base (DT-04-10)
 
@@ -29,10 +29,10 @@ de producción debe quedar limpia y protegida de los scripts y las pruebas.
 - Limpieza al final del sprint, con SQL en el orden de las llaves foráneas y borrado del bucket de fotos.
 
 ## Tareas
-- [ ] T1 Bitácora `docs/retroalimentacion.md` — verifica: el archivo existe con las 22 entradas
-- [ ] T2 Guardas en seed y E2E — verifica: `npm run db:seed` contra producción termina con error y no borra nada
-- [ ] T3 Documentar el proyecto de pruebas en `DEPLOY.md` — verifica: lectura
-- [ ] T4 Limpiar producción (último paso del sprint) — verifica: conteos en 0 y solo usuarios reales
+- [x] T1 Bitácora `docs/retroalimentacion.md` — verifica: el archivo existe con las 22 entradas
+- [x] T2 Guardas en seed y E2E — verifica: `npm run db:seed` contra producción termina con error y no borra nada
+- [x] T3 Documentar el proyecto de pruebas en `DEPLOY.md` — verifica: lectura
+- [x] T4 Limpiar producción (último paso del sprint) — verifica: conteos en 0 y solo usuarios reales. *Hecho el 2026-10-04: 0 animales, pesajes, lotes, tenedores, ventas y precios manuales; queda la finca propia "Finca Santa Rita", los 5 rangos de precio y los usuarios del equipo; se borró el usuario de prueba y se quitó la excepción `E2E_PERMITIR_PRODUCCION`.*
 
 ## Criterios de aceptación para el verificador
 - Con la base limpia, la app abre sin errores y muestra estados vacíos útiles en cada pantalla.

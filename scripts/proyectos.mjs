@@ -15,9 +15,6 @@ export function refDe(url) {
 export function exigirProyectoDePruebas(url, que) {
   if (!url) throw new Error('Falta VITE_SUPABASE_URL (ver .env.example).');
   const ref = refDe(url);
-  // TEMPORAL (Sprint 05): mientras producción aún tiene los datos de ejemplo se verifica ahí.
-  // Se quita al limpiar producción (spec 014 · T4).
-  if (ref === PROYECTO_PRODUCCION && process.env.E2E_PERMITIR_PRODUCCION === 'si') return;
   if (ref === PROYECTO_PRODUCCION) {
     throw new Error(
       `${que} no puede correr contra PRODUCCIÓN (${PROYECTO_PRODUCCION}): borraría o mezclaría datos reales de la finca. ` +
