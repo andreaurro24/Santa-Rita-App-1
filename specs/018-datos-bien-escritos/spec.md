@@ -1,6 +1,6 @@
 # Spec 018 — Dinero con miles y nombres válidos
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: transversal
 

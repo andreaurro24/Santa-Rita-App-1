@@ -79,10 +79,22 @@ export function FotoAnimal({ animal, puedeEditar }) {
       )}
       {puedeEditar && (
         <div className="no-print flex flex-wrap gap-2">
-          <input ref={input} type="file" accept="image/*" className="sr-only" aria-label="Foto del animal" onChange={elegir} />
-          <Button variante="secundario" icono={Camera} disabled={Boolean(estado)} onClick={() => input.current?.click()}>
-            {estado || (animal.fotoPath ? 'Cambiar foto' : 'Agregar foto')}
-          </Button>
+          {/* El selector de archivo va encima del botón (invisible y del mismo tamaño): un toque lo abre. */}
+          <span className="relative inline-flex">
+            <Button variante="secundario" icono={Camera} disabled={Boolean(estado)} tabIndex={-1} aria-hidden="true">
+              {estado || (animal.fotoPath ? 'Cambiar foto' : 'Agregar foto')}
+            </Button>
+            <input
+              ref={input}
+              type="file"
+              accept="image/*"
+              disabled={Boolean(estado)}
+              className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              aria-label="Foto del animal"
+              title={animal.fotoPath ? 'Cambiar foto' : 'Agregar foto'}
+              onChange={elegir}
+            />
+          </span>
           {animal.fotoPath && !estado && (
             <Button variante="fantasma" icono={ImageOff} onClick={quitar} disabled={guardar.isPending}>
               Quitar foto
@@ -131,6 +143,7 @@ export function AccionesAnimal({ animal, lotes, duenos }) {
           Apareció: reactivar
         </Button>
       )}
+      {reactivar.isError && <p role="alert" className="w-full text-base text-peligro">{mensajeError(reactivar.error)}</p>}
       <Button variante="fantasma" icono={Trash2} onClick={() => setAbierto('eliminar')}>
         Eliminar
       </Button>

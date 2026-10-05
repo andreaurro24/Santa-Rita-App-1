@@ -37,7 +37,14 @@ export function numeroAPesos(n) {
 export function entradaPesosInvalida(nuevo, anterior) {
   if (/[^\d.\s$]/.test(nuevo)) return true; // coma, signo, letras
   const limpio = nuevo.replace(/[\s$]/g, '');
-  const borrando = limpio.replace(/\D/g, '').length < String(anterior ?? '').replace(/\D/g, '').length;
+  // Borrar es quitar caracteres; reemplazar una selección con otra cosa no cuenta como borrar.
+  const borrando = limpio.length < String(anterior ?? '').length && limpio.replace(/\D/g, '').length < String(anterior ?? '').replace(/\D/g, '').length;
   // Un punto seguido de 0 a 2 dígitos al final es un decimal (al borrar es solo reacomodo de miles).
   return !borrando && /\.\d{0,2}$/.test(limpio);
+}
+
+// Verificación Sprint 05 (M1-r2): lo pegado en un campo de pesos solo vale si es un entero, con o
+// sin puntos de miles bien puestos ("1250000", "1.250.000", "$ 1.250.000").
+export function pegadoPesosValido(texto) {
+  return /^\s*\$?\s*(\d{1,3}(\.\d{3})+|\d+)\s*$/.test(String(texto ?? ''));
 }

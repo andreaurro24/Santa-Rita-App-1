@@ -1,6 +1,6 @@
 # Spec 020 — Fincas, lotes y gastos de finca
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M5, M6, M7, M8
 

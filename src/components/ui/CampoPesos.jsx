@@ -1,23 +1,56 @@
-import { useRef, useState } from 'react';
-import { entradaPesosInvalida, numeroAPesos } from '../../utils/validar';
+import { useEffect, useRef, useState } from 'react';
+import { entradaPesosInvalida, numeroAPesos, pegadoPesosValido } from '../../utils/validar';
+
+const AVISO = 'Solo pesos enteros: escribe solo números (los puntos de miles se ponen solos) y sin centavos.';
 
 // Spec 018 · R1: campo de dinero con puntos de miles en vivo ("1000000" → "1.000.000").
 // `value` es el texto con puntos; quien lo usa lo convierte con pesosANumero al guardar.
 // El cursor se mantiene después del mismo dígito aunque se agreguen o quiten puntos.
+//
+// Verificación Sprint 05 (M1, M1-r2): nunca se convierte un monto en otro número en silencio.
+// - Lo que entra de una vez (pegar, autocompletar) solo vale si es un entero bien formado.
+// - Un punto o una coma escritos a mano se rechazan, y los dígitos que vengan después también,
+//   hasta que se borre algo: así "1.000,50" queda en "1.000" con el aviso, no en "100.050".
 export default function CampoPesos({ value, onChange, className = '', ...props }) {
   const ref = useRef(null);
   const [aviso, setAviso] = useState('');
+  const bloqueado = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    // Evento nativo: el `onBeforeInput` de React no siempre deja cancelar la entrada.
+    function antes(e) {
+      if (e.inputType?.startsWith('delete')) {
+        bloqueado.current = false;
+        return;
+      }
+      const texto = e.data ?? e.dataTransfer?.getData('text') ?? '';
+      if (!texto) return;
+      const unSoloCaracter = texto.length === 1;
+      const valido = unSoloCaracter ? /\d/.test(texto) && !bloqueado.current : pegadoPesosValido(texto);
+      if (!valido) {
+        e.preventDefault();
+        if (unSoloCaracter && /[.,]/.test(texto)) bloqueado.current = true;
+        setAviso(AVISO);
+      }
+    }
+    el.addEventListener('beforeinput', antes);
+    return () => el.removeEventListener('beforeinput', antes);
+  }, []);
 
   function manejar(e) {
     const el = e.target;
+    // Respaldo para cambios que no pasan por `beforeinput`.
     if (entradaPesosInvalida(el.value, value)) {
-      setAviso('Solo pesos enteros: sin centavos, signos ni letras.');
+      setAviso(AVISO);
       return; // React vuelve a mostrar el valor anterior
     }
-    setAviso('');
+    if (!bloqueado.current) setAviso('');
     const cursor = el.selectionStart ?? el.value.length;
     const digitosAntes = el.value.slice(0, cursor).replace(/\D/g, '').length;
     const nuevo = numeroAPesos(el.value);
+    if (!nuevo) bloqueado.current = false;
     onChange(nuevo);
     requestAnimationFrame(() => {
       if (!ref.current) return;

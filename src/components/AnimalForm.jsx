@@ -228,8 +228,8 @@ export default function AnimalForm({ especie = 'bovino', animal = null, lotes = 
                 ['kilo', 'Por kilo'],
                 ['animal', 'Por animal'],
               ].map(([valor, label]) => (
-                <label key={valor} className={`flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border px-3 text-base font-semibold ${form.modoCompra === valor ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-borde-control bg-white text-gray-700'}`}>
-                  <input type="radio" name="modoCompra" value={valor} checked={form.modoCompra === valor} onChange={() => set('modoCompra', valor)} className="sr-only" />
+                <label key={valor} className={`relative flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border px-3 text-base font-semibold ${form.modoCompra === valor ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-borde-control bg-white text-gray-700'}`}>
+                  <input type="radio" name="modoCompra" value={valor} checked={form.modoCompra === valor} onChange={() => set('modoCompra', valor)} className="absolute inset-0 size-full cursor-pointer opacity-0" />
                   {label}
                 </label>
               ))}

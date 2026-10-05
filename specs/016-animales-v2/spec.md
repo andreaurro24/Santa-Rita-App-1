@@ -1,6 +1,6 @@
 # Spec 016 — Animales: editar, baja, dueño, vientres, compra y caballos
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M2 (sustituye en parte a la spec 003, que nunca se escribió)
 

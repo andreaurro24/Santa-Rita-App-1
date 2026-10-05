@@ -127,6 +127,7 @@ function FichaAnimal({ animales, caballos, lotes, reparto }) {
             <Row label="Sexo" value={animal.sexo} />
             <Row label="Categoría" value={etiquetaCategoria(animal.categoria)} />
             <Row label="Dueño" value={animal.dueno ?? '—'} />
+            {animal.color && <Row label="Color" value={animal.color} />}
             <Row label="Origen" value={animal.origen} />
             <Row label="Fecha de ingreso" value={formatFecha(animal.fechaIngreso)} />
             <Row label="Peso de ingreso" value={`${formatKg(animal.pesoIngreso)}`} />

@@ -112,10 +112,14 @@ function NuevaVentaContenido({ datos }) {
   // lo pulsaba sin ver el resumen. Se habilita un momento después de mostrar el paso 3.
   const [listoParaGuardar, setListoParaGuardar] = useState(false);
   useEffect(() => {
-    if (paso !== 2) return setListoParaGuardar(false);
+    if (paso !== 2) return undefined;
     const t = setTimeout(() => setListoParaGuardar(true), 800);
     return () => clearTimeout(t);
   }, [paso]);
+  function irAPaso(n) {
+    setListoParaGuardar(false);
+    setPaso(n);
+  }
   const [loteId, setLoteId] = useState(params.get('lote') ?? lotes[0]?.id ?? '');
   const [form, setForm] = useState({
     fecha: hoyISO(),
@@ -217,7 +221,7 @@ function NuevaVentaContenido({ datos }) {
       const sugerido = precioSugerido();
       if (sugerido) set('precioKg', numeroAPesos(sugerido));
     }
-    setPaso((p) => p + 1);
+    irAPaso(paso + 1);
   }
 
   function handleSubmit(e) {
@@ -242,6 +246,15 @@ function NuevaVentaContenido({ datos }) {
         animales,
       },
       { onSuccess: (id) => navigate(`/ventas/${id}`), onError: (err) => setError(mensajeError(err)) },
+    );
+  }
+
+  if (!lotes.length) {
+    return (
+      <div className="space-y-5">
+        <h1 className="text-3xl font-bold text-gray-900">Registrar venta</h1>
+        <EmptyState titulo="No hay lotes con animales para vender">Registra animales en un lote; cuando estén listos, véndelos desde aquí o desde su ficha.</EmptyState>
+      </div>
     );
   }
 
@@ -377,12 +390,12 @@ function NuevaVentaContenido({ datos }) {
               Cancelar
             </Button>
           ) : (
-            <Button variante="secundario" icono={ArrowLeft} onClick={() => (setError(''), setPaso((p) => p - 1))}>
+            <Button variante="secundario" icono={ArrowLeft} onClick={() => (setError(''), irAPaso(paso - 1))}>
               Atrás
             </Button>
           )}
           {paso < 2 ? (
-            <Button key="siguiente" onClick={siguiente}>
+            <Button key="siguiente" type="submit">
               Siguiente
             </Button>
           ) : (

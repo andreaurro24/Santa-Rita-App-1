@@ -1,6 +1,6 @@
 # Spec 021 — Precio del ganado por zona y categoría
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M9, M10
 

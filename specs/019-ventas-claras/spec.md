@@ -1,6 +1,6 @@
 # Spec 019 — Ventas más claras
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M11
 

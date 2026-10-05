@@ -1,6 +1,6 @@
 # Spec 017 — Fotos de los animales
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M2
 

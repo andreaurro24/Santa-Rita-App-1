@@ -54,5 +54,13 @@ está mal escrito: reescríbelo.
 | [011 — Venta real y cierre del ciclo](011-ventas/spec.md) | hecha | 3 |
 | [012 — Indicadores, formato de cifras y rendimiento](012-kpis-reportes/spec.md) | hecha | 4 |
 | [013 — Importar el censo desde CSV](013-importar-censo/spec.md) | hecha | 4 |
+| [014 — Base limpia, guardas y bitácora](014-base-limpia/spec.md) | hecha | 5 |
+| [015 — Simplificar para Miguel](015-simplificar/spec.md) | hecha | 5 |
+| [016 — Animales: editar, baja, dueño, vientres, compra y caballos](016-animales-v2/spec.md) | hecha | 5 |
+| [017 — Fotos de los animales](017-fotos/spec.md) | hecha | 5 |
+| [018 — Dinero con miles y nombres válidos](018-datos-bien-escritos/spec.md) | hecha | 5 |
+| [019 — Ventas más claras](019-ventas-claras/spec.md) | hecha | 5 |
+| [020 — Fincas, lotes y gastos de finca](020-fincas-lotes-gastos/spec.md) | hecha | 5 |
+| [021 — Precio del ganado por zona y categoría](021-precios-zona/spec.md) | hecha | 5 |
 
 Las specs 003 (gestión del hato) y 005 (sanidad) no existen como archivo: el control de permisos de Claude Code bloqueó su creación. Quedan pendientes de revisión humana.

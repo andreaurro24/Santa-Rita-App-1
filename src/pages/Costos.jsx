@@ -248,9 +248,9 @@ function CostoForm({ costo, lotes, fincas, animales, onClose }) {
             ].map(([valor, label]) => (
               <label
                 key={valor}
-                className={`flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-2 text-center text-base font-semibold ${form.de === valor ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-borde-control bg-white text-gray-700'}`}
+                className={`relative flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-2 text-center text-base font-semibold ${form.de === valor ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-borde-control bg-white text-gray-700'}`}
               >
-                <input type="radio" name="de" value={valor} checked={form.de === valor} onChange={() => set('de', valor)} className="sr-only" />
+                <input type="radio" name="de" value={valor} checked={form.de === valor} onChange={() => set('de', valor)} className="absolute inset-0 size-full cursor-pointer opacity-0" />
                 {label}
               </label>
             ))}

@@ -1,6 +1,6 @@
 # Spec 015 — Simplificar para Miguel
 
-- Estado: en-progreso
+- Estado: hecha
 - Sprint: 5
 - Módulos del plan: M9, M10, M12, diseño (002)
 

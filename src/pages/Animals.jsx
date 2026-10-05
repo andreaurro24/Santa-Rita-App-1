@@ -182,13 +182,13 @@ function HatoContenido({ animales, caballos, lotes, todosLotes }) {
               <thead className="border-b border-gray-200 text-left text-gray-600">
                 <tr>
                   <th className="whitespace-nowrap px-4 py-3 font-medium">N° interno</th>
-                  <th className="hidden px-4 py-3 font-medium xl:table-cell">Chapeta ICA</th>
+                  <th className="hidden px-4 py-3 font-medium 2xl:table-cell">Chapeta ICA</th>
                   <th className="px-4 py-3 font-medium">Categoría</th>
                   <th className="px-4 py-3 font-medium">Lote</th>
                   <th className="px-4 py-3 font-medium">Dueño</th>
                   <th className="whitespace-nowrap px-4 py-3 text-right font-medium">Peso actual</th>
                   <th className="px-4 py-3 text-right font-medium">Meta</th>
-                  <th className="hidden whitespace-nowrap px-4 py-3 font-medium xl:table-cell">Último pesaje</th>
+                  <th className="hidden whitespace-nowrap px-4 py-3 font-medium 2xl:table-cell">Último pesaje</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -200,7 +200,7 @@ function HatoContenido({ animales, caballos, lotes, todosLotes }) {
                         <Chapeta numero={a.numeroInterno} />
                       </Link>
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-2 text-gray-600 xl:table-cell">{a.chapetaICA}</td>
+                    <td className="hidden whitespace-nowrap px-4 py-2 text-gray-600 2xl:table-cell">{a.chapetaICA}</td>
                     <td className="px-4 py-2 text-gray-700">{etiquetaCategoria(a.categoria)}</td>
                     <td className="px-4 py-2 text-gray-700">
                       {a.loteNombre}
@@ -217,7 +217,7 @@ function HatoContenido({ animales, caballos, lotes, todosLotes }) {
                       {formatKg(pesoActual(a))}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-right text-gray-600">{a.pesoObjetivo ? formatKg(a.pesoObjetivo) : '—'}</td>
-                    <td className="hidden whitespace-nowrap px-4 py-2 text-gray-600 xl:table-cell">{formatFecha(fechaUltimoPesaje(a))}</td>
+                    <td className="hidden whitespace-nowrap px-4 py-2 text-gray-600 2xl:table-cell">{formatFecha(fechaUltimoPesaje(a))}</td>
                   </tr>
                 ))}
               </tbody>
