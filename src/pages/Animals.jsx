@@ -317,10 +317,15 @@ function CeldaAnimal({ a, url, ocultas = false }) {
           <span className="block truncate text-base font-semibold text-brand-800 hover:underline">{a.numeroInterno}</span>
           <EstadoPunto estado={a.estado} />
           {/* 022 · R3: en pantallas medianas, chapeta, raza y dueño van aquí en vez de en su columna. */}
-          {ocultas && (
-            <span className="block truncate text-sm text-gray-600 2xl:hidden">
-              <span className="xl:hidden">{a.chapetaICA ? `${a.chapetaICA} · ` : ''}</span>
-              {[a.raza, a.dueno].filter(Boolean).join(' · ')}
+          {ocultas && (a.chapetaICA || a.raza || a.dueno) && (
+            <span className={`block truncate text-sm text-gray-600 2xl:hidden ${a.raza || a.dueno ? '' : 'xl:hidden'}`}>
+              {[a.chapetaICA, a.raza, a.dueno].filter(Boolean).map((t, i) => (
+                // La chapeta tiene su columna desde 1280 px: ahí se esconde aquí.
+                <span key={i} className={i === 0 && t === a.chapetaICA ? 'xl:hidden' : ''}>
+                  {i > 0 && ' · '}
+                  {t}
+                </span>
+              ))}
             </span>
           )}
         </span>

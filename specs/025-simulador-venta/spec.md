@@ -65,7 +65,8 @@ varios lotes (decisión del usuario del 2026-10-05).
 - R8 — La lista de ventas, el detalle y "Al partir" (sección "Ventas del contrato") deberán mostrar
   los lotes de cada venta ("Lote A y Lote B") y las comisiones (en Al partir, la parte que le toca
   al contrato). El "Margen esperado vs. real" de la spec 011 sigue funcionando: el esperado es el
-  beneficio neto que mostraba el simulador al confirmar, con comisiones y transporte.
+  beneficio neto que calculaba el sistema para esos animales con el precio de la zona (y las mismas
+  comisiones); la diferencia con el real muestra el efecto del precio negociado y de la báscula.
   *Corrección r1 (A1, M2): el reporte imprimible es de apoyo antes de vender, por lote, y no lista
   ventas; se quitó de R8.*
 - R9 — "Vender este animal" desde la ficha deberá abrir el simulador con solo ese animal elegido.

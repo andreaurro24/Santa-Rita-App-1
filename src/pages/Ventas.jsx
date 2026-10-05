@@ -253,9 +253,12 @@ function Simulador({ datos }) {
       recomendacion,
       razon: analisis.length === 1 ? analisis[0].razones[0] : lotesElegidos.map((l, i) => `${l.nombre}: ${analisis[i]?.razones[0] ?? 'sin datos'}`).join(' · '),
       equilibrioKg: analisis.length === 1 ? (analisis[0].hoy?.equilibrioKg ?? null) : null,
-      // Corrección r1 (M2): el margen esperado es el beneficio neto que mostraba el simulador para
-      // ESTOS animales, con comisiones y transporte (no el de los lotes completos).
-      margenNeto: Math.round(r.margenNeto),
+      // Corrección r1/r2 (M2): el margen esperado es el que el sistema calculaba para ESTOS animales
+      // con el precio de la zona (y las mismas comisiones). La diferencia con el real muestra cuánto
+      // se ganó o se perdió al negociar el precio y con el peso de báscula.
+      margenNeto: Math.round(
+        simularVenta({ animales: filasVenta, precioKg: sugerido ?? precio, destarePct: destare || 0, gastosVenta: gastos, previo: estadoContratos(datos.ventas.data) }).margenNeto,
+      ),
       fecha: hoyISO(),
     };
   }
@@ -430,7 +433,7 @@ function Simulador({ datos }) {
               </Button>
             )}
             {paso < 2 ? (
-              <Button key="siguiente" type="submit" icono={paso === 0 ? BadgeDollarSign : undefined}>
+              <Button key="siguiente" type="submit" icono={paso === 0 ? BadgeDollarSign : undefined} className={paso === 0 && elegidos.length ? 'max-md:hidden' : ''}>
                 {paso === 0 ? 'Confirmar venta' : 'Siguiente'}
               </Button>
             ) : (

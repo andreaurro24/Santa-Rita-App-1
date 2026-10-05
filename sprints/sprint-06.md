@@ -1,6 +1,6 @@
 # Sprint 06 — Como la referencia: hato en una página, fichas completas y simulador
 
-- Estado: en-verificacion
+- Estado: en-verificacion (bloqueado solo por la suite E2E, que necesita el proyecto de pruebas)
 - Inicio: 2026-10-05 · Cierre: —
 - Aprobación del plan: [x] Andrés Sánchez el 2026-10-05 ("Aprobo. Construye todo de una. Doy permisos de todo.")
 
@@ -64,10 +64,26 @@ de empezar la 023. Producción no tiene animales ni ventas, así que no hay dato
 | 2026-10-05 | 025 · T1–T5 | Simulador con lotes, animales sueltos, panel con valor bruto, costos, comisiones, tenedores, beneficio y margen; datos y confirmación; venta de varios lotes; lista y detalle por lotes | La recomendación guardada en una venta de varios lotes es la más repetida entre sus lotes y el margen esperado es la suma |
 | 2026-10-05 | Prueba en el navegador | Con un usuario temporal en producción (vacía): registrar Luna-001 con raza, nacimiento sin mes, 250 → 310 kg en 60 días, compra $9.000 × 250 kg y foto 4000×3000 recortada (20 KB + 4 KB); simular y vender 2 lotes con $300.000 de transporte (una sola venta pese al doble toque, números iguales en el detalle); cambiar la foto 3 veces deja 2 archivos; eliminar el animal borra sus 2 archivos | Al terminar se borraron el usuario, los lotes, los animales, la venta y las fotos: producción quedó como estaba. Sin proyecto de pruebas no corre la suite E2E (DT-05-1) |
 | 2026-10-05 | Correcciones r1 | A1: "Ventas del contrato" en Al partir con lotes, parte de las comisiones y pago (el reporte, que es antes de vender, salió de R8). M1: chapeta, raza y dueño bajo el nombre cuando su columna no cabe. M2: el margen esperado es el beneficio simulado de esos animales. M3: casilla del lote con área de 48 px. M4: pruebas del equipo con la RPC nueva y "Añadir animal". B1: nacimiento ≤ ingreso (cliente y migración 2000). B2: "por animal" en la cuenta. B3: "Confirmar venta" en la barra del celular. B5: pesos desde 1 kg. B7: kilos con 1 decimal también en el simulador. S1: la X de los diálogos es `type="button"`. S2–S4: selectores únicos en las E2E nuevas | B4 y B6 pasan a deuda (DT-06-2, DT-06-3) |
+| 2026-10-05 | Ajustes tras r2 | N2: sin separador colgando bajo el nombre; N4: en el celular un solo "Confirmar venta" (el de la barra fija); margen esperado = el que calculaba el sistema con el precio de la zona para esos animales (la diferencia muestra el efecto del precio negociado) | Sin nueva ronda (máximo 2). N1, N3, N5 y S5 pasan a deuda |
 
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
 | 022–025 | 1 | 022 RECHAZADO (M1 y E2E), 023 BLOQUEADO (E2E), 024 BLOQUEADO (E2E), 025 RECHAZADO (A1) | [sprint06-2026-10-05](../reports/verificacion/sprint06-2026-10-05.md) |
+| 022–025 | 2 | Las 4 BLOQUEADAS solo por E2E, sin hallazgos Crítico/Alto/Medio abiertos; 022 y 025 piden ratificar los cambios de R3 y R8 | [sprint06-2026-10-05-ronda2](../reports/verificacion/sprint06-2026-10-05-ronda2.md) |
 
 ## 4. Cierre
+
+**Pendiente.** El sprint no se cierra hasta correr `npm run test:e2e` en un proyecto de pruebas
+(DT-05-1) y que el humano ratifique los cambios de R3 (spec 022) y R8 (spec 025) hechos en las
+correcciones. La deuda conocida ya queda registrada:
+
+### Deuda
+| ID | Descripción | Severidad | Origen | Sprint destino |
+|---|---|---|---|---|
+| DT-06-1 | Pruebas E2E del verificador de sprints anteriores que usan la página `/lotes`, el asistente de venta viejo, la meta del lote, el botón "Registrar animal" o la `registrar_venta` vieja (verificador-lotes, -ventas, -d8-acumulado, -d11-contrato, -sprint05, -sprint05-r2, -costos-r2, -recomendacion, -recomendacion-r2, -diseno, -diseno-r2, -indicadores y verificador.spec.js): actualizarlas a la premisa nueva | Media | Verificación r1 | 7 (con el proyecto de pruebas) |
+| DT-06-2 | Si falla el borrado de la foto anterior, el archivo queda suelto sin aviso (B4) | Baja | Verificación r1 | 7 |
+| DT-06-3 | Detalles de la tabla y del lote: lote no preseleccionado al añadir desde un filtro, orden por precio con precios calculados, "—" en vez de "Sin meta" (B6) | Baja | Verificación r1 | 7 |
+| DT-06-4 | La base de datos acepta pesos actuales desde más de 0 kg; el cliente exige 1 kg (N1) | Baja | Verificación r2 | 7 |
+| DT-06-5 | El mensaje de error de la restricción "nacimiento antes del ingreso" no habla de la fecha (N3); hoy el formulario lo valida antes | Baja | Verificación r2 | 7 |
+| DT-06-6 | Faltan E2E de: Ventas del contrato, barra del celular del simulador, restricción de nacimiento y casilla de 48 px (N5); pellizco con saltos pequeños (S5) | Baja | Verificación r2 | 7 |

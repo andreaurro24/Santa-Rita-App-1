@@ -193,6 +193,7 @@ están `hecha` (con veredicto `APROBADO` del verificador y visto bueno humano).
 | **3 · Decisión de venta** | Recomendación con costo real y cierre del ciclo. | M9, M10, M11 | 009 Pasto y destare · 010 Recomendación v2 · 011 Ventas | Cerrado |
 | **4 · Reportes y piloto** | Indicadores, importación del censo, formato y rendimiento. | M12, M13 | 012 Indicadores y formato · 013 Importar censo | Cerrado |
 | **5 · La app de Miguel** | Lo que pidieron Miguel y Juan tras la primera demostración: más simple, fotos, caballos, gastos de finca, precio por zona. | M2, M5–M11 | 014–021 | Cerrado |
+| **6 · Como la referencia** | Animales y lotes en una página, registro con nombre, raza, nacimiento y tres pesos, fotos cuadradas, simulador de venta de varios lotes. | M2, M3, M10, M11 | 022–025 | En verificación (falta la E2E) |
 
 ## 11. Fuera de alcance
 
@@ -223,3 +224,4 @@ están `hecha` (con veredicto `APROBADO` del verificador y visto bueno humano).
 - 2026-09-28: D2 cubre vientres y terneras con confirmación; la base de datos impide vender vientres.
 - 2026-09-28: Recomendación v2 con costo real, parte del tenedor, escenarios a 2/4/8 semanas, pasto y clima; se retiró el motor v1.
 - 2026-10-04: Sprint 05 ("La app de Miguel"): sin clima ni TRM; menú de 4; dueño por res; vientre menor, mayor y parida; caballos; fotos; gastos de finca; precio por zona y categoría. Producción limpia y protegida de las pruebas.
+- 2026-10-05: Sprint 06: una venta puede llevar animales de varios lotes (cada animal guarda su lote) y guarda comisiones y transporte, que se restan antes de la parte de los tenedores; el lote ya no tiene meta propia (la meta es el promedio de los pesos objetivo de sus animales); el nombre del animal lleva un consecutivo de toda la finca.
