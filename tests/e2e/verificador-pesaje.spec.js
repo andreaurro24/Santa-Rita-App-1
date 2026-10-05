@@ -62,7 +62,8 @@ test.describe('celular 375×812 en el corral', () => {
     const r = { total };
 
     await iniciarSesion(page);
-    await page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Pesaje' }).tap();
+    await page.getByRole('navigation', { name: 'Principal' }).last().getByRole('button', { name: 'Más' }).tap(); // Sprint 05: Pesaje va en Más
+    await page.getByRole('dialog', { name: 'Más secciones' }).getByRole('link', { name: 'Pesaje' }).tap();
     await expect(page.getByRole('heading', { name: 'Jornada de pesaje' })).toBeVisible();
     await page.getByLabel('Lote').selectOption(loteId);
     await page.getByRole('button', { name: 'Abrir jornada' }).tap();
@@ -323,7 +324,8 @@ test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ro
   // Ronda 2: antes de crear nada, el panel no debe marcar reses de la semilla (falsas alarmas).
   await iniciarSesion(page);
   await page.goto('/#/');
-  const panelSemilla = await page.locator('section', { hasText: 'Pierden peso' }).innerText();
+  await expect(page.getByText('Reses activas')).toBeVisible(); // Sprint 05: el panel es 'Para revisar'
+  const panelSemilla = await page.locator('main').innerText();
   const { data: lote } = await supabase.from('lotes').insert({ codigo: `${PREFIJO}-LOTE`, nombre: `${PREFIJO} lote`, tipo: 'ceba', peso_meta_kg: 400 }).select('id').single();
   const crear = async (sufijo, pesos) => {
     const numero = `${PREFIJO}-${sufijo}`;
@@ -368,14 +370,14 @@ test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ro
     await page.screenshot({ path: `${DIR}/r2-gdp-${k}.png` });
   }
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(`${PREFIJO}-`);
+  await page.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-`);
   r.hato = {};
   for (const k of Object.keys(casos)) {
     const fila = page.getByRole('row', { name: new RegExp(`${PREFIJO}-${k}\\b`) });
     r.hato[k] = await fila.locator('[aria-label="Pierde peso"]').count();
   }
   await page.goto('/#/');
-  const panel = page.locator('section', { hasText: 'Pierden peso' });
+  const panel = page.locator('section', { hasText: 'Para revisar' });
   r.panel = (await panel.innerText()).replace(/\s+/g, ' ');
 
   // R3 en "Registrar peso" de la ficha (corregido): +55 % pide confirmación; "Guardar igual" guarda una vez.
@@ -402,7 +404,7 @@ test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ro
   r.fichaMas55.guardadoTrasConfirmar = await cuenta450();
 
   registrar('GDP y alertas (ronda 2)', r);
-  expect(r.panelSemilla, 'la semilla no debe tener falsas alarmas').toMatch(/Ningún animal activo perdió peso/);
+  expect(r.panelSemilla, 'la semilla no debe tener falsas alarmas').not.toMatch(/perdiendo peso/); // Sprint 05
   expect(r.A.alertaFicha).toBe(true);
   for (const k of ['A', 'B', 'C', 'D', 'G']) {
     expect.soft(r[k].alertaFicha, `${k}: alerta en la ficha`).toBe(true);

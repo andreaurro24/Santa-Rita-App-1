@@ -70,7 +70,7 @@ test.beforeAll(async () => {
   const A = await lote('A', 400);
   const a = {};
   for (const s of ['A1', 'A2', 'A4']) a[s] = await animal(s, A, { ingreso: haceDias(30), peso: 270, pesos: [[hoyBogota(), 300]] });
-  a.A3 = await animal('A3', A, { ingreso: haceDias(30), peso: 270, sexo: 'Hembra', categoria: 'vientre', compra: 500_000, pesos: [[hoyBogota(), 300]] });
+  a.A3 = await animal('A3', A, { ingreso: haceDias(30), peso: 270, sexo: 'Hembra', categoria: 'vientre_mayor', compra: 500_000, pesos: [[hoyBogota(), 300]] });
   const finca = (await supabase.from('fincas').insert({ nombre: `${P} finca tenedor`, tipo: 'tenedor' }).select('id').single()).data.id;
   const ten = (await supabase.from('tenedores').insert({ nombre: `${P} tenedor`, finca_id: finca }).select('id').single()).data.id;
   const contrato = (await supabase.from('contratos_al_partir').insert({ tenedor_id: ten, porcentaje_ganancia: 50, fecha_inicio: haceDias(30) }).select('id').single()).data.id;
@@ -80,7 +80,7 @@ test.beforeAll(async () => {
   if (g.error) throw g.error;
   // Lote B: solo un vientre. Lote C: pesado hace 30 días (240 → 270 kg, GDP 1), meta 290.
   const B = await lote('B', 400);
-  await animal('B1', B, { ingreso: haceDias(30), peso: 280, sexo: 'Hembra', categoria: 'vientre' });
+  await animal('B1', B, { ingreso: haceDias(30), peso: 280, sexo: 'Hembra', categoria: 'vientre_mayor' });
   const C = await lote('C', 290);
   for (const s of ['C1', 'C2']) await animal(s, C, { ingreso: haceDias(60), peso: 240, pesos: [[haceDias(30), 270]] });
   ids = { A, B, C, propia: propia.id, fincaTenedor: finca, a };
@@ -110,6 +110,7 @@ const num = (s) => (s == null ? NaN : Number(s.replace(/[−-]/, '-').replace(/[
 
 // Lee todo lo que muestra AnalisisVenta dentro de `raiz`.
 async function leer(raiz) {
+  await raiz.locator('details').evaluateAll((ds) => ds.forEach((d) => (d.open = true))); // Sprint 05: detalles plegados
   const texto = await raiz.innerText();
   const lineas = texto.split('\n').map((l) => l.trim()).filter(Boolean);
   const stat = (label) => {
@@ -127,7 +128,7 @@ async function leer(raiz) {
     peso: stat('Peso promedio'),
     equilibrio: stat('Punto de equilibrio real'),
     precio: stat('Precio del kilo'),
-    margen: stat('Margen neto hoy'),
+    margen: stat('Margen para Santa Rita hoy'),
     tenedores: stat('Parte de los tenedores'),
     costo: stat('Costo acumulado'),
     gastoDiario: stat('Gasto diario del lote'),
@@ -139,7 +140,7 @@ async function leer(raiz) {
 
 async function analizar(page, loteNombre, precio = '8000') {
   await page.getByLabel('Lote a evaluar').selectOption({ label: loteNombre });
-  await page.getByLabel('Precio de mercado (COP/kg)').fill(precio);
+  await page.getByLabel('Probar con otro precio por kilo').fill(precio);
   const card = page.locator('section').filter({ has: page.getByRole('heading', { name: loteNombre, exact: true }) });
   await expect(card).toBeVisible();
   await page.waitForTimeout(400);

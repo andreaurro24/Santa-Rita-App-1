@@ -41,6 +41,7 @@ function registrar(nombre, datos) {
 
 async function limpiar() {
   const supabase = await clientePrueba();
+  await supabase.from('precios_referencia').delete().like('fuente', `${P}%`); // Sprint 05
   const { data: lotes } = await supabase.from('lotes').select('id').like('codigo', `${P}%`);
   const idsLotes = (lotes ?? []).map((l) => l.id);
   if (idsLotes.length) await supabase.from('ventas').delete().in('lote_id', idsLotes);
@@ -121,6 +122,11 @@ test.beforeAll(async () => {
   // El reporte usa el último boletín: uno de hoy a $8.000.
   const pr = await supabase.from('precios_mercado').insert({ fecha: hoyBogota(), precio_kg_cop: 8000, fuente: `${P} boletín` });
   if (pr.error) throw pr.error;
+  // Sprint 05 (spec 021): el reporte usa el precio de la zona; se fija en $8.000 para todas las categorías.
+  for (const categoria of ['ternero', 'ternera', 'levante', 'gordo', 'vaca']) {
+    const z = await supabase.from('precios_referencia').insert({ categoria, precio_min_cop: 8000, precio_max_cop: 8000, fecha: hoyBogota(), fuente: `${P} zona` });
+    if (z.error) throw z.error;
+  }
   ids = { L, a, C };
 });
 test.afterAll(async () => {
@@ -144,11 +150,12 @@ function vigilar(page, errores) {
 async function leerRecomendacion(page, lote) {
   await page.goto('/#/recomendacion');
   await page.getByLabel('Lote a evaluar').selectOption({ label: `${P} ${lote}` });
-  await page.getByLabel('Precio de mercado (COP/kg)').fill('8000');
+  await page.getByLabel('Probar con otro precio por kilo').fill('8000');
   await page.waitForTimeout(600);
+  await page.locator('details').evaluateAll((ds) => ds.forEach((d) => (d.open = true))); // Sprint 05
   const sec = page.locator('section').filter({ has: page.getByRole('heading', { name: `${P} ${lote}`, exact: true }) });
   const ls = await lineas(sec);
-  return { tenedores: trasEtiqueta(ls, 'Parte de los tenedores'), margen: trasEtiqueta(ls, 'Margen neto hoy') };
+  return { tenedores: trasEtiqueta(ls, 'Parte de los tenedores'), margen: trasEtiqueta(ls, 'Margen para Santa Rita hoy') };
 }
 async function leerReporte(page, lote) {
   await page.goto('/#/reporte');
@@ -157,7 +164,7 @@ async function leerReporte(page, lote) {
   await expect(page.locator('article')).toBeVisible();
   await page.waitForTimeout(600);
   const ls = await lineas(page.locator('article'));
-  return { tenedores: trasEtiqueta(ls, 'Parte de los tenedores'), margen: trasEtiqueta(ls, 'Margen neto hoy') };
+  return { tenedores: trasEtiqueta(ls, 'Parte de los tenedores'), margen: trasEtiqueta(ls, 'Margen para Santa Rita hoy') };
 }
 
 async function leerDetalle(page) {
@@ -174,17 +181,20 @@ async function leerDetalle(page) {
 async function venderUI(page, lote, { fecha = hoyBogota(), desmarcar = [], nombre } = {}) {
   await page.goto(`/#/ventas/nueva?lote=${ids.L[lote]}`);
   await expect(page.getByRole('heading', { name: 'Registrar venta' })).toBeVisible({ timeout: 15_000 });
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
+  // Sprint 05 (spec 019): asistente en 3 pasos.
+  for (const s of desmarcar) await page.getByRole('checkbox', { name: `Vender ${P}-${s}` }).uncheck();
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.getByLabel('Precio por kilo').fill('8000');
   await page.getByLabel('Destare (%)').fill('0');
   await page.getByLabel('Fecha de la venta').fill(fecha);
-  for (const s of desmarcar) await page.getByRole('checkbox', { name: `Vender ${P}-${s}` }).uncheck();
+  await page.getByLabel('Comprador').fill(`${P} Comprador ${nombre ?? lote}`);
+  await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.waitForTimeout(500);
   const secRes = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) });
   const ls = await lineas(secRes);
   const vista = { tenedores: trasEtiqueta(ls, 'A los tenedores'), margen: trasEtiqueta(ls, 'Margen neto') };
   // Ronda 2 (Bajo 4): aviso bajo "A los tenedores" cuando se descuenta lo acumulado.
   const aviso = ls.includes('Con lo acumulado y lo ya pagado del contrato');
-  await page.getByLabel('Comprador').fill(`${P} Comprador ${nombre ?? lote}`);
   await page.screenshot({ path: `${DIR}/asistente-${nombre ?? lote}.png`, fullPage: true });
   await page.getByRole('button', { name: 'Guardar venta' }).click();
   await expect(page.getByRole('heading', { name: new RegExp(`^Venta de ${P} ${lote}$`) })).toBeVisible({ timeout: 15_000 });
@@ -356,7 +366,7 @@ test('VRF D8A · la carga extra de ventas: estados de carga y de error en /recom
     await page.unroute('**/rest/v1/ventas*');
     if (error) await page.getByRole('button', { name: 'Reintentar' }).click();
     const recupera = await page
-      .getByRole('heading', { name: /Recomendación de venta|Reporte resumen|Registrar venta/ })
+      .getByRole('heading', { name: /¿Vendo?|Reporte resumen|Registrar venta/ })
       .first()
       .waitFor({ timeout: 20_000 })
       .then(() => true)
@@ -547,10 +557,11 @@ test('VRF D8A · venta con fecha futura: la rechazan el asistente y la base de d
   await iniciarSesion(page);
   await page.goto(`/#/ventas/nueva?lote=${ids.L.W}`);
   await expect(page.getByRole('heading', { name: 'Registrar venta' })).toBeVisible({ timeout: 15_000 });
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
+  await page.getByRole('button', { name: 'Siguiente' }).click(); // Sprint 05: 3 pasos
+  await page.getByLabel('Precio por kilo').fill('8000');
   await page.getByLabel('Fecha de la venta').fill(manana);
   await page.getByLabel('Comprador').fill(`${P} Comprador UI futura`);
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
+  await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.waitForTimeout(1500);
   const mensaje = await page.getByText('La fecha de la venta no puede ser futura.').isVisible();
   const sigue = page.url().includes('/ventas/nueva');

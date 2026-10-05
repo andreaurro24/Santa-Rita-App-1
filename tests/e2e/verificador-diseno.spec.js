@@ -137,7 +137,7 @@ async function registrar(nombre, datos) {
 
 async function abrirFicha(page) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(ANIMAL);
+  await page.getByPlaceholder(/Buscar por número/).fill(ANIMAL);
   await page.getByRole('link', { name: new RegExp(`^${ANIMAL}`) }).first().click();
   await expect(page.getByRole('heading', { name: `Animal N° ${ANIMAL}` })).toBeVisible();
 }
@@ -145,13 +145,13 @@ async function abrirFicha(page) {
 // Escenarios: pantalla o formulario abierto. `preparar` deja la página en ese estado.
 const ESCENARIOS = [
   ['inicio', async (p) => { await p.goto('/#/'); await expect(p.getByRole('heading', { name: /^Hola/ })).toBeVisible(); }],
-  ['hato', async (p) => { await p.goto('/#/animales'); await expect(p.getByText(/reses registradas/)).toBeVisible(); }],
+  ['hato', async (p) => { await p.goto('/#/animales'); await expect(p.getByText(/reses activas/)).toBeVisible(); }],
   ['ficha', abrirFicha],
   ['ficha-form-peso', async (p) => { await abrirFicha(p); await p.getByRole('button', { name: 'Registrar peso' }).click(); }],
   ['ficha-form-sanidad', async (p) => { await abrirFicha(p); await p.getByRole('button', { name: 'Registrar evento' }).click(); }],
-  ['mercado', async (p) => { await p.goto('/#/mercado'); await expect(p.getByRole('heading', { name: 'Mercado y clima' })).toBeVisible(); await p.waitForTimeout(1500); }],
-  ['mercado-form-precio', async (p) => { await p.goto('/#/mercado'); await p.getByRole('button', { name: 'Actualizar precio' }).click(); await p.waitForTimeout(800); }],
-  ['venta', async (p) => { await p.goto('/#/recomendacion'); await expect(p.getByRole('heading', { name: 'Recomendación de venta' })).toBeVisible(); await p.waitForTimeout(800); }],
+  ['mercado', async (p) => { await p.goto('/#/mercado'); await expect(p.getByRole('heading', { name: 'Precio y pasto' })).toBeVisible(); await p.waitForTimeout(1500); }],
+  ['mercado-form-precio', async (p) => { await p.goto('/#/mercado'); await p.getByRole('button', { name: /Actualizar Gordo/ }).click(); await p.waitForTimeout(800); }],
+  ['venta', async (p) => { await p.goto('/#/recomendacion'); await expect(p.getByRole('heading', { name: '¿Vendo?' })).toBeVisible(); await p.waitForTimeout(800); }],
   ['reporte', async (p) => { await p.goto('/#/reporte'); await expect(p.getByRole('article')).toBeVisible(); await p.waitForTimeout(800); }],
   ['form-nuevo-animal', async (p) => {
     await p.goto('/#/animales');
@@ -242,7 +242,7 @@ test.describe('celular 375×812', () => {
     await page.getByRole('button', { name: 'Cancelar' }).click();
 
     await page.goto('/#/mercado');
-    await page.getByRole('button', { name: 'Actualizar precio' }).click();
+    await page.getByRole('button', { name: /Actualizar Gordo/ }).click();
     await medirHoja('actualizar precio');
 
     await registrar('R9 formularios', resultado);
@@ -272,7 +272,7 @@ test.describe('celular 375×812', () => {
     await page.goto('/#/animales');
     const abrir = page.getByRole('button', { name: 'Registrar animal' });
     await abrir.click();
-    const modal = page.getByRole('dialog', { name: 'Registrar nuevo animal' });
+    const modal = page.getByRole('dialog', { name: 'Registrar animal' });
     await expect(modal).toBeVisible();
     r.modalFocoAlAbrir = await dentro(null);
     for (let i = 0; i < 20; i++) await page.keyboard.press('Tab');
@@ -294,7 +294,7 @@ test.describe('celular 375×812', () => {
     await iniciarSesion(page);
     await page.screenshot({ path: `${DIR}/vp-movil-inicio.png` });
     await page.goto('/#/animales');
-    await expect(page.getByText(/reses registradas/)).toBeVisible();
+    await expect(page.getByText(/reses activas/)).toBeVisible();
     await page.screenshot({ path: `${DIR}/vp-movil-hato.png` });
     await abrirFicha(page);
     await page.getByRole('button', { name: 'Registrar peso' }).click();

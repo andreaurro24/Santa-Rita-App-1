@@ -90,7 +90,7 @@ test.beforeAll(async () => {
   v.V1 = await animal('V1', V);
   v.V2 = await animal('V2', V);
   v.V3 = await animal('V3', V, { compra: 3_000_000 });
-  v.V4 = await animal('V4', V, { sexo: 'Hembra', categoria: 'vientre', compra: 500_000 });
+  v.V4 = await animal('V4', V, { sexo: 'Hembra', categoria: 'vientre_mayor', compra: 500_000 });
   v.V5 = await animal('V5', V, { sexo: 'Hembra', categoria: 'ternera', compra: 400_000, peso: 180, pesos: [[hoyBogota(), 200]] });
   const finca = (await supabase.from('fincas').insert({ nombre: `${P} finca tenedor`, tipo: 'tenedor' }).select('id').single()).data.id;
   const ten = (await supabase.from('tenedores').insert({ nombre: `${P} tenedor`, finca_id: finca }).select('id').single()).data.id;
@@ -103,7 +103,7 @@ test.beforeAll(async () => {
   const W = await lote('W');
   const w = {};
   for (const s of ['W1', 'W2']) w[s] = await animal(s, W, { ingreso: haceDias(60), peso: 240, pesos: [[haceDias(30), 270]] });
-  w.W3 = await animal('W3', W, { sexo: 'Hembra', categoria: 'vientre', compra: 500_000 });
+  w.W3 = await animal('W3', W, { sexo: 'Hembra', categoria: 'vientre_mayor', compra: 500_000 });
   // X: un solo novillo (el lote debe quedar vendido). Z: gasto después de la fecha de venta.
   const X = await lote('X');
   const x1 = await animal('X1', X);
@@ -148,42 +148,47 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   r.activosAntes = (await page.locator('main').innerText()).match(/Reses activas\s+(\d+)/)?.[1];
   await page.goto(`/#/ventas/nueva?lote=${ids.V}`);
   await expect(page.getByRole('heading', { name: 'Registrar venta' })).toBeVisible();
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
-  await page.getByLabel('Destare (%)').fill('0');
-  await page.waitForTimeout(500);
+  // Sprint 05 (spec 019): asistente en 3 pasos. Paso 1: animales y pesos.
   const main = page.locator('main');
+  const alerta = async () => ((await page.getByRole('alert').count()) ? (await page.getByRole('alert').first().innerText()).trim() : 'SIN MENSAJE');
+  const siguiente = () => page.getByRole('button', { name: 'Siguiente' }).click();
   r.asistente = {
     animales: await page.getByRole('heading', { name: /^Animales \(/ }).innerText(),
     vientres: await main.getByText(/vientres? no aparecen?/).innerText({ timeout: 5000 }).catch(() => 'SIN AVISO'),
     ternera: await page.getByRole('status').filter({ hasText: /ternera/ }).innerText().catch(() => 'SIN AVISO'),
     pesos: await main.locator('ul li input[type=text]').evaluateAll((xs) => xs.map((x) => x.value)),
-    recomendacion: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' '),
-    resultado: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) }).innerText()).split('\n').map((l) => l.trim()).filter(Boolean),
   };
-  // Validaciones de la interfaz.
-  const alerta = async () => ((await page.getByRole('alert').count()) ? (await page.getByRole('alert').first().innerText()).trim() : 'SIN MENSAJE');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
-  r.ui = { sinComprador: await alerta() };
+  r.ui = {};
+  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('abc');
+  await siguiente();
+  r.ui.pesoTexto = await alerta();
+  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('0');
+  await siguiente();
+  r.ui.pesoCero = await alerta();
+  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('300');
+  await siguiente();
+  // Paso 2: comprador, precio, destare y fecha.
+  await page.getByLabel('Destare (%)').fill('0');
+  await siguiente();
+  r.ui.sinComprador = await alerta();
   await page.getByLabel('Comprador').fill(COMPRADOR);
+  await page.getByLabel('Precio por kilo').fill('');
+  await siguiente();
+  r.ui.sinPrecio = await alerta();
+  await page.getByLabel('Precio por kilo').fill('8000');
   await page.getByLabel('Destare (%)').fill('20');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
+  await siguiente();
   r.ui.destare20 = await alerta();
   await page.getByLabel('Destare (%)').fill('0');
   await page.getByLabel('Fecha de la venta').fill('2099-01-01');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
+  await siguiente();
   r.ui.fechaFutura = await alerta();
   await page.getByLabel('Fecha de la venta').fill(hoyBogota());
-  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('abc');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
-  r.ui.pesoTexto = await alerta();
-  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('0');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
-  r.ui.pesoCero = await alerta();
-  await page.getByLabel(`Peso de venta de ${P}-V1 (kg)`).fill('300');
-  await page.getByLabel('Precio por kilo (COP)').fill('');
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
-  r.ui.sinPrecio = await alerta();
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
+  await siguiente();
+  // Paso 3: resumen.
+  await page.waitForTimeout(500);
+  r.asistente.recomendacion = (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' ');
+  r.asistente.resultado = (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) }).innerText()).split('\n').map((l) => l.trim()).filter(Boolean);
   await page.screenshot({ path: `${DIR}/01-asistente.png`, fullPage: true });
   // Doble clic en Guardar.
   await page.getByRole('button', { name: 'Guardar venta' }).dblclick();
@@ -227,7 +232,7 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   r.fichaV1Acciones = await page.locator('main button').evaluateAll((bs) => bs.filter((b) => b.checkVisibility()).map((b) => b.innerText.trim()).filter(Boolean));
   r.fichaV1DiceVendido = /vendid/i.test(await page.locator('main').innerText());
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(`${P}-V1`);
+  await page.getByPlaceholder(/Buscar por número/).fill(`${P}-V1`);
   r.hatoV1 = (await page.locator('main table tbody').innerText().catch(() => '')).replace(/\s+/g, ' ');
   await page.goto('/#/indicadores');
   await page.reload();
@@ -342,21 +347,25 @@ test('VRF 011: venta con fecha pasada y el peso propuesto (lotes Z y W)', async 
   const r = {};
   // W: pesado hace 30 días (270 kg), estimado hoy 300 kg. ¿Qué peso propone el asistente?
   await page.goto(`/#/ventas/nueva?lote=${ids.W}`);
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
+  await expect(page.getByRole('heading', { name: /^Animales \(/ })).toBeVisible({ timeout: 15_000 }); // Sprint 05
   await page.waitForTimeout(500);
-  r.W = {
-    pesos: await page.locator('main ul li input[type=text]').evaluateAll((xs) => xs.map((x) => x.value)),
-    recomendacion: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' '),
-    resultado: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) }).innerText()).replace(/\s+/g, ' '),
-    vientres: await page.getByText(/vientres? no aparecen?/).innerText({ timeout: 5000 }).catch(() => 'SIN AVISO'),
-  };
+  r.W = { pesos: await page.locator('main ul li input[type=text]').evaluateAll((xs) => xs.map((x) => x.value)), vientres: await page.getByText(/vientres? no aparecen?/).innerText({ timeout: 5000 }).catch(() => 'SIN AVISO') };
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.getByLabel('Comprador').fill(`${P} Comprador W`);
+  await page.getByLabel('Precio por kilo').fill('8000');
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.waitForTimeout(500);
+  r.W.recomendacion = (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Lo que recomienda el sistema hoy' }) }).innerText()).replace(/\s+/g, ' ');
+  r.W.resultado = (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) }).innerText()).replace(/\s+/g, ' ');
   // Z: gasto de $400.000 hace 5 días; se vende Z1 con fecha de hace 10 días.
   r.fichaZ1Antes = await costoEnFicha(page, ids.z.Z1);
   await page.goto(`/#/ventas/nueva?lote=${ids.Z}`);
-  await page.getByLabel('Comprador').fill(`${P} Comprador Z`);
-  await page.getByLabel('Precio por kilo (COP)').fill('8000');
-  await page.getByLabel('Fecha de la venta').fill(haceDias(10));
   await page.getByRole('checkbox', { name: `Vender ${P}-Z2` }).uncheck();
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.getByLabel('Comprador').fill(`${P} Comprador Z`);
+  await page.getByLabel('Precio por kilo').fill('8000');
+  await page.getByLabel('Fecha de la venta').fill(haceDias(10));
+  await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Guardar venta' }).click();
   await expect(page.getByRole('heading', { name: new RegExp(`^Venta de ${P} Z`) })).toBeVisible({ timeout: 15_000 });
   const { data: fz } = await supabase.from('venta_animales').select('costo_acumulado_cop').eq('animal_id', ids.z.Z1).single();
@@ -388,7 +397,7 @@ test.describe('celular 375×812', () => {
     r.lista = { desborde: await page.evaluate(medirDesborde) };
     // Ronda 2 (011 Medio 5): en las tarjetas del celular el vendido también se marca.
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número interno/).fill(`${P}-V1`);
+    await page.getByPlaceholder(/Buscar por número/).fill(`${P}-V1`);
     await page.waitForTimeout(500);
     r.tarjetaV1 = (await page.locator('main ul li').filter({ hasText: `${P}-V1` }).first().innerText().catch(() => 'SIN TARJETA')).replace(/\s+/g, ' ');
     await page.screenshot({ path: `${DIR}/04-lista-celular.png`, fullPage: true });

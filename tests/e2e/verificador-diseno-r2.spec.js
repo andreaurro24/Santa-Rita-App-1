@@ -135,7 +135,7 @@ test.describe('celular 375×812', () => {
 
     // Ficha con la tarjeta de Ubicación (0101)
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número interno/).fill('0101');
+    await page.getByPlaceholder(/Buscar por número/).fill('0101');
     await page.getByRole('link', { name: /^0101/ }).first().click();
     await expect(page.getByRole('heading', { name: 'Ubicación' })).toBeVisible();
     await expect(page.getByText(/Sin movimientos registrados|Movimientos/).first()).toBeVisible();
@@ -147,7 +147,7 @@ test.describe('celular 375×812', () => {
     // Hoja "Más" con las 2 secciones nuevas
     await page.getByRole('button', { name: 'Más' }).click();
     const mas = page.getByRole('dialog', { name: 'Más secciones' });
-    await expect(mas.getByRole('link', { name: 'Lotes y ciclos' })).toBeVisible();
+    await expect(mas.getByRole('link', { name: 'Lotes' })).toBeVisible();
     await expect(mas.getByRole('link', { name: 'Fincas y potreros' })).toBeVisible();
     anotar('hoja-mas', await medirTodo(page, 'hoja-mas'));
 
@@ -345,7 +345,7 @@ test('VRF 002-r2 sesión: login real por formulario → recargar → sigue dentr
     .toBeVisible({ timeout: 10_000 })
     .then(() => true, () => false);
   await b.goto('/#/animales');
-  await expect(b.getByText(/reses registradas/)).toBeVisible();
+  await expect(b.getByText(/reses activas/)).toBeVisible();
 
   // ¿Se revocó en el servidor la sesión que se cerró? (el refresh token de A ya no debe servir)
   const suelto = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -368,7 +368,7 @@ test('VRF 002-r2 sesión: cerrar sesión SIN señal (falla /auth/v1/logout) ¿de
   await page.unroute('**/auth/v1/logout**');
   await page.goto('/#/animales');
   await page.reload();
-  const dentro = await page.getByText(/reses registradas/).isVisible({ timeout: 10_000 }).catch(() => false);
+  const dentro = await page.getByText(/reses activas/).isVisible({ timeout: 10_000 }).catch(() => false);
   registrar('cerrar sesión sin señal', { sesionSigueGuardada: guardada, alRecargarEntraSinContrasena: dentro });
   expect(dentro, 'tras "Cerrar sesión" sin señal, al recargar la app vuelve a entrar sin contraseña').toBe(false);
 });

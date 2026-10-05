@@ -169,7 +169,7 @@ test('VRF 008 r2 · movimientos con fecha pasada, fuera de orden, un animal muer
   r.fechaPasada = { p1: (await costoEnFicha(page, p1.id)).deLote, p2: (await costoEnFicha(page, p2.id)).deLote, p3: (await costoEnFicha(page, p3.id)).deLote, q1: (await costoEnFicha(page, q1.id)).deLote };
 
   // D9 "activos": P3 muere (por API; no hay fecha de baja) y se gasta $100.000 en P hoy.
-  await supabase.from('animales').update({ estado: 'muerto' }).eq('id', p3.id);
+  await supabase.from('animales').update({ estado: 'muerto', fecha_baja: hoyBogota() }) /* Sprint 05: la baja lleva fecha */.eq('id', p3.id);
   await supabase.from('costos').insert(gasto(Pl, 100_000, hoyBogota()));
   await page.reload();
   r.muerto = { p1: (await costoEnFicha(page, p1.id)).deLote, p3: (await costoEnFicha(page, p3.id)).deLote };
@@ -222,7 +222,7 @@ test.describe('celular 375×812', () => {
     const { data: directo } = await supabase.from('costos').insert(gasto(S, 50_000, haceDias(10), { animal_id: s1.id, categoria: 'medicamentos', descripcion: `${P} directo S1` })).select('id').single();
     const { data: directo2 } = await supabase.from('costos').insert(gasto(S, 10_000, haceDias(9), { animal_id: s1.id, descripcion: `${P} otro directo S1` })).select('id').single();
     await supabase.rpc('mover_animales', { ids: [s1.id], fecha: hoyBogota(), motivo: `${P} mover S1`, lote_destino: T });
-    await supabase.from('animales').update({ estado: 'muerto' }).eq('id', s2.id);
+    await supabase.from('animales').update({ estado: 'muerto', fecha_baja: hoyBogota() }) /* Sprint 05: la baja lleva fecha */.eq('id', s2.id);
     const errores = [];
     page.on('console', (m) => m.type() === 'error' && errores.push(m.text()));
     page.on('response', (x) => x.status() >= 400 && !x.url().includes('/auth/v1/') && errores.push(`${x.status()} ${x.request().method()} ${x.url().split('?')[0]}`));
@@ -251,7 +251,7 @@ test.describe('celular 375×812', () => {
     await page.getByRole('button', { name: `Editar gasto ${P} directo S1 corregido` }).tap();
     let hoja = page.getByRole('dialog', { name: 'Editar gasto' });
     r.ui.paraQuien = await hoja.getByLabel('¿Para quién?').evaluate((s) => s.options[s.selectedIndex]?.text);
-    await hoja.getByLabel('Monto (COP)').fill('60.000');
+    await hoja.getByLabel('Monto').fill('60.000');
     await hoja.getByRole('button', { name: 'Guardar' }).tap();
     await expect(hoja).toHaveCount(0, { timeout: 5000 }).catch(() => {});
     r.ui.editarDirecto = (await hoja.count()) ? await hoja.getByRole('alert').innerText().catch(() => 'sin alerta') : 'guardado';
@@ -261,23 +261,23 @@ test.describe('celular 375×812', () => {
 
     // Selector "¿Para quién?" de un gasto nuevo en S: solo activos del lote (S3), no el muerto (S2) ni el movido (S1).
     await page.goto(`/#/costos?lote=${S}`);
-    await page.getByRole('button', { name: 'Registrar gasto' }).first().tap();
-    hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+    await page.getByRole('button', { name: 'Anotar gasto' }).first().tap();
+    hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
     r.ui.opciones = await hoja.getByLabel('¿Para quién?').evaluate((s) => [...s.options].map((o) => o.text));
     const alerta = async () => ((await hoja.getByRole('alert').count()) ? (await hoja.getByRole('alert').innerText()).trim() : 'SIN MENSAJE');
     await hoja.getByLabel('Descripción').fill(`${P} validación`);
     for (const monto of ['12.5', '12,50', '1.000,50', '100000000000', '99999999999999999999', '5000000001', '1e6', '0x10']) {
-      await hoja.getByLabel('Monto (COP)').fill(monto);
+      await hoja.getByLabel('Monto').fill(monto);
       await hoja.getByRole('button', { name: 'Guardar' }).tap();
       await page.waitForTimeout(700);
       if (!(await hoja.count())) {
         r.ui[`monto ${monto}`] = 'GUARDADO';
-        await page.getByRole('button', { name: 'Registrar gasto' }).first().tap();
+        await page.getByRole('button', { name: 'Anotar gasto' }).first().tap();
         await hoja.getByLabel('Descripción').fill(`${P} validación`);
       } else r.ui[`monto ${monto}`] = await alerta();
     }
     r.ui.guardadosRaros = (await supabase.from('costos').select('monto_cop').eq('descripcion', `${P} validación`)).data.map((x) => x.monto_cop);
-    await hoja.getByLabel('Monto (COP)').fill('1000');
+    await hoja.getByLabel('Monto').fill('1000');
     await hoja.getByLabel('Fecha').fill('1999-12-31');
     await hoja.getByRole('button', { name: 'Guardar' }).tap();
     await page.waitForTimeout(1500);

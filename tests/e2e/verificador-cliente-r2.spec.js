@@ -43,7 +43,7 @@ test('VRF 012 r2 · R3: llave de sesión, apikey y token de la sesión en cada c
   const supabase = await clientePrueba();
   const { data } = await supabase.auth.getSession();
   for (const [url, titulo] of [
-    ['/#/animales', 'Trazabilidad del hato'],
+    ['/#/animales', 'Animales'],
     ['/#/lotes', null],
     ['/#/indicadores', null],
   ]) {
@@ -109,7 +109,7 @@ test('VRF 012 r2 · R3: refresco de token, otra pestaña y cerrar sesión con el
   const b = await context.newPage();
   const pedidosB = capturar(b);
   await b.goto('/#/animales');
-  await expect(b.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible({ timeout: 15_000 });
+  await expect(b.getByRole('heading', { name: 'Animales', exact: true })).toBeVisible({ timeout: 15_000 });
 
   // Deja la sesión a 20 s de vencer (dentro del margen de 90 s de auth-js) y recarga A: debe refrescar.
   await a.evaluate((k) => {

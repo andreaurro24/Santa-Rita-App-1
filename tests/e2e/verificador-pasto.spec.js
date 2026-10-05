@@ -117,7 +117,7 @@ test.describe('celular 375×812', () => {
     const r = {};
     await iniciarSesion(page);
     await page.goto('/#/mercado');
-    await expect(page.getByRole('heading', { name: 'Mercado y clima' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Precio y pasto' })).toBeVisible();
     const pasto = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Estado del pasto' }) });
     await expect(pasto.getByRole('listitem').filter({ hasText: `${P} finca 30 días` })).toBeVisible();
     const fila = async (nombre) => (await pasto.getByRole('listitem').filter({ hasText: nombre }).innerText()).replace(/\s+/g, ' ');

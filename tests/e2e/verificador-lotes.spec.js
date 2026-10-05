@@ -191,11 +191,11 @@ test('VRF 006 mover_animales: atomicidad, reglas de destino, anon y lo que no va
   const { data: loteVendido } = await supabase.from('lotes').insert({ codigo: `${P}-VENDIDO`, nombre: `${P} vendido`, tipo: 'ceba', estado: 'vendido' }).select('id').single();
   const aVendido = await supabase.rpc('mover_animales', { ids: [dos[1].id], fecha: hoyBogota(), motivo: `${P} a lote vendido`, lote_destino: loteVendido.id });
   r.haciaLoteVendido = aVendido.error?.code ?? 'ACEPTADO';
-  const vientre = await crearAnimal(supabase, 'V1', { lote_id: loteCria.id, sexo: 'Hembra', categoria: 'vientre', pesos: [[haceDias(60), 380]] });
+  const vientre = await crearAnimal(supabase, 'V1', { lote_id: loteCria.id, sexo: 'Hembra', categoria: 'vientre_mayor', pesos: [[haceDias(60), 380]] });
   const vientreCeba = await supabase.rpc('mover_animales', { ids: [vientre.id], fecha: hoyBogota(), motivo: `${P} vientre a ceba`, lote_destino: loteA.id });
   r.vientreACebaPorAPI = vientreCeba.error?.code ?? 'ACEPTADO';
   const muerto = await crearAnimal(supabase, 'M1', { lote_id: loteCria.id, sexo: 'Macho', categoria: 'ternero', pesos: [[haceDias(60), 150]] });
-  await supabase.from('animales').update({ estado: 'muerto' }).eq('id', muerto.id);
+  await supabase.from('animales').update({ estado: 'muerto', fecha_baja: hoyBogota() }) /* Sprint 05: la baja lleva fecha */.eq('id', muerto.id);
   const mMuerto = await supabase.rpc('mover_animales', { ids: [muerto.id], fecha: hoyBogota(), motivo: `${P} animal muerto`, lote_destino: loteA.id });
   r.moverAnimalMuerto = mMuerto.error?.code ?? 'ACEPTADO';
   const vivo = await crearAnimal(supabase, 'I1', { lote_id: loteCria.id, sexo: 'Macho', categoria: 'ternero', pesos: [[haceDias(60), 150]] });
@@ -231,7 +231,7 @@ test('VRF 006 R8/D2: la interfaz advierte al pasar un vientre a ceba, y cómo se
   const supabase = await clientePrueba();
   const loteA = await lotePorCodigo(supabase, 'LOTE-2026-A');
   const { data: loteCriaNuevo } = await supabase.from('lotes').insert({ codigo: `${P}-CRIA`, nombre: `${P} cría`, tipo: 'cria' }).select('id').single();
-  const vientre = await crearAnimal(supabase, 'V2', { lote_id: loteCriaNuevo.id, sexo: 'Hembra', categoria: 'vientre', pesos: [[haceDias(60), 380], [haceDias(20), 390]] });
+  const vientre = await crearAnimal(supabase, 'V2', { lote_id: loteCriaNuevo.id, sexo: 'Hembra', categoria: 'vientre_mayor', pesos: [[haceDias(60), 380], [haceDias(20), 390]] });
   const ternera = await crearAnimal(supabase, 'T2', { lote_id: loteCriaNuevo.id, sexo: 'Hembra', categoria: 'ternera', pesos: [[haceDias(60), 150]] });
   const r = {};
   await iniciarSesion(page);
@@ -287,7 +287,7 @@ test('VRF 006 R8/D2: la interfaz advierte al pasar un vientre a ceba, y cómo se
   // 5) Registrar una hembra (ternera) directamente en un lote de ceba.
   await page.goto('/#/animales');
   await page.getByRole('button', { name: 'Registrar animal' }).first().click();
-  const n = page.getByRole('dialog', { name: 'Registrar nuevo animal' });
+  const n = page.getByRole('dialog', { name: 'Registrar animal' });
   await n.getByLabel('Número interno').fill(`${P}-NH`);
   await n.getByLabel('Chapeta ICA / Sinigán').fill(`${P}-NH-CH`);
   await n.getByLabel('Sexo').selectOption('Hembra');
@@ -444,8 +444,8 @@ test('VRF 006 R1/R5: formularios de lote y potrero (vacíos, cero, negativos, du
   r.conteosFincas = conteos;
 
   registrar('formularios', r);
-  expect(r.loteVacio).toMatch(/obligatorios/);
-  expect(r.loteNombreEnBlanco).toMatch(/obligatorios/);
+  expect(r.loteVacio).toMatch(/obligatorios|Escribe/);
+  expect(r.loteNombreEnBlanco).toMatch(/obligatorios|Escribe/);
   expect(r['meta 0']).toMatch(/entre 1 y 1.499/);
   expect(r['meta -5']).toMatch(/entre 1 y 1.499/);
   expect(r['meta 1500']).toMatch(/entre 1 y 1.499/);
@@ -492,7 +492,7 @@ test.describe('celular 375×812', () => {
     r.movimientos = movs.length;
 
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número interno/).fill(n1);
+    await page.getByPlaceholder(/Buscar por número/).fill(n1);
     await page.getByRole('link', { name: new RegExp(`^${n1}`) }).first().tap();
     const ubic = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) });
     await expect(ubic).toContainText(nombrePot);

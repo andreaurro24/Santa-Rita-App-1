@@ -74,15 +74,14 @@ test.describe('celular 375×812', () => {
 
     await iniciarSesion(page);
     // Llegar desde la navegación del celular: "Más" → "Insumos y costos".
-    await page.getByRole('button', { name: /Más/ }).first().tap();
-    await page.getByRole('link', { name: 'Insumos y costos' }).tap();
-    await expect(page.getByRole('heading', { name: 'Insumos y costos' })).toBeVisible();
-    await page.getByRole('combobox', { name: /^Lote/ }).selectOption(lote.id);
+    await page.getByRole('link', { name: 'Gastos' }).tap(); // Sprint 05: Gastos está en la barra principal
+    await expect(page.getByRole('heading', { level: 1, name: 'Gastos' })).toBeVisible();
+    await page.getByLabel('Ver gastos de').selectOption(lote.id);
     r.pantallaVacia = { desborde: await page.evaluate(medirDesborde), controlesChicos: await page.evaluate(medirControles) };
     await page.screenshot({ path: `${DIR}/01-costos-vacio.png`, fullPage: true });
 
-    await page.getByRole('button', { name: 'Registrar gasto' }).first().tap();
-    const hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+    await page.getByRole('button', { name: 'Anotar gasto' }).first().tap();
+    const hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
     await expect(hoja).toBeVisible();
     r.hoja = await hoja.evaluate((el) => {
       const b = el.getBoundingClientRect();
@@ -90,8 +89,8 @@ test.describe('celular 375×812', () => {
       return { x: b.x, ancho: b.width, abajo: Math.round(b.bottom), pieVisible: pie.bottom <= innerHeight };
     });
     await hoja.getByLabel('Categoría').selectOption('suplemento');
-    await hoja.getByLabel('Monto (COP)').fill('1.000.000'); // con puntos de miles, como se escribe en Colombia
-    r.tecladoMonto = await hoja.getByLabel('Monto (COP)').getAttribute('inputmode');
+    await hoja.getByLabel('Monto').fill('1.000.000'); // con puntos de miles, como se escribe en Colombia
+    r.tecladoMonto = await hoja.getByLabel('Monto').getAttribute('inputmode');
     await hoja.getByLabel('Descripción').fill(`${P} suplemento criterio`);
     await page.screenshot({ path: `${DIR}/02-hoja-registrar.png` });
     await hoja.getByRole('button', { name: 'Guardar' }).dblclick();
@@ -163,24 +162,24 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
 
   await iniciarSesion(page);
   await page.goto(`/#/costos?lote=${lote.id}`);
-  await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
-  const hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+  await page.getByRole('button', { name: 'Anotar gasto' }).first().click();
+  const hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
   const alerta = async () => ((await hoja.getByRole('alert').count()) ? (await hoja.getByRole('alert').innerText()).trim() : 'SIN MENSAJE');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   r.ui.vacio = await alerta();
   await hoja.getByLabel('Descripción').fill('   ');
-  await hoja.getByLabel('Monto (COP)').fill('1000');
+  await hoja.getByLabel('Monto').fill('1000');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   r.ui.descripcionEnBlanco = await alerta();
   await hoja.getByLabel('Descripción').fill(`${P} validación`);
   // Ronda 2: "$1.000" ahora se acepta (se quita el signo) y "1000,50" dice "pesos enteros"; se quitan de aquí.
   for (const monto of ['0', '-5', 'abc', '1,000,000']) {
-    await hoja.getByLabel('Monto (COP)').fill(monto);
+    await hoja.getByLabel('Monto').fill(monto);
     await hoja.getByRole('button', { name: 'Guardar' }).click();
     await page.waitForTimeout(300);
     r.ui[`monto ${monto}`] = (await hoja.count()) ? await alerta() : 'GUARDADO';
   }
-  await hoja.getByLabel('Monto (COP)').fill('1000');
+  await hoja.getByLabel('Monto').fill('1000');
   await hoja.getByLabel('Fecha').fill('2099-01-01');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   r.ui.fechaFutura = await alerta();
@@ -191,19 +190,19 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   // Un monto con punto decimal: "12.5" se lee como 125 (los puntos se quitan como separadores de miles).
   await hoja.getByLabel('Fecha').fill(hoyBogota());
   await hoja.getByLabel('Descripción').fill(`${P} punto decimal`);
-  await hoja.getByLabel('Monto (COP)').fill('12.5');
+  await hoja.getByLabel('Monto').fill('12.5');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForTimeout(800);
   r.ui.montoConPuntoDecimalMensaje = (await hoja.count()) ? await alerta() : 'GUARDADO';
   r.ui.montoConPuntoDecimal = (await supabase.from('costos').select('monto_cop').eq('descripcion', `${P} punto decimal`)).data.map((x) => x.monto_cop);
   // Un monto enorme (error de ceros de más): ¿pide confirmación o avisa?
-  if (!(await hoja.count())) await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
+  if (!(await hoja.count())) await page.getByRole('button', { name: 'Anotar gasto' }).first().click();
   await hoja.getByLabel('Descripción').fill(`${P} enorme`);
-  await hoja.getByLabel('Monto (COP)').fill('99999999999999999999');
+  await hoja.getByLabel('Monto').fill('99999999999999999999');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForTimeout(1500);
   r.ui.montoFueraDeRango = (await hoja.count()) ? await alerta() : 'GUARDADO';
-  await hoja.getByLabel('Monto (COP)').fill('100000000000');
+  await hoja.getByLabel('Monto').fill('100000000000');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForTimeout(1500);
   r.ui.cienMilMillones = (await hoja.count()) ? await alerta() : 'GUARDADO SIN CONFIRMAR';
@@ -297,14 +296,14 @@ test('VRF 008 R3/R4 y la simplificación declarada: mover animales entre lotes y
   await page.getByRole('button', { name: `Editar gasto ${P} directo X1` }).click();
   const hoja = page.getByRole('dialog', { name: 'Editar gasto' });
   r.editarDirectoUI = { paraQuien: await hoja.getByLabel('¿Para quién?').evaluate((s) => s.options[s.selectedIndex]?.text) };
-  await hoja.getByLabel('Monto (COP)').fill('60000');
+  await hoja.getByLabel('Monto').fill('60000');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForTimeout(1500);
   r.editarDirectoUI.resultado = (await hoja.count()) ? (await hoja.getByRole('alert').innerText().catch(() => 'sin alerta')) : 'guardado';
   await page.screenshot({ path: `${DIR}/06-editar-directo-tras-mover.png` });
 
   // Baja: X3 muere (estado por API; la interfaz de bajas es la spec 003) y luego se gasta $200.000 en X.
-  await supabase.from('animales').update({ estado: 'muerto' }).eq('id', x3.id);
+  await supabase.from('animales').update({ estado: 'muerto', fecha_baja: hoyBogota() }) /* Sprint 05: la baja lleva fecha */.eq('id', x3.id);
   await supabase.from('costos').insert({ lote_id: loteX, categoria: 'sal_mineral', descripcion: `${P} sal X tras la baja`, monto_cop: 200_000, fecha: hoyBogota() });
   await page.goto('/#/');
   await page.reload();

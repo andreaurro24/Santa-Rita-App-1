@@ -58,7 +58,7 @@ async function base(supabase, s = 'BD') {
       datos: { numero_interno: numero, chapeta_ica: `${numero}-CH`, sexo: 'Macho', categoria: 'novillo', origen: 'compra', fecha_ingreso: ingreso, peso_ingreso_kg: 250, peso_objetivo_kg: 400, lote_id: lote.id, finca_id: propia.id },
     });
     if (error) throw error;
-    if (estado) await supabase.from('animales').update({ estado }).eq('id', id);
+    if (estado) await supabase.from('animales').update({ estado, ...(['muerto', 'perdido'].includes(estado) ? { fecha_baja: hoyBogota() } : {}) }).eq('id', id); // Sprint 05
     return { id, numero };
   };
   return { propia, lote, tenedor, contrato, animal };

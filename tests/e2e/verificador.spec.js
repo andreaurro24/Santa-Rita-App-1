@@ -25,7 +25,7 @@ const mananaBogota = () => new Date(Date.parse(`${hoyBogota()}T12:00:00Z`) + 86_
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(numero);
+  await page.getByPlaceholder(/Buscar por número/).fill(numero);
   await page.getByRole('link', { name: numero, exact: true }).click();
   await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
 }
@@ -73,7 +73,7 @@ test('VRF R3: sesión expirada (refresh inválido) vuelve a /login y vacía la c
   });
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await expect(page.getByText('140 reses registradas', { exact: false })).toBeVisible();
+  await expect(page.getByText('reses activas', { exact: false })).toBeVisible();
 
   // Simula una sesión vencida cuyo refresh token ya no sirve (p. ej. revocado o caducado).
   await page.evaluate((key) => {
@@ -90,7 +90,7 @@ test('VRF R3: sesión expirada (refresh inválido) vuelve a /login y vacía la c
   const antes = pedidosHato.length;
   await entrar(page);
   // R2: vuelve a la ruta donde estaba (#/animales).
-  await expect(page.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Animales', exact: true })).toBeVisible();
   await expect.poll(() => pedidosHato.length, { timeout: 10_000 }).toBeGreaterThan(antes);
 });
 
@@ -143,7 +143,7 @@ test('VRF R7: si falla la consulta del perfil, el mensaje no culpa a la cuenta',
   // Vuelve la red: Reintentar entra y lleva a la ruta pedida (R2).
   await page.unroute('**/rest/v1/perfiles**');
   await page.getByRole('button', { name: 'Reintentar' }).click();
-  await expect(page.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('heading', { name: 'Animales', exact: true })).toBeVisible({ timeout: 15_000 });
 });
 
 test('VRF R4/R7: una cuenta sin perfil ve "pide acceso", no ve datos y puede cerrar sesión', async ({ page }) => {
@@ -182,7 +182,7 @@ test('VRF R3: iniciar sesión en otra pestaña se refleja en esta (como ya pasa 
   // Simétrico: cerrar sesión en B sí saca a A (comprobación de control).
   await a.goto('/#/animales');
   await a.reload(); // recarga completa: la sesión compartida se restaura con INITIAL_SESSION
-  await expect(a.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible({ timeout: 15_000 });
+  await expect(a.getByRole('heading', { name: 'Animales', exact: true })).toBeVisible({ timeout: 15_000 });
   await b.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(a).toHaveURL(/#\/login/, { timeout: 15_000 });
   expect.soft(sigueEnLogin, 'la pestaña A no se enteró del inicio de sesión en B').toBe(false);
@@ -238,16 +238,16 @@ test('VRF animal: registro válido persiste tras recargar y en otra sesión', as
   await dialogo.getByLabel(/Costo de compra/).fill('1500000');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByText('141 reses registradas', { exact: false })).toBeVisible();
+  await expect(page.getByText('reses activas', { exact: false })).toBeVisible();
   await page.reload();
-  await page.getByPlaceholder(/Buscar por número interno/).fill(`${PREFIJO}-1`);
+  await page.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-1`);
   await expect(page.getByRole('link', { name: `${PREFIJO}-1`, exact: true })).toBeVisible();
 
   const otra = await browser.newContext();
   const page2 = await otra.newPage();
   await iniciarSesion(page2);
   await page2.goto('/#/animales');
-  await page2.getByPlaceholder(/Buscar por número interno/).fill(`${PREFIJO}-1`);
+  await page2.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-1`);
   await expect(page2.getByRole('link', { name: `${PREFIJO}-1`, exact: true })).toBeVisible();
   await otra.close();
 });
@@ -413,7 +413,7 @@ test('VRF R5 (0500): la BD rechaza al EDITAR una fecha de nacimiento futura y un
   const supabase = await clientePrueba();
   const { data: a } = await supabase.from('animales').select('id, sexo, categoria, fecha_nacimiento').eq('numero_interno', ANIMAL_PESO).single();
   const f = await supabase.from('animales').update({ fecha_nacimiento: mananaBogota() }).eq('id', a.id).select('id');
-  const otra = a.sexo === 'Macho' ? 'vientre' : 'novillo';
+  const otra = a.sexo === 'Macho' ? 'vientre_mayor' : 'novillo';
   const c = await supabase.from('animales').update({ categoria: otra }).eq('id', a.id).select('id');
   // Restaurar por si alguna se aceptó.
   await supabase.from('animales').update({ fecha_nacimiento: a.fecha_nacimiento, categoria: a.categoria }).eq('id', a.id);
@@ -489,7 +489,7 @@ test('VRF precio: registro válido y duplicado (misma fecha y fuente)', async ({
   await iniciarSesion(page);
   await page.goto('/#/mercado');
   for (const intento of [1, 2]) {
-    await page.getByRole('button', { name: 'Actualizar precio' }).click();
+    await page.getByRole('button', { name: /Actualizar Gordo/ }).click();
     await page.getByLabel('Fecha del boletín').fill(FECHA_PRECIO);
     await page.getByLabel('Precio (COP/kg)').fill('7000');
     await page.getByRole('button', { name: 'Guardar' }).click();
@@ -509,12 +509,12 @@ test('VRF consola y red: recorrido de las 6 pantallas sin errores de consola ni 
   });
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await expect(page.getByText(/\d+ reses registradas/)).toBeVisible();
-  await page.getByPlaceholder(/Buscar por número interno/).fill('0101');
+  await expect(page.getByText(/\d+ reses activas/)).toBeVisible();
+  await page.getByPlaceholder(/Buscar por número/).fill('0101');
   await page.getByRole('link', { name: '0101', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Animal N° 0101' })).toBeVisible();
   for (const [ruta, titulo] of [
-    ['/#/mercado', 'Mercado y clima'],
+    ['/#/mercado', 'Precio y pasto'],
     ['/#/recomendacion', 'Recomendación de venta'],
     ['/#/reporte', 'Reporte resumen de apoyo a la decisión'],
     ['/#/', /^Hola/],

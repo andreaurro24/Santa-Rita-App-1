@@ -52,7 +52,7 @@ async function limpiar() {
   await supabase.from('potreros').delete().like('nombre', `${P}%`);
   await supabase.from('fincas').delete().like('nombre', `${P}%`);
   await supabase.from('lotes').delete().like('codigo', `${P}%`);
-  await supabase.from('precios_mercado').delete().like('fuente', `${P}%`);
+  await supabase.from('precios_mercado').delete().like('fuente', `${P}%`); await supabase.from('precios_referencia').delete().like('fuente', `${P}%`); // Sprint 05
 }
 
 let ids;
@@ -83,7 +83,7 @@ test.beforeAll(async () => {
   const A = await lote('A', 400);
   const a = {};
   for (const s of ['A1', 'A2', 'A4']) a[s] = await animal(s, A, { ingreso: haceDias(30), peso: 270, pesos: [[hoyBogota(), 300]] });
-  a.A3 = await animal('A3', A, { ingreso: haceDias(30), peso: 270, sexo: 'Hembra', categoria: 'vientre', compra: 500_000, pesos: [[hoyBogota(), 300]] });
+  a.A3 = await animal('A3', A, { ingreso: haceDias(30), peso: 270, sexo: 'Hembra', categoria: 'vientre_mayor', compra: 500_000, pesos: [[hoyBogota(), 300]] });
   const finca = (await supabase.from('fincas').insert({ nombre: `${P} finca tenedor`, tipo: 'tenedor' }).select('id').single()).data.id;
   const ten = (await supabase.from('tenedores').insert({ nombre: `${P} tenedor`, finca_id: finca }).select('id').single()).data.id;
   const contrato = (await supabase.from('contratos_al_partir').insert({ tenedor_id: ten, porcentaje_ganancia: 50, fecha_inicio: haceDias(30) }).select('id').single()).data.id;
@@ -96,7 +96,7 @@ test.beforeAll(async () => {
   for (const s of ['C1', 'C2']) await animal(s, C, { ingreso: haceDias(60), peso: 240, pesos: [[haceDias(30), 270]] });
   const D = await lote('D', 290);
   await animal('D1', D, { ingreso: haceDias(60), peso: 240, pesos: [[haceDias(30), 270]] });
-  await animal('D2', D, { ingreso: haceDias(60), peso: 250, sexo: 'Hembra', categoria: 'vientre', pesos: [[haceDias(30), 250]] });
+  await animal('D2', D, { ingreso: haceDias(60), peso: 250, sexo: 'Hembra', categoria: 'vientre_mayor', pesos: [[haceDias(30), 250]] });
   const E = await lote('E', 400);
   await animal('E1', E, { ingreso: haceDias(21), peso: 250, pesos: [[haceDias(20), 256]] });
   const F = await lote('F', 400);
@@ -133,6 +133,7 @@ async function simularClima(page, modo) {
 const num = (s) => (s == null ? NaN : Number(s.replace(/[−-]/, '-').replace(/[^\d-]/g, '')));
 
 async function leer(raiz) {
+  await raiz.locator('details').evaluateAll((ds) => ds.forEach((d) => (d.open = true))); // Sprint 05: detalles plegados
   const texto = await raiz.innerText();
   const lineas = texto.split('\n').map((l) => l.trim()).filter(Boolean);
   const stat = (label) => {
@@ -149,7 +150,7 @@ async function leer(raiz) {
     reses: stat('Reses para vender'),
     peso: stat('Peso promedio'),
     equilibrio: stat('Punto de equilibrio real'),
-    margen: stat('Margen neto hoy'),
+    margen: stat('Margen para Santa Rita hoy'),
     filas,
     porQue: lineas.slice(lineas.indexOf('Por qué') + 1),
   };
@@ -157,7 +158,7 @@ async function leer(raiz) {
 
 async function analizar(page, loteNombre, precio = '8000') {
   await page.getByLabel('Lote a evaluar').selectOption({ label: loteNombre });
-  await page.getByLabel('Precio de mercado (COP/kg)').fill(precio);
+  await page.getByLabel('Probar con otro precio por kilo').fill(precio);
   const card = page.locator('section').filter({ has: page.getByRole('heading', { name: loteNombre, exact: true }) });
   await expect(card).toBeVisible();
   await page.waitForTimeout(400);
@@ -188,6 +189,7 @@ test('VRF 010 r2 · Alto: lote pesado hace 30 días, /lotes y /recomendacion ya 
   await page.screenshot({ path: `${DIR}/01-recomendacion-C-meta290.png`, fullPage: true });
   // Reporte (R8) con el mismo lote y un boletín de hoy de $8.000 (el reporte usa el último boletín).
   await supabase.from('precios_mercado').insert({ fecha: hoyBogota(), precio_kg_cop: 8000, fuente: `${P} boletín` });
+  for (const categoria of ['ternero', 'ternera', 'levante', 'gordo', 'vaca']) await supabase.from('precios_referencia').insert({ categoria, precio_min_cop: 8000, precio_max_cop: 8000, fecha: hoyBogota(), fuente: `${P} zona` }); // Sprint 05: el reporte usa el precio de la zona
   await page.goto('/#/reporte');
   await page.reload();
   await page.locator('select').first().selectOption({ label: `${P} C` });
@@ -195,7 +197,7 @@ test('VRF 010 r2 · Alto: lote pesado hace 30 días, /lotes y /recomendacion ya 
   await page.waitForTimeout(400);
   const rep = await leer(page.locator('article'));
   r.reporteC = { badge: rep.badge, peso: rep.peso, filas: rep.filas.map((f) => [f[1], f.at(-1)]) };
-  await supabase.from('precios_mercado').delete().like('fuente', `${P}%`);
+  await supabase.from('precios_mercado').delete().like('fuente', `${P}%`); await supabase.from('precios_referencia').delete().like('fuente', `${P}%`); // Sprint 05
   // Meta 320: /lotes proyecta 20 días; la recomendación debe decir ESPERAR con 94 %.
   await supabase.from('lotes').update({ peso_meta_kg: 320 }).eq('id', ids.C);
   r.loteC320 = await textoLote(page, ids.C);
@@ -369,7 +371,7 @@ test.describe('celular 375×812', () => {
     const imp = await leer(art);
     r.columnasImpresion = imp.filas[0];
     await page.pdf({ path: `${DIR}/06-reporte.pdf`, format: 'Letter' }).catch((e) => (r.pdf = e.message));
-    await supabase.from('precios_mercado').delete().like('fuente', `${P}%`);
+    await supabase.from('precios_mercado').delete().like('fuente', `${P}%`); await supabase.from('precios_referencia').delete().like('fuente', `${P}%`); // Sprint 05
     registrar('reporte celular', r);
     expect(r.columnasCelular).toHaveLength(3);
     expect(r.columnasImpresion).toHaveLength(5);
