@@ -268,6 +268,7 @@ test.describe('celular 375×812', () => {
     await hoja.getByLabel('Descripción').fill(`${P} validación`);
     for (const monto of ['12.5', '12,50', '1.000,50', '100000000000', '99999999999999999999', '5000000001', '1e6', '0x10']) {
       await hoja.getByLabel('Monto').fill(monto);
+      r.ui[`aviso ${monto}`] = await hoja.getByText(/Solo pesos enteros/).count(); // Sprint 05 r2 (M1)
       await hoja.getByRole('button', { name: 'Guardar' }).tap();
       await page.waitForTimeout(700);
       if (!(await hoja.count())) {
@@ -295,7 +296,9 @@ test.describe('celular 375×812', () => {
     expect(r.ui.trasEditar).toEqual({ monto: 60_000, sigueDeS1: true, loteS: true });
     expect(r.ui.fichaS1.directos).toBe(60_000);
     expect(r.ui.opciones).toEqual(['Todo el lote', `Solo el animal ${s3.numero}`]);
-    for (const m of ['12.5', '12,50', '1.000,50']) expect(r.ui[`monto ${m}`]).toMatch(/pesos enteros/);
+    // Premisa del Sprint 05 r2 (M1): se rechazan al escribirlos, con aviso, y no se guardan.
+    for (const m of ['12.5', '12,50', '1.000,50']) expect(r.ui[`aviso ${m}`]).toBe(1);
+    for (const m of ['12.5', '12,50', '1.000,50', '1e6', '0x10']) expect(r.ui[`monto ${m}`]).not.toBe('GUARDADO');
     for (const m of ['100000000000', '99999999999999999999', '5000000001']) expect(r.ui[`monto ${m}`]).toMatch(/5\.000 millones/);
     expect(r.ui.fecha1999).toMatch(/revisa el año/);
     expect(r.ui.controles.filter((c) => /gasto/.test(c.texto))).toEqual([]);

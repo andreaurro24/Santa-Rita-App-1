@@ -175,6 +175,7 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   // Ronda 2: "$1.000" ahora se acepta (se quita el signo) y "1000,50" dice "pesos enteros"; se quitan de aquí.
   for (const monto of ['0', '-5', 'abc', '1,000,000']) {
     await hoja.getByLabel('Monto').fill(monto);
+    r.ui[`aviso ${monto}`] = await hoja.getByText(/Solo pesos enteros/).count(); // Sprint 05 r2 (M1)
     await hoja.getByRole('button', { name: 'Guardar' }).click();
     await page.waitForTimeout(300);
     r.ui[`monto ${monto}`] = (await hoja.count()) ? await alerta() : 'GUARDADO';
@@ -243,15 +244,17 @@ test('VRF 008 R2: validaciones en la interfaz y en la base de datos, RLS', async
   // Premisa cambiada a propósito (2026-09-28): "-5", "abc" y "1,000,000" ahora responden "El monto debe ser
   // un número de pesos…" (formato) y "0" sigue en "mayor que cero". Lo que se verifica: ninguno se guarda
   // y el mensaje dice qué hacer.
-  expect(r.ui['monto 0']).toMatch(/mayor que cero/);
-  for (const m of ['-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).toMatch(/El monto debe ser un número (de pesos|entero de pesos mayor que cero)/);
+  // Premisa del Sprint 05 r2 (M1): "0" pide escribir el monto y "-5", "abc" y "1,000,000" se rechazan al
+  // escribirlos con "Solo pesos enteros…" (el campo conserva el valor anterior).
+  expect(r.ui['monto 0']).toMatch(/monto/);
+  for (const m of ['-5', 'abc', '1,000,000']) expect(r.ui[`aviso ${m}`]).toBe(1);
   for (const m of ['0', '-5', 'abc', '1,000,000']) expect(r.ui[`monto ${m}`]).not.toBe('GUARDADO');
   expect(r.ui.fechaFutura).toMatch(/futura/);
   expect(r.bd.montoCero).toMatch(/^23514/);
   expect(r.bd.montoNegativo).toMatch(/^23514/);
   expect(r.bd.fechaFutura).toMatch(/fecha_futura/);
   expect(r.bd.fecha1999).toMatch(/^23514/);
-  expect(r.bd.sinLote).toMatch(/^23502/);
+  expect(r.bd.sinLote).toMatch(/^(23502|23514)/); // Sprint 05 (020 R4): lote opcional, el check costos_lote_o_finca lo rechaza
   expect(r.bd.descripcionEnBlanco).toMatch(/^23514/);
   expect(r.bd.categoriaInvalida).toMatch(/^23514/);
   expect(r.bd.animalDeOtroLote).toMatch(/animal_de_otro_lote/);

@@ -4,7 +4,8 @@ import { expect, test } from '@playwright/test';
 import { clientePrueba, iniciarSesion } from './helpers';
 import { medirContraste, medirDesborde } from './verificador-medidas';
 
-// Pruebas del VERIFICADOR para el Sprint 05 (specs 014–021), ronda 1, commit d2808f7.
+// Pruebas del VERIFICADOR para el Sprint 05 (specs 014–021), ronda 1 (commit d2808f7) y ronda 2
+// (commit 09cfe4d: premisas de M6 y M2 adaptadas; lo nuevo de la ronda 2 está en verificador-sprint05-r2).
 // Prefijo VRF5; todo se borra al final (ventas, ventas de caballos, animales, fotos, costos, lotes,
 // fincas, tenedores, precios). Corre contra producción con E2E_PERMITIR_PRODUCCION=si (decisión del
 // equipo para este sprint: producción aún tiene solo datos de ejemplo y el usuario de prueba).
@@ -165,9 +166,11 @@ test('VRF5 BD: nombres, montos, bajas, caballos, gastos y precios por escritura 
   r.equinoNovillo = resumen(await reg({ especie: 'equino', numero_interno: `${P}-EQN`, sexo: 'Macho', categoria: 'novillo' }));
   r.vientreViejo = resumen(await reg({ numero_interno: `${P}-VV`, chapeta_ica: `${P}-VV`, sexo: 'Hembra', categoria: 'vientre', peso_ingreso_kg: 300, lote_id: LOTE }));
   r.vientreMacho = resumen(await reg({ numero_interno: `${P}-VM`, chapeta_ica: `${P}-VM`, sexo: 'Macho', categoria: 'vientre_menor', peso_ingreso_kg: 300, lote_id: LOTE }));
-  // Caballo con lote (por API): ¿se puede pesar o vender como ganado?
-  const cab = await reg({ especie: 'equino', numero_interno: `${P}-CAB-LOTE`, sexo: 'Macho', categoria: 'caballo', lote_id: LOTE });
-  r.caballoConLote = resumen(cab);
+  // Ronda 2 (M6, migración 1800): un caballo no puede tener lote, pesajes ni gastos directos por API.
+  r.caballoRegistradoConLote = resumen(await reg({ especie: 'equino', numero_interno: `${P}-CAB-LOTE`, sexo: 'Macho', categoria: 'caballo', lote_id: LOTE }));
+  const cab = await reg({ especie: 'equino', numero_interno: `${P}-CAB`, sexo: 'Macho', categoria: 'caballo' });
+  if (cab.error) throw cab.error;
+  r.caballoConLote = resumen(await supabase.from('animales').update({ lote_id: LOTE }).eq('id', cab.data));
   const { count: pesajesCab } = await supabase.from('pesajes').select('id', { count: 'exact', head: true }).eq('animal_id', cab.data);
   r.caballoPesajesAlRegistrar = pesajesCab;
   r.caballoPesajeDirecto = resumen(await supabase.from('pesajes').insert({ animal_id: cab.data, fecha: haceDias(0), peso_kg: 400 }));
@@ -213,7 +216,7 @@ test('VRF5 BD: nombres, montos, bajas, caballos, gastos y precios por escritura 
   registrar('BD', r);
 
   const rechazado = /^(23514|23502|22001|P0001)/;
-  for (const k of ['numero31', 'numeroScript', 'duenoEmoji', 'duenoPuntoYComa', 'color41', 'chapetaRara', 'fincaRara', 'fincaPropietarioRaro', 'tenedorRaro', 'potreroRaro', 'loteNombreRaro', 'loteCodigo31', 'loteDescripcion301', 'bajaFutura', 'bajaAntesIngreso', 'muertoSinFecha', 'perdidoSinFecha', 'motivo201', 'bovinoSinChapeta', 'bovinoSinLote', 'bovinoYegua', 'equinoNovillo', 'vientreViejo', 'vientreMacho', 'venderEquinoBovino', 'venderEquinoFutura', 'venderEquinoCompradorRaro', 'venderEquinoAntesIngreso', 'venderEquinoDosVeces', 'gastoLoteYFinca', 'gastoSinNada', 'gastoFincaConAnimal', 'gastoFincaNegativo', 'gastoFincaFuturo', 'precioMinMayorQueMax', 'precioFuturo', 'precioCategoriaRara', 'precioCero', 'precioFuenteVacia', 'ventaCompradorRaro', 'caballoEnVentaDeGanado']) {
+  for (const k of ['numero31', 'numeroScript', 'duenoEmoji', 'duenoPuntoYComa', 'color41', 'chapetaRara', 'fincaRara', 'fincaPropietarioRaro', 'tenedorRaro', 'potreroRaro', 'loteNombreRaro', 'loteCodigo31', 'loteDescripcion301', 'bajaFutura', 'bajaAntesIngreso', 'muertoSinFecha', 'perdidoSinFecha', 'motivo201', 'bovinoSinChapeta', 'bovinoSinLote', 'bovinoYegua', 'equinoNovillo', 'vientreViejo', 'vientreMacho', 'venderEquinoBovino', 'venderEquinoFutura', 'venderEquinoCompradorRaro', 'venderEquinoAntesIngreso', 'venderEquinoDosVeces', 'gastoLoteYFinca', 'gastoSinNada', 'gastoFincaConAnimal', 'gastoFincaNegativo', 'gastoFincaFuturo', 'precioMinMayorQueMax', 'precioFuturo', 'precioCategoriaRara', 'precioCero', 'precioFuenteVacia', 'ventaCompradorRaro', 'caballoEnVentaDeGanado', 'caballoRegistradoConLote', 'caballoConLote', 'caballoPesajeDirecto', 'caballoGastoDirecto']) {
     expect.soft(r[k], k).toMatch(rechazado);
   }
   expect.soft(r.duenoValido).toBe('ACEPTADO');
@@ -545,15 +548,14 @@ test.describe('celular 375×812', () => {
     let hoja = page.getByRole('dialog', { name: 'Nueva finca' });
     await hoja.getByLabel('Nombre de la finca').fill(`${P} Finca B`);
     await hoja.getByLabel('Tipo').selectOption('tenedor');
-    await hoja.getByLabel(/^Tenedor/).selectOption({ label: `${P} Pedro` });
+    // Ronda 2 (M2): un tenedor que ya tiene finca no se ofrece; no se le quita la suya.
     await page.screenshot({ path: `${DIR}/finca-tenedor-375.png`, fullPage: true });
-    await hoja.getByRole('button', { name: 'Guardar' }).click();
-    await expect(hoja).toHaveCount(0);
+    r.opcionesTenedor = await hoja.getByLabel(/^Tenedor/).evaluate((s) => [...s.options].map((o) => o.text));
+    r.pedroOfrecido = r.opcionesTenedor.includes(`${P} Pedro`);
+    await hoja.getByRole('button', { name: 'Cancelar' }).click();
     const { data: tenDespues } = await supabase.from('tenedores').select('finca_id').eq('id', ten.id).single();
-    const { data: fb } = await supabase.from('fincas').select('id, propietario').eq('nombre', `${P} Finca B`).single();
-    r.tenedorExistente = { fincaAntes: 'A', fincaDespues: tenDespues.finca_id === fb.id ? 'B' : tenDespues.finca_id === fa.id ? 'A' : '?', propietarioB: fb.propietario };
+    r.tenedorExistente = { fincaDespues: tenDespues.finca_id === fa.id ? 'A' : '?' };
     r.tarjetaA = await page.locator('article').filter({ hasText: `${P} Finca A` }).getByText(/A nombre de/).innerText();
-    r.tarjetaB = await page.locator('article').filter({ hasText: `${P} Finca B` }).getByText(/A nombre de/).innerText();
     // Tenedor nuevo con doble toque en Guardar.
     await page.getByRole('button', { name: 'Nueva finca' }).click();
     hoja = page.getByRole('dialog', { name: 'Nueva finca' });
@@ -601,7 +603,10 @@ test.describe('celular 375×812', () => {
     await hoja.getByRole('button', { name: 'Cancelar' }).click();
     registrar('fincas', r);
 
+    expect.soft(r.pedroOfrecido, 'M2: un tenedor con finca no se ofrece').toBe(false);
+    expect.soft(r.tenedorExistente.fincaDespues).toBe('A');
     expect.soft(r.tenedorNuevoRaro).toMatch(/solo puede tener/);
+    expect.soft(r.trasDobleToque, 'M3: sin error falso tras el doble toque').toBe('cerrado');
     expect.soft(r.fincaCDobleToque.length, 'doble toque no duplica la finca').toBe(1);
     expect.soft(r.marcaLotes ?? 1).toBeGreaterThan(0);
     expect.soft(r.marcaGastosBadge ?? 1).toBeGreaterThan(0);

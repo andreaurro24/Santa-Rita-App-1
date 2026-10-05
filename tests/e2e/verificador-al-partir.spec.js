@@ -263,13 +263,12 @@ test.describe('celular 375×812', () => {
       r.contrato[`pct ${v}`] = await alertaDe(hoja);
     }
     await pct.fill('45');
+    // Sprint 05 r2 (M1, premisa nueva): el campo de pesos rechaza "-1" y "1500000.5" con un aviso y deja el
+    // valor anterior; ya no se toca Guardar con esos valores (se guardaría el valor anterior).
     await hoja.getByLabel('Precio del animal (COP)').fill('-1');
-    await hoja.getByRole('button', { name: 'Guardar' }).tap();
-    r.contrato.precioNegativo = await alertaDe(hoja);
+    r.contrato.precioNegativo = ((await hoja.getByText(/Solo pesos enteros/).count()) ? 'AVISO Solo pesos enteros' : `SIN AVISO, valor ${await hoja.getByLabel('Precio del animal (COP)').inputValue()}`);
     await hoja.getByLabel('Precio del animal (COP)').fill('1500000.5');
-    await hoja.getByRole('button', { name: 'Guardar' }).tap();
-    await page.waitForTimeout(1500);
-    r.contrato.precioConDecimales = (await hoja.count()) ? await alertaDe(hoja) : 'GUARDADO';
+    r.contrato.precioConDecimales = ((await hoja.getByText(/Solo pesos enteros/).count()) ? 'AVISO Solo pesos enteros' : `SIN AVISO, valor ${await hoja.getByLabel('Precio del animal (COP)').inputValue()}`);
     // Porcentaje vacío: ¿se guarda como 0 %?
     await hoja.getByLabel('Precio del animal (COP)').fill('1500000');
     await pct.fill('');
@@ -369,7 +368,8 @@ test.describe('celular 375×812', () => {
     expect(r.tenedorDobleToque).toEqual({ tenedores: 1, fincas: 1 });
     expect(r.contrato['pct 150']).toMatch(/entre 0 y 100/);
     expect(r.contrato['pct -5']).toMatch(/entre 0 y 100/);
-    expect(r.contrato.precioNegativo).toMatch(/negativo/);
+    expect(r.contrato.precioNegativo).toMatch(/negativo|Solo pesos enteros/);
+    expect(r.contrato.precioConDecimales).toMatch(/enteros/);
     expect(r.movimientosTrasAsignar).toBe(3);
     expect(r.visitaVacia).toMatch(/3 animales sin peso quedarán como no encontrados/);
     expect(r.visitaFechaFutura).toMatch(/futura/);

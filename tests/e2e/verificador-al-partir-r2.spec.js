@@ -189,9 +189,9 @@ test.describe('celular 375×812', () => {
     await hoja.getByRole('button', { name: 'Guardar' }).tap();
     r.contrato.pctVacio = await alertaDe(hoja);
     await pct.fill('45');
+    // Sprint 05 r2 (M1, premisa nueva): el campo rechaza el decimal con aviso; no se toca Guardar.
     await hoja.getByLabel('Precio del animal (COP)').fill('1500000.5');
-    await hoja.getByRole('button', { name: 'Guardar' }).tap();
-    r.contrato.precioDecimal = await alertaDe(hoja);
+    r.contrato.precioDecimal = ((await hoja.getByText(/Solo pesos enteros/).count()) ? 'AVISO Solo pesos enteros' : `SIN AVISO, valor ${await hoja.getByLabel('Precio del animal (COP)').inputValue()}`);
     await hoja.getByLabel('Precio del animal (COP)').fill('1500000');
     await hoja.getByLabel('Fecha de inicio').fill('2099-01-01');
     await hoja.getByRole('button', { name: 'Guardar' }).tap();
