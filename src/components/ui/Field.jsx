@@ -2,13 +2,13 @@
 // pantalla los asocien sin ids.
 export function Field({ label, required, ayuda, className = '', children }) {
   return (
-    <label className={`block text-sm ${className}`}>
-      <span className="mb-1 block font-medium text-gray-700">
+    <label className={`block text-base ${className}`}>
+      <span className="mb-1 block font-semibold text-gray-800">
         {label}
         {required && <span className="text-peligro"> *</span>}
       </span>
       {children}
-      {ayuda && <span className="mt-1 block text-xs text-gray-500">{ayuda}</span>}
+      {ayuda && <span className="mt-1 block text-sm text-gray-600">{ayuda}</span>}
     </label>
   );
 }

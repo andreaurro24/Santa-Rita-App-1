@@ -8,14 +8,26 @@ export const COLUMNAS = [
   { clave: 'lote', encabezado: 'lote', obligatoria: true },
   { clave: 'fechaIngreso', encabezado: 'fecha_ingreso', obligatoria: true },
   { clave: 'pesoIngreso', encabezado: 'peso_ingreso_kg', obligatoria: true },
-  { clave: 'pesoObjetivo', encabezado: 'peso_objetivo_kg', obligatoria: true },
+  { clave: 'pesoObjetivo', encabezado: 'peso_objetivo_kg', obligatoria: false }, // spec 016 · R6
   { clave: 'costoCompra', encabezado: 'costo_compra_cop', obligatoria: false },
 ];
 
 export const PLANTILLA_CSV =
   COLUMNAS.map((c) => c.encabezado).join(';') + '\n' + '0301;COL-CES-123456;Macho;novillo;LOTE-2026-A;15/09/2026;210,5;350;1250000\n';
 
-const CATEGORIAS = { Macho: ['novillo', 'ternero', 'reproductor'], Hembra: ['ternera', 'vientre'] };
+// Spec 016 · R5: tres tipos de vientre. "vientre" y "vaca" a secas se leen como vientre mayor.
+const CATEGORIAS = { Macho: ['novillo', 'ternero', 'reproductor'], Hembra: ['ternera', 'vientre_menor', 'vientre_mayor', 'vientre_parida'] };
+const ALIAS_CATEGORIA = { vientre: 'vientre_mayor', vaca: 'vientre_mayor', vaca_parida: 'vientre_parida', parida: 'vientre_parida' };
+
+export function normalizarCategoria(texto) {
+  const c = String(texto ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '_');
+  return ALIAS_CATEGORIA[c] ?? c;
+}
 
 // Separa una línea respetando comillas dobles ("a;b" es un solo campo; "" es una comilla).
 function partirLinea(linea, sep) {
@@ -123,7 +135,7 @@ export function validarFilas(filas, { hoy, lotes, existentes }) {
     const numero = datos.numeroInterno.trim();
     const chapeta = datos.chapetaICA.trim().toUpperCase();
     const sexo = capital(datos.sexo.trim());
-    const categoria = datos.categoria.trim().toLowerCase();
+    const categoria = normalizarCategoria(datos.categoria);
     const lote = lotes.find((l) => l.codigo.toUpperCase() === datos.lote.trim().toUpperCase());
     const fecha = leerFecha(datos.fechaIngreso.trim());
     const pesoIngreso = leerNumero(datos.pesoIngreso);
@@ -149,6 +161,9 @@ export function validarFilas(filas, { hoy, lotes, existentes }) {
     if (datos.pesoIngreso && !(pesoIngreso > 0 && pesoIngreso < 1500)) errores.push('El peso de ingreso debe estar entre 0,1 y 1.499 kg.');
     if (datos.pesoObjetivo && !(pesoObjetivo > 0 && pesoObjetivo < 1500)) errores.push('El peso objetivo debe estar entre 0,1 y 1.499 kg.');
     if (pesoIngreso && pesoObjetivo && pesoObjetivo <= pesoIngreso) errores.push('El peso objetivo debe ser mayor que el de ingreso.');
+    if (numero && numero.length > 30) errores.push('El número interno puede tener hasta 30 caracteres.');
+    if (numero && !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'()#/–-]+$/.test(numero)) errores.push('El número interno tiene caracteres no permitidos.');
+    if (chapeta && !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'()#/–-]{1,30}$/.test(chapeta)) errores.push('La chapeta tiene caracteres no permitidos o es muy larga.');
     if (datos.costoCompra && !(Number.isInteger(costo) && costo >= 0)) errores.push('El costo de compra debe ser un número entero de pesos.');
 
     return {
@@ -164,7 +179,7 @@ export function validarFilas(filas, { hoy, lotes, existentes }) {
             loteId: lote.id,
             fechaIngreso: fecha,
             pesoIngreso: Math.round(pesoIngreso * 10) / 10,
-            pesoObjetivo: Math.round(pesoObjetivo * 10) / 10,
+            pesoObjetivo: pesoObjetivo ? Math.round(pesoObjetivo * 10) / 10 : null,
             costoCompra: costo,
           },
     };

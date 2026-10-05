@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Syringe, Scale, Tag, TrendingDown, MapPin, MoveRight, Receipt, Printer } from 'lucide-react';
 import { useHato, useAddPeso, useAddSanidad } from '../data/hato';
 import { useMovimientos } from '../data/fincas';
 import { useVisitasAnimal } from '../data/alPartir';
 import { useRepartoCostos } from '../data/costos';
+import { useLotes } from '../data/lotes';
+import { FotoAnimal, AccionesAnimal, FichaCaballo } from '../components/FichaAcciones';
+import { duenosExistentes, etiquetaCategoria } from '../domain/animales';
 import { CATEGORIAS_COSTO, costoAcumuladoAnimal } from '../domain/costos';
 import MoverAnimales from '../components/MoverAnimales';
 import { ConDatos } from '../components/EstadoCarga';
@@ -26,23 +29,32 @@ import { formatFecha, diasHasta, hoyISO, formatoGdp, formatKg, formatPct } from 
 export default function AnimalDetail() {
   const hato = useHato();
   const costos = useRepartoCostos();
-  return <ConDatos queries={[hato, ...costos.queries]}>{() => <FichaAnimal animales={hato.data.animales} reparto={costos.reparto} />}</ConDatos>;
+  const lotes = useLotes();
+  return (
+    <ConDatos queries={[hato, lotes, ...costos.queries]}>
+      {() => <FichaAnimal animales={hato.data.animales} caballos={hato.data.caballos} lotes={lotes.data} reparto={costos.reparto} />}
+    </ConDatos>
+  );
 }
 
-function FichaAnimal({ animales, reparto }) {
+function FichaAnimal({ animales, caballos, lotes, reparto }) {
   const { id } = useParams();
   const { user } = useAuth();
   const animal = animales.find((a) => a.id === id);
+  const caballo = caballos.find((a) => a.id === id);
+  const duenos = useMemo(() => duenosExistentes([...animales, ...caballos]), [animales, caballos]);
   const [showPesoForm, setShowPesoForm] = useState(false);
   const [showSanidadForm, setShowSanidadForm] = useState(false);
   const [moviendo, setMoviendo] = useState(false);
 
-  if (!animal) return <Navigate to="/animales" replace />;
-
   // Mientras solo Miguel use la app, todo miembro con perfil puede registrar (docs/plan.md §2).
   const puedeRegistrar = Boolean(user?.rol);
+  if (caballo) return <FichaCaballo caballo={caballo} lotes={lotes} duenos={duenos} puedeEditar={puedeRegistrar} />;
+  if (!animal) return <Navigate to="/animales" replace />;
+
   const peso = pesoActual(animal);
-  const avance = Math.round((peso / animal.pesoObjetivo) * 100);
+  // Spec 016 · R6: sin peso objetivo no hay avance que mostrar.
+  const avance = animal.pesoObjetivo ? Math.round((peso / animal.pesoObjetivo) * 100) : null;
 
   const sanidadOrdenada = [...(animal.sanidad ?? [])].sort((a, b) =>
     (b.fecha ?? b.proximaFecha ?? '').localeCompare(a.fecha ?? a.proximaFecha ?? ''),
@@ -52,7 +64,7 @@ function FichaAnimal({ animales, reparto }) {
     <div className="space-y-5">
       <div className="no-print flex flex-wrap items-center justify-between gap-2">
         <Link to="/animales" className="inline-flex min-h-12 items-center gap-1 text-sm text-gray-600 hover:text-brand-700 md:min-h-0">
-          <ArrowLeft size={16} aria-hidden="true" /> Volver al hato
+          <ArrowLeft size={16} aria-hidden="true" /> Volver a los animales
         </Link>
         {/* Spec 012 · R4: ficha imprimible (la navegación y las acciones no se imprimen). */}
         <Button variante="secundario" tamano="sm" icono={Printer} onClick={() => window.print()}>
@@ -66,8 +78,8 @@ function FichaAnimal({ animales, reparto }) {
             <span className="sr-only">Animal N° </span>
             <Chapeta numero={animal.numeroInterno} tamano="lg" />
           </h1>
-          <p className="text-sm text-gray-600">
-            {animal.loteNombre}
+          <p className="text-base text-gray-600">
+            {etiquetaCategoria(animal.categoria)} · {animal.loteNombre}
             {animal.esquema === 'Al partir' && (
               <Badge tono="cuero" className="ml-2">
                 Al partir
@@ -85,15 +97,27 @@ function FichaAnimal({ animales, reparto }) {
         </div>
         <div className="md:text-right">
           <p className="cifra text-4xl font-bold text-brand-800">{formatKg(peso)}</p>
-          <p className="text-sm text-gray-600">
-            Meta {formatKg(animal.pesoObjetivo)}, {formatPct(avance)} de avance
-          </p>
+          {avance != null && (
+            <p className="text-base text-gray-600">
+              Meta {formatKg(animal.pesoObjetivo)}, {formatPct(avance)} de avance
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="h-2 overflow-hidden rounded-full bg-gray-200" aria-hidden="true">
-        <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.min(100, avance)}%` }} />
-      </div>
+      {avance != null && (
+        <div className="h-2 overflow-hidden rounded-full bg-gray-200" aria-hidden="true">
+          <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.min(100, avance)}%` }} />
+        </div>
+      )}
+
+      {puedeRegistrar && <AccionesAnimal animal={animal} lotes={lotes} duenos={duenos} />}
+      {animal.fechaBaja && (
+        <p className="rounded-lg bg-gray-100 px-4 py-3 text-base text-gray-800">
+          Dado de baja el {formatFecha(animal.fechaBaja)} ({animal.estado.toLowerCase()}){animal.motivoBaja ? `: ${animal.motivoBaja}` : ''}.
+        </p>
+      )}
+      <FotoAnimal animal={animal} puedeEditar={puedeRegistrar} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card titulo="Identificación" icono={Tag}>
@@ -101,10 +125,13 @@ function FichaAnimal({ animales, reparto }) {
             <Row label="Marca de finca" value={animal.marcaFinca} />
             <Row label="Chapeta ICA / Sinigán" value={animal.chapetaICA} />
             <Row label="Sexo" value={animal.sexo} />
+            <Row label="Categoría" value={etiquetaCategoria(animal.categoria)} />
+            <Row label="Dueño" value={animal.dueno ?? '—'} />
             <Row label="Origen" value={animal.origen} />
             <Row label="Fecha de ingreso" value={formatFecha(animal.fechaIngreso)} />
             <Row label="Peso de ingreso" value={`${formatKg(animal.pesoIngreso)}`} />
             {animal.costoCompra != null && <Row label="Costo de compra" value={`$${formatCOP(animal.costoCompra)}`} />}
+            {animal.precioCompraKg != null && <Row label="Precio de compra por kilo" value={`$${formatCOP(animal.precioCompraKg)}`} />}
             <Row
               label="Esquema"
               value={animal.esquema === 'Al partir' ? `${animal.tenedor} (${formatPct(animal.porcentajeTenedor)})` : 'Propio'}
@@ -168,7 +195,7 @@ function FichaAnimal({ animales, reparto }) {
         titulo="Historial sanitario"
         icono={Syringe}
         accion={
-          puedeRegistrar && (
+          puedeRegistrar && animal.estado === 'Activo' && (
             <Button variante="suave" tamano="sm" icono={Plus} onClick={() => setShowSanidadForm(true)}>
               Registrar evento
             </Button>

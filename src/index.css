@@ -67,6 +67,16 @@ body,
   min-height: 100%;
 }
 
+/* Spec 015 · R4: letra base de 18 px (todo lo que usa rem crece en proporción) para Miguel.
+   R6: sin rebote al pasar el final de la página, así la barra inferior no se mueve. */
+html {
+  font-size: 112.5%;
+}
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 body {
   background-color: var(--color-cal);
   color: var(--color-gray-900);
@@ -98,7 +108,7 @@ table,
   /* Campo de formulario. En celular mide 48 px de alto (R5) y usa 16 px para que iOS no haga zoom. */
   .input {
     width: 100%;
-    min-height: 3rem;
+    min-height: 3.2rem;
     border-radius: 0.5rem;
     border: 1px solid var(--color-borde-control);
     background-color: #fff;

@@ -4,7 +4,9 @@ import { useAnalisisLotes, useAnalisisLote } from '../data/analisis';
 import { ConDatos } from '../components/EstadoCarga';
 import AnalisisVenta from '../components/AnalisisVenta';
 import Card from '../components/ui/Card';
-import { Field, Input, Select } from '../components/ui/Field';
+import { Field, Select } from '../components/ui/Field';
+import CampoPesos from '../components/ui/CampoPesos';
+import { pesosANumero } from '../utils/validar';
 
 // Spec 010 · recomendación de venta v2.
 export default function SaleRecommendation() {
@@ -16,14 +18,13 @@ function RecomendacionContenido({ datos }) {
   const lotes = datos.lotes.data.filter((l) => l.estado !== 'vendido' && l.estado !== 'cerrado');
   const [loteId, setLoteId] = useState(lotes[0]?.id ?? '');
   const [precioManual, setPrecioManual] = useState('');
-  const analisis = useAnalisisLote(datos, loteId, precioManual);
-  const precioActual = datos.precios.data.precioActual;
+  const analisis = useAnalisisLote(datos, loteId, pesosANumero(precioManual));
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Recomendación de venta</h1>
-        <p className="text-sm text-gray-500">¿Vender hoy o esperar? Con el costo real del lote, la parte de los tenedores, el pasto y el clima.</p>
+        <h1 className="text-3xl font-bold text-gray-900">¿Vendo?</h1>
+        <p className="text-base text-gray-600">¿Vender hoy o esperar? Con el costo real del lote, el precio de la zona y el pasto.</p>
       </div>
 
       <Card>
@@ -37,18 +38,12 @@ function RecomendacionContenido({ datos }) {
               ))}
             </Select>
           </Field>
-          <Field label="Precio de mercado (COP/kg)">
-            <Input
-              type="text"
-              inputMode="numeric"
-              placeholder={precioActual ? String(precioActual.precioCOP) : 'Sin precio registrado'}
-              value={precioManual}
-              onChange={(e) => setPrecioManual(e.target.value.replace(/\D/g, ''))}
-            />
+          <Field label="Probar con otro precio por kilo">
+            <CampoPesos placeholder="Precio de la zona" value={precioManual} onChange={setPrecioManual} />
           </Field>
         </div>
-        <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-500">
-          <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" /> Si lo dejas vacío usa el último precio registrado. Cámbialo para simular otro escenario.
+        <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-600">
+          <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" /> Vacío: cada animal se calcula con el precio de la zona para su categoría. Escribe un precio para probar otro.
         </p>
       </Card>
 

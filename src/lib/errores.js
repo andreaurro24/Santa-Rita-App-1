@@ -12,7 +12,13 @@ export function mensajeError(error) {
     if (detalle.includes('precios_mercado')) return 'Ya hay un precio registrado para esa fecha y fuente. Cambia la fecha.';
     return 'Ese registro ya existe. Revisa los datos e inténtalo de nuevo.';
   }
-  if (error.code === '23514' && detalle.includes('categoria_sexo')) return 'La categoría no corresponde al sexo: vientre y ternera son hembras; novillo, ternero y reproductor son machos.';
+  if (error.code === '23514' && detalle.includes('categoria_sexo'))
+    return 'La categoría no corresponde al sexo: ternera y vientres son hembras; novillo, ternero y reproductor son machos; yegua y potranca son hembras; caballo y potro, machos.';
+  // Spec 018 · R2: nombres con caracteres no permitidos (constraints *_valido / *_valida).
+  if (error.code === '23514' && /_valid[oa]\b/.test(detalle)) return "Un nombre tiene caracteres no permitidos o es muy largo. Usa solo letras, números, espacios y . , - ' ( ) # /";
+  if (error.code === '23514' && detalle.includes('costos_lote_o_finca')) return 'El gasto debe ser de un lote o de la finca, no de los dos.';
+  if (error.code === '23514' && detalle.includes('bovino_completo')) return 'Faltan datos del animal: la chapeta ICA, el peso de ingreso y el lote son obligatorios para el ganado.';
+  if (error.code === '23503' && detalle.includes('venta_animales')) return 'Este animal ya está en una venta y no se puede eliminar. Si murió o se perdió, dalo de baja.';
   if (error.code === '23514' && /_fecha(_\w+)?_check|_razonable/.test(detalle)) return 'La fecha no es válida: revisa el año (debe ser del 2000 en adelante).';
   if (error.code === '23514' && detalle.includes('fecha_futura')) return 'La fecha no puede ser futura. Revisa la fecha e inténtalo de nuevo.';
   // Errores de reglas escritos en las funciones SQL como 'codigo: explicación'.

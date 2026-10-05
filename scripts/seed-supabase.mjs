@@ -1,5 +1,5 @@
 // Spec 001 · R9: recarga los datos de ejemplo (140 reses, 4 lotes, precios) en el proyecto
-// Supabase de DESARROLLO. Nunca corre contra otro proyecto.
+// Supabase de PRUEBAS. Spec 014 · R2: nunca corre contra producción (scripts/proyectos.mjs).
 //
 //   npm run db:seed          borra y vuelve a insertar entrando como el usuario de prueba
 //   npm run db:seed -- --sql escribe supabase/seed.sql para pegarlo en el SQL Editor
@@ -12,13 +12,13 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import seedAnimals from '../src/data/seedAnimals.json' with { type: 'json' };
 import { PRECIO_KILO_EN_PIE_HISTORICO } from '../src/data/seedMercado.js';
-
-const PROYECTO_DEV = 'eiszvbwwpqcqognkcfew';
+import { exigirProyectoDePruebas, refDe } from './proyectos.mjs';
 
 // Orden de borrado (hijos primero); el de inserción es el inverso. Incluye las tablas que la
 // semilla no llena (jornadas, movimientos, costos…): hay que vaciarlas porque apuntan a lotes,
 // fincas y animales, y sin eso la recarga falla por las llaves foráneas.
 const TABLAS = [
+  'ventas_equinos',
   'venta_animales',
   'ventas',
   'condicion_pasto',
@@ -190,9 +190,8 @@ async function aplicar(filas) {
         'Alternativa: `npm run db:seed -- --sql` y pegar supabase/seed.sql en el SQL Editor.',
     );
   }
-  if (new URL(url).hostname !== `${PROYECTO_DEV}.supabase.co`) {
-    throw new Error(`Por seguridad este script solo corre contra el proyecto de desarrollo (${PROYECTO_DEV}). URL recibida: ${url}`);
-  }
+  // Spec 014 · R2: nunca contra producción, solo contra el proyecto de pruebas declarado.
+  exigirProyectoDePruebas(url, 'El script de datos de ejemplo');
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
   if (authError) throw new Error(`No se pudo entrar como ${email}: ${authError.message}`);
@@ -217,7 +216,7 @@ if (process.argv.includes('--sql')) {
   console.log(`supabase/seed.sql generado (${resumen}).`);
 } else {
   aplicar(filas)
-    .then(() => console.log(`Datos de ejemplo cargados en ${PROYECTO_DEV}: ${resumen}`))
+    .then(() => console.log(`Datos de ejemplo cargados en ${refDe(process.env.VITE_SUPABASE_URL)}: ${resumen}`))
     .catch((err) => {
       console.error(err.message);
       process.exit(1);

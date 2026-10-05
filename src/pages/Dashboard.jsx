@@ -1,161 +1,121 @@
 import { Link } from 'react-router-dom';
-import { PawPrint, Syringe, Banknote, CloudSun, DollarSign, AlertTriangle, ChevronRight, TrendingDown } from 'lucide-react';
+import { PawPrint, Scale, Receipt, TrendingUp, AlertTriangle, ChevronRight, TrendingDown, Tags } from 'lucide-react';
 import { useHato } from '../data/hato';
-import { usePrecios } from '../data/precios';
-import { useClima, useTRM } from '../data/externos';
+import { usePreciosReferencia } from '../data/precios';
 import { ConDatos } from '../components/EstadoCarga';
 import { useAuth } from '../context/AuthContext';
-import StatCard from '../components/StatCard';
 import Card from '../components/ui/Card';
 import Chapeta from '../components/ui/Chapeta';
-import EmptyState from '../components/ui/EmptyState';
-import { describeWeatherCode } from '../api/weather';
 import { formatCOP } from '../domain/breakeven';
 import { pierdePeso } from '../domain/gdp';
+import { rangosVigentes } from '../domain/precios';
 import { formatFecha, diasHasta, hoyISO, cantidad } from '../utils/format';
 
 export default function Dashboard() {
   const hato = useHato();
-  const precios = usePrecios();
-  return (
-    <ConDatos queries={[hato, precios]}>
-      {() => <DashboardContenido {...hato.data} precioActual={precios.data.precioActual} />}
-    </ConDatos>
-  );
+  const precios = usePreciosReferencia();
+  return <ConDatos queries={[hato, precios]}>{() => <DashboardContenido {...hato.data} rangos={precios.data} />}</ConDatos>;
 }
 
-function DashboardContenido({ animales, lotes, precioActual }) {
-  const { user } = useAuth();
-  const { data: clima } = useClima();
-  const { data: trm } = useTRM();
+// Spec 015 · R3: los 4 accesos de todos los días, grandes.
+const ACCESOS = [
+  { to: '/animales?nuevo=1', label: 'Registrar animal', icon: PawPrint },
+  { to: '/pesaje', label: 'Pesar', icon: Scale },
+  { to: '/costos?nuevo=1', label: 'Anotar gasto', icon: Receipt },
+  { to: '/recomendacion', label: '¿Vendo hoy?', icon: TrendingUp },
+];
 
+function DashboardContenido({ animales, caballos, rangos }) {
+  const { user } = useAuth();
   const activos = animales.filter((a) => a.estado === 'Activo');
+  const caballosActivos = caballos.filter((a) => a.estado === 'Activo');
+  const gordo = rangosVigentes(rangos).get('gordo');
 
   const alertas = activos
-    .flatMap((a) =>
-      (a.sanidad ?? []).filter((s) => s.pendiente).map((s) => ({ animal: a, ...s, diasRestantes: diasHasta(s.proximaFecha) })),
-    )
+    .flatMap((a) => (a.sanidad ?? []).filter((s) => s.pendiente).map((s) => ({ animal: a, ...s, diasRestantes: diasHasta(s.proximaFecha) })))
+    .filter((a) => a.diasRestantes <= 15)
     .sort((a, b) => a.diasRestantes - b.diasRestantes);
-  const alertasVencidasOProximas = alertas.filter((a) => a.diasRestantes <= 15);
   // Spec 004 · R7: animales cuya ganancia reciente es negativa.
   const perdiendo = activos.filter(pierdePeso);
-
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Hola, {user?.nombre?.split(' ')[0]}</h1>
-        <p className="text-sm text-gray-500">Finca Santa Rita, Badillo (Cesar). Hoy es {formatFecha(hoyISO())}.</p>
+        <p className="text-base text-gray-600">Finca Santa Rita, Badillo (Cesar). Hoy es {formatFecha(hoyISO())}.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-        <StatCard icon={PawPrint} label="Reses activas" value={activos.length} sub={`${lotes.length} lotes`} />
-        <StatCard
-          icon={Syringe}
-          label="Alertas sanitarias"
-          value={alertasVencidasOProximas.length}
-          sub="Vencidas o en 15 días"
-          tone={alertasVencidasOProximas.length > 0 ? 'warning' : 'default'}
+      <nav aria-label="Accesos rápidos" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {ACCESOS.map(({ to, label, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl bg-brand-700 px-3 py-4 text-center text-lg font-bold text-white shadow-sm hover:bg-brand-800"
+          >
+            <Icon size={32} aria-hidden="true" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Resumen to="/animales" titulo="Reses activas" valor={activos.length} detalle={cantidad(caballosActivos.length, 'caballo', 'caballos')} />
+        <Resumen
+          to="/mercado"
+          titulo="Kilo de ganado gordo"
+          valor={gordo ? `$${formatCOP(gordo.precioMin)} – $${formatCOP(gordo.precioMax)}` : '—'}
+          detalle={gordo ? `Cesar y La Guajira, ${formatFecha(gordo.fecha)}` : 'Sin precio registrado'}
+          icono={Tags}
         />
-        <StatCard
-          icon={Banknote}
-          label="Kilo en pie"
-          value={precioActual ? `$${formatCOP(precioActual.precioCOP)}` : '—'}
-          sub={precioActual ? `Fedegán, ${formatFecha(precioActual.fecha)}` : 'Sin precio registrado'}
-        />
-        <StatCard
-          icon={CloudSun}
-          label="Clima en Badillo"
-          value={clima ? `${Math.round(clima.actual.temperaturaC)} °C` : '…'}
-          sub={clima ? describeWeatherCode(clima.actual.codigo) + (clima.isFallback ? ' (respaldo)' : '') : 'Consultando'}
-        />
-        <StatCard
-          icon={DollarSign}
-          label="TRM hoy"
-          value={trm ? `$${formatCOP(trm.valor)}` : '…'}
-          sub={trm ? (trm.isFallback ? 'Valor de respaldo' : 'datos.gov.co') : 'Consultando'}
+        <Resumen
+          to="/animales"
+          titulo="Alertas"
+          valor={alertas.length + perdiendo.length}
+          detalle={alertas.length + perdiendo.length ? 'Revisa abajo' : 'Todo al día'}
+          alerta={alertas.length + perdiendo.length > 0}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card
-          className="lg:col-span-2"
-          titulo="Vacunas y tratamientos pendientes"
-          accion={
-            <Link to="/animales" className="flex min-h-12 items-center gap-1 text-sm font-medium text-brand-700 hover:underline md:min-h-0">
-              Ver hato <ChevronRight size={14} aria-hidden="true" />
-            </Link>
-          }
-        >
-          {alertas.length === 0 ? (
-            <EmptyState titulo="Todo al día">No hay vacunas ni tratamientos programados pendientes.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {alertas.slice(0, 6).map((a) => (
-                <li key={`${a.animal.id}-${a.id}`}>
-                  <Link to={`/animales/${a.animal.id}`} className="flex min-h-12 items-center gap-3 py-2 hover:bg-gray-50">
-                    <AlertTriangle
-                      size={16}
-                      aria-hidden="true"
-                      className={a.diasRestantes < 0 ? 'shrink-0 text-brasa' : 'shrink-0 text-alerta'}
-                    />
-                    <Chapeta numero={a.animal.numeroInterno} />
-                    <span className="line-clamp-2 min-w-0 flex-1 text-sm text-gray-700">{a.descripcion}</span>
-                    <span className={`shrink-0 text-xs font-semibold ${a.diasRestantes < 0 ? 'text-brasa' : 'text-gray-600'}`}>
-                      {a.diasRestantes < 0 ? `Vencida hace ${Math.abs(a.diasRestantes)} d` : `En ${a.diasRestantes} d`}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card titulo="Lotes">
-          <ul className="space-y-2">
-            {lotes.map((l) => (
-              <li key={l.codigo}>
-                <Link
-                  to="/recomendacion"
-                  className="flex min-h-12 items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:border-brand-300 hover:bg-brand-50"
-                >
-                  <span className="font-medium text-gray-800">{l.nombre}</span>
-                  <span className="shrink-0 text-gray-500">{cantidad(l.animales.filter((a) => a.estado === 'Activo').length, 'res', 'reses')}</span>
+      {(alertas.length > 0 || perdiendo.length > 0) && (
+        <Card titulo="Para revisar">
+          <ul className="divide-y divide-gray-100">
+            {alertas.slice(0, 6).map((a) => (
+              <li key={`${a.animal.id}-${a.id}`}>
+                <Link to={`/animales/${a.animal.id}`} className="flex min-h-14 items-center gap-3 py-2 hover:bg-gray-50">
+                  <AlertTriangle size={20} aria-hidden="true" className={a.diasRestantes < 0 ? 'shrink-0 text-brasa' : 'shrink-0 text-alerta'} />
+                  <Chapeta numero={a.animal.numeroInterno} />
+                  <span className="line-clamp-2 min-w-0 flex-1 text-base text-gray-800">{a.descripcion}</span>
+                  <span className={`shrink-0 text-sm font-semibold ${a.diasRestantes < 0 ? 'text-brasa' : 'text-gray-700'}`}>
+                    {a.diasRestantes < 0 ? `Vencida hace ${cantidad(Math.abs(a.diasRestantes), 'día', 'días')}` : `En ${cantidad(a.diasRestantes, 'día', 'días')}`}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {perdiendo.map((a) => (
+              <li key={`peso-${a.id}`}>
+                <Link to={`/animales/${a.id}`} className="flex min-h-14 items-center gap-3 py-2 hover:bg-gray-50">
+                  <TrendingDown size={20} aria-hidden="true" className="shrink-0 text-peligro" />
+                  <Chapeta numero={a.numeroInterno} />
+                  <span className="min-w-0 flex-1 text-base text-gray-800">Está perdiendo peso: revísalo en el próximo recorrido.</span>
                 </Link>
               </li>
             ))}
           </ul>
         </Card>
-      </div>
-
-      <Card titulo="Pierden peso" icono={TrendingDown}>
-        {perdiendo.length === 0 ? (
-          <p className="text-sm text-gray-600">Ningún animal activo perdió peso en su último periodo de pesaje.</p>
-        ) : (
-          <>
-            <p className="mb-3 text-sm text-gray-600">
-              {perdiendo.length} {perdiendo.length === 1 ? 'animal perdió' : 'animales perdieron'} peso: bajaron en su último periodo de pesaje o cayeron más de 8 kg de un pesaje al siguiente. Revísalos en el próximo recorrido.
-            </p>
-            <ul className="flex flex-wrap gap-2">
-              {perdiendo.map((a) => (
-                <li key={a.id}>
-                  <Link to={`/animales/${a.id}`} className="inline-flex min-h-12 items-center rounded-lg px-1 hover:bg-gray-50">
-                    <Chapeta numero={a.numeroInterno} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </Card>
-
-      <Link to="/indicadores" className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm hover:border-brand-300">
-        <span>
-          <span className="font-semibold text-gray-900">Indicadores del proyecto</span>
-          <span className="block text-gray-600">Registro digital, historial de peso, fuentes externas y ventas frente a la línea base.</span>
-        </span>
-        <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
-      </Link>
+      )}
     </div>
+  );
+}
+
+function Resumen({ to, titulo, valor, detalle, alerta = false }) {
+  return (
+    <Link to={to} className={`flex min-h-20 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 hover:border-brand-300 ${alerta ? 'border-alerta' : 'border-gray-200'}`}>
+      <span>
+        <span className="block text-base text-gray-600">{titulo}</span>
+        <span className="cifra block text-2xl font-bold text-gray-900">{valor}</span>
+        <span className="block text-sm text-gray-600">{detalle}</span>
+      </span>
+      <ChevronRight size={20} className="shrink-0 text-gray-400" aria-hidden="true" />
+    </Link>
   );
 }

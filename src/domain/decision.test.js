@@ -99,11 +99,32 @@ describe('analizarLoteV2 · recomendación (R5–R7)', () => {
     expect(analizarLoteV2(base({ pasto: 'rojo' })).recomendacion).toBe('VENDER_ANTICIPADO');
   });
 
-  it('VENDER_ANTICIPADO por sequía pronosticada, pero no con el clima de respaldo (R6)', () => {
-    expect(analizarLoteV2(base({ clima: { isFallback: false, resumenLluvia7d: 1 } })).recomendacion).toBe('VENDER_ANTICIPADO');
-    const r = analizarLoteV2(base({ clima: { isFallback: true, resumenLluvia7d: 0 } }));
+  it('spec 015 · R1: el clima ya no cambia la recomendación (solo el semáforo del pasto)', () => {
+    const r = analizarLoteV2(base({ clima: { isFallback: false, resumenLluvia7d: 0 } }));
     expect(r.recomendacion).toBe('ESPERAR');
-    expect(r.razones.join(' ')).toMatch(/sin conexión/);
+    expect(r.razones.join(' ')).not.toMatch(/lluvia|pronóstico/);
+  });
+
+  it('spec 021 · R3: con un precio por animal, cada uno vende a su precio y el precio de hoy es el promedio', () => {
+    // a a 8.000 y b a 10.000 $/kg, 300 kg cada uno: ingreso 5.400.000, promedio 9.000.
+    const precio = (an) => (an.id === 'a' ? 8_000 : 10_000);
+    const r = analizarLoteV2(base({ precioKg: precio }));
+    expect(r.hoy.ingreso).toBe(5_400_000);
+    expect(r.hoy.precioMedio).toBe(9_000);
+    expect(r.sensibilidad[0].precioKg).toBeCloseTo(8_100, 5);
+    expect(r.razones.join(' ')).toMatch(/El precio de hoy es \$9\.000\/kg/);
+  });
+
+  it('spec 021: sin precio para algún animal, SIN_DATOS', () => {
+    expect(analizarLoteV2(base({ precioKg: (an) => (an.id === 'a' ? 8_000 : null) })).recomendacion).toBe('SIN_DATOS');
+  });
+
+  it('spec 016 · R5/R6: excluye los tres tipos de vientre y funciona sin peso objetivo', () => {
+    const animales = [animal('a', { pesoObjetivo: null }), animal('b', { pesoObjetivo: null }), animal('c', { categoria: 'vientre_parida' })];
+    const r = analizarLoteV2(base({ animales }));
+    expect(r.excluidos).toBe(1);
+    expect(r.meta).toBeNull();
+    expect(r.razones.join(' ')).not.toMatch(/NaN/);
   });
 
   it('NO_VENDER con margen negativo hoy, avisando cuándo sería positivo', () => {

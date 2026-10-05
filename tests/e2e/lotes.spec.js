@@ -27,7 +27,7 @@ test.afterAll(limpiar);
 test('R2, R3: cada lote muestra su proyección y el 2026-A tiene una fecha futura coherente con su GDP', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/lotes');
-  await expect(page.getByRole('heading', { name: 'Lotes y ciclos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Lotes', level: 1 })).toBeVisible();
   const tarjeta = page.getByRole('link', { name: /Lote 2026-A/ });
   await expect(tarjeta).toContainText(/Llega a la meta: \d{2} de [a-z]{3} de \d{4} \(en \d+ días\)/);
   await expect(page.getByRole('link', { name: /Lote 2025-B/ })).toContainText('Meta alcanzada');
@@ -93,7 +93,7 @@ test('R5–R7: crear un potrero, mover 2 animales a él y ver la ubicación y el
   expect(count).toBe(2);
 
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(primero);
+  await page.getByPlaceholder(/Buscar por número/).fill(primero);
   await page.getByRole('link', { name: primero, exact: true }).click();
   const ubicacion = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) });
   await expect(ubicacion).toContainText(POTRERO);

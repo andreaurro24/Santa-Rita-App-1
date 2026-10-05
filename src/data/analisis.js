@@ -2,33 +2,43 @@ import { useMemo } from 'react';
 import { useHato } from './hato';
 import { useLotes } from './lotes';
 import { useRepartoCostos } from './costos';
-import { usePrecios } from './precios';
+import { usePrecios, usePreciosReferencia } from './precios';
 import { useParametros, useCondicionPasto } from './pasto';
-import { useClima } from './externos';
 import { useVentas } from './ventas';
 import { analizarLoteV2, estadoContratos } from '../domain/decision';
 import { pastoMasCritico } from '../domain/pasto';
+import { precioPorAnimal, rangosVigentes } from '../domain/precios';
 import { hoyISO } from '../utils/format';
 
 // Spec 010 · reúne todo lo que necesita el motor v2 para un lote. `precioManual` permite simular.
+// Spec 015 · R1: sin clima. Spec 021 · R3: precio por animal según los rangos de la zona.
 export function useAnalisisLotes() {
   const hato = useHato();
   const lotes = useLotes();
   const costos = useRepartoCostos();
   const precios = usePrecios();
+  const referencia = usePreciosReferencia();
   const parametros = useParametros();
   const pasto = useCondicionPasto();
-  const clima = useClima();
   // D8 acumulado: lo que ya se liquidó a cada contrato en ventas anteriores (DT-04-9).
   const ventas = useVentas();
-  // El clima entra en la carga: sin esperarlo, la recomendación cambiaba al llegar el pronóstico (verificación 010).
-  return { queries: [hato, lotes, ...costos.queries, precios, parametros, pasto, clima, ventas], hato, lotes, costos, precios, parametros, pasto, clima, ventas };
+  return {
+    queries: [hato, lotes, ...costos.queries, precios, referencia, parametros, pasto, ventas],
+    hato,
+    lotes,
+    costos,
+    precios,
+    referencia,
+    parametros,
+    pasto,
+    ventas,
+  };
 }
 
 export function useAnalisisLote(datos, loteId, precioManual) {
-  const { hato, lotes, costos, precios, parametros, pasto, clima, ventas } = datos;
+  const { hato, lotes, costos, precios, referencia, parametros, pasto, ventas } = datos;
   return useMemo(() => {
-    if (!hato.data || !lotes.data || !costos.reparto || !precios.data || !parametros.data || !pasto.data) return null;
+    if (!hato.data || !lotes.data || !costos.reparto || !precios.data || !referencia.data || !parametros.data || !pasto.data) return null;
     const lote = lotes.data.find((l) => l.id === loteId);
     if (!lote) return null;
     const hoy = hoyISO();
@@ -38,14 +48,18 @@ export function useAnalisisLote(datos, loteId, precioManual) {
     // Si algún animal no tiene potrero, cualquier potrero de su finca le puede aplicar.
     const potreros = activos.every((a) => a.potreroId) ? [...new Set(activos.map((a) => a.potreroId))] : null;
     const pastoCritico = pastoMasCritico(pasto.data, hoy, fincas, potreros);
-    const precioKg = Number(precioManual) || precios.data.precioActual?.precioCOP || null;
+    const manual = Number(precioManual) || null;
+    const vigentes = rangosVigentes(referencia.data);
+    // Precio simulado: uno solo para todo el lote. Si no, el de la zona por categoría (respaldo: último manual).
+    const precioKg = manual ?? precioPorAnimal(vigentes, precios.data.precioActual?.precioCOP ?? null);
     return {
       lote,
       precioKg,
+      precioSimulado: manual,
       precioActual: precios.data.precioActual,
+      rangos: vigentes,
       destarePct: parametros.data.destarePct,
       pasto: pastoCritico,
-      clima: clima.data ?? null,
       resultado: analizarLoteV2({
         animales,
         costos: costos.costos.filter((c) => c.loteId === loteId),
@@ -53,11 +67,10 @@ export function useAnalisisLote(datos, loteId, precioManual) {
         precioKg,
         destarePct: parametros.data.destarePct,
         metaKg: lote.pesoMeta,
-        clima: clima.data ?? null,
         pasto: pastoCritico?.nivel ?? null,
         hoy,
         contratosPrevios: estadoContratos(ventas.data ?? []),
       }),
     };
-  }, [hato.data, lotes.data, costos.costos, costos.reparto, precios.data, parametros.data, pasto.data, clima.data, ventas.data, loteId, precioManual]);
+  }, [hato.data, lotes.data, costos.costos, costos.reparto, precios.data, referencia.data, parametros.data, pasto.data, ventas.data, loteId, precioManual]);
 }

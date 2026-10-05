@@ -6,7 +6,8 @@ import { iniciarSesion } from './helpers';
 test('R1: los indicadores muestran el hato registrado, el historial y los lotes', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/');
-  await page.getByRole('link', { name: /Indicadores del proyecto/ }).click();
+  // Spec 015 · R2: Indicadores ya no está en el menú ni en el panel; la ruta sigue funcionando.
+  await page.goto('/#/indicadores');
   await expect(page.getByRole('heading', { name: 'Indicadores del proyecto' })).toBeVisible();
   await expect(page.getByText(/Hoy: 100 % de 140 reses activas/)).toBeVisible();
   await expect(page.getByText(/Hoy: 100 % \(140 reses\)/)).toBeVisible();
@@ -21,8 +22,8 @@ test('R3: las pantallas se cargan por partes y funcionan al navegar', async ({ p
   });
   await iniciarSesion(page);
   for (const [ruta, titulo] of [
-    ['/#/lotes', 'Lotes y ciclos'],
-    ['/#/costos', 'Insumos y costos'],
+    ['/#/lotes', 'Lotes'],
+    ['/#/costos', 'Gastos'],
     ['/#/ventas', 'Ventas'],
     ['/#/indicadores', 'Indicadores del proyecto'],
   ]) {
@@ -35,7 +36,7 @@ test('R3: las pantallas se cargan por partes y funcionan al navegar', async ({ p
 test('R4: la ficha del animal se imprime sin navegación ni botones', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill('0101');
+  await page.getByPlaceholder(/Buscar por número/).fill('0101');
   await page.getByRole('link', { name: '0101', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Imprimir ficha' })).toBeVisible();
   await page.emulateMedia({ media: 'print' });

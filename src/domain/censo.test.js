@@ -107,6 +107,19 @@ describe('validarFilas (R2)', () => {
   it('campos obligatorios vacíos', () => {
     const [r] = validarFilas([fila({ ...valida, chapetaICA: '', pesoObjetivo: '' })], ctx);
     expect(r.errores).toContain('Falta chapeta_ica.');
-    expect(r.errores).toContain('Falta peso_objetivo_kg.');
+    // Spec 016 · R6: el peso objetivo es opcional.
+    expect(r.errores).not.toContain('Falta peso_objetivo_kg.');
+  });
+
+  it('spec 016 · R5: tipos de vientre y alias "vientre" o "vaca parida"', () => {
+    const hembra = { ...valida, sexo: 'Hembra', pesoObjetivo: '' };
+    const [a, b, c] = validarFilas(
+      [fila({ ...hembra, numeroInterno: 'H1', chapetaICA: 'CH-H1', categoria: 'Vientre parida' }), fila({ ...hembra, numeroInterno: 'H2', chapetaICA: 'CH-H2', categoria: 'vientre' }), fila({ ...hembra, numeroInterno: 'H3', chapetaICA: 'CH-H3', categoria: 'vaca parida' })],
+      ctx,
+    );
+    expect(a.animal.categoria).toBe('vientre_parida');
+    expect(b.animal.categoria).toBe('vientre_mayor');
+    expect(c.animal.categoria).toBe('vientre_parida');
+    expect(a.animal.pesoObjetivo).toBeNull();
   });
 });

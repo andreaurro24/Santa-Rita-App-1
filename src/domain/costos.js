@@ -46,6 +46,8 @@ export function repartirCostos(costos, animales, movimientos = []) {
   // Gastos de lote sin animales en esa fecha: no los carga nadie y hay que avisarlo (verificación 008).
   reparto.sinRepartir = [];
   for (const c of costos) {
+    // Spec 020 · R4: los gastos de la finca entera no se reparten entre los animales.
+    if (!c.loteId) continue;
     if (c.animalId) {
       sumar(c.animalId, c.montoCop, c.categoria, 'directos');
       continue;

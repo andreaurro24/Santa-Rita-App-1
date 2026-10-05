@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Handshake, Receipt, BadgeDollarSign, CloudSun, FileText, Target, LogOut, Menu, X } from 'lucide-react';
+import { Home, PawPrint, Scale, TrendingUp, Layers, MapPin, Handshake, Receipt, BadgeDollarSign, Tags, FileText, Upload, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MarcaSR from './MarcaSR';
 import useDialogo from './ui/useDialogo';
 
-// Secciones de la app. `movil: true` = va en la barra inferior; el resto queda en "Más".
+// Spec 015 · R2: 4 secciones principales (`principal: true`) y el resto en "Más".
+// Indicadores (KPI del proyecto) no está en el menú; su ruta /indicadores sigue funcionando.
 const SECCIONES = [
-  { to: '/', label: 'Inicio', icon: Home, end: true, movil: true },
-  { to: '/animales', label: 'Hato', icon: PawPrint, movil: true },
-  { to: '/pesaje', label: 'Pesaje', icon: Scale, movil: true },
-  { to: '/recomendacion', label: 'Venta', icon: TrendingUp, movil: true },
-  { to: '/lotes', label: 'Lotes y ciclos', icon: Layers },
+  { to: '/', label: 'Inicio', icon: Home, end: true, principal: true },
+  { to: '/animales', label: 'Animales', icon: PawPrint, end: true, principal: true },
+  { to: '/costos', label: 'Gastos', icon: Receipt, principal: true },
+  { to: '/recomendacion', label: '¿Vendo?', icon: TrendingUp, principal: true },
+  { to: '/pesaje', label: 'Pesaje', icon: Scale },
+  { to: '/lotes', label: 'Lotes', icon: Layers },
   { to: '/fincas', label: 'Fincas y potreros', icon: MapPin },
   { to: '/al-partir', label: 'Al partir', icon: Handshake },
-  { to: '/costos', label: 'Insumos y costos', icon: Receipt },
   { to: '/ventas', label: 'Ventas', icon: BadgeDollarSign },
-  { to: '/mercado', label: 'Mercado y clima', icon: CloudSun },
+  { to: '/mercado', label: 'Precio y pasto', icon: Tags },
   { to: '/reporte', label: 'Reporte', icon: FileText },
-  { to: '/indicadores', label: 'Indicadores', icon: Target },
+  { to: '/animales/importar', label: 'Importar animales', icon: Upload },
 ];
 
 export default function Layout() {
@@ -26,7 +27,7 @@ export default function Layout() {
     <div className="min-h-dvh md:flex">
       <SideNav />
       <TopBar />
-      <main className="min-w-0 flex-1 pb-24 md:pb-0">
+      <main className="min-w-0 flex-1 pb-28 md:pb-0">
         <div className="mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-8">
           <Outlet />
         </div>
@@ -48,21 +49,23 @@ function SideNav() {
           <p className="text-xs text-brand-200">Badillo, Cesar</p>
         </div>
       </div>
-      <nav aria-label="Principal" className="flex-1 space-y-1 px-3 py-2">
-        {SECCIONES.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-[color,background-color] ${
-                isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-700 hover:text-white'
-              }`
-            }
-          >
-            <Icon size={18} aria-hidden="true" />
-            {label}
-          </NavLink>
+      <nav aria-label="Principal" className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        {SECCIONES.map(({ to, label, icon: Icon, end, principal }, i) => (
+          <div key={to}>
+            {!principal && SECCIONES[i - 1]?.principal && <p className="px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-brand-200">Más</p>}
+            <NavLink
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 ${principal ? 'py-3 text-base font-semibold' : 'py-2 text-sm font-medium'} transition-[color,background-color] ${
+                  isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-700 hover:text-white'
+                }`
+              }
+            >
+              <Icon size={principal ? 20 : 18} aria-hidden="true" />
+              {label}
+            </NavLink>
+          </div>
         ))}
       </nav>
       <div className="border-t border-white/10 px-4 py-4">
@@ -93,12 +96,12 @@ function TopBar() {
 function BottomNav() {
   const [masAbierto, setMasAbierto] = useState(false);
   const location = useLocation();
-  const secundarias = SECCIONES.filter((s) => !s.movil);
+  const secundarias = SECCIONES.filter((s) => !s.principal);
   const enSecundaria = secundarias.some((s) => location.pathname.startsWith(s.to));
 
   const clase = (activo) =>
-    `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
-      activo ? 'text-brand-800' : 'text-gray-500'
+    `flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-sm font-semibold ${
+      activo ? 'text-brand-800' : 'text-gray-600'
     }`;
 
   return (
@@ -107,12 +110,12 @@ function BottomNav() {
         aria-label="Principal"
         className="no-print fixed inset-x-0 bottom-0 z-40 flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       >
-        {SECCIONES.filter((s) => s.movil).map(({ to, label, icon: Icon, end }) => (
+        {SECCIONES.filter((s) => s.principal).map(({ to, label, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className={({ isActive }) => clase(isActive)}>
             {({ isActive }) => (
               <>
                 <span className={`rounded-full px-4 py-1 ${isActive ? 'bg-brand-100' : ''}`}>
-                  <Icon size={20} aria-hidden="true" />
+                  <Icon size={22} aria-hidden="true" />
                 </span>
                 {label}
               </>
@@ -121,7 +124,7 @@ function BottomNav() {
         ))}
         <button onClick={() => setMasAbierto(true)} className={clase(enSecundaria)} aria-haspopup="dialog">
           <span className={`rounded-full px-4 py-1 ${enSecundaria ? 'bg-brand-100' : ''}`}>
-            <Menu size={20} aria-hidden="true" />
+            <Menu size={22} aria-hidden="true" />
           </span>
           Más
         </button>

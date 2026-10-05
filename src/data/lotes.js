@@ -11,6 +11,7 @@ export function mapLote(l) {
     fechaInicio: l.fecha_inicio,
     pesoMeta: l.peso_meta_kg != null ? Number(l.peso_meta_kg) : null,
     estado: l.estado,
+    descripcion: l.descripcion ?? '', // spec 020 · R2
   };
 }
 
@@ -20,7 +21,7 @@ export function useLotes() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('lotes')
-        .select('id, codigo, nombre, tipo, fecha_inicio, peso_meta_kg, estado')
+        .select('id, codigo, nombre, tipo, fecha_inicio, peso_meta_kg, estado, descripcion')
         .order('tipo')
         .order('codigo');
       if (error) throw error;
@@ -40,6 +41,7 @@ export function useGuardarLote() {
         fecha_inicio: lote.fechaInicio || null,
         peso_meta_kg: lote.pesoMeta === '' || lote.pesoMeta == null ? null : Number(lote.pesoMeta),
         estado: lote.estado,
+        descripcion: lote.descripcion?.trim() || null,
       };
       const consulta = lote.id ? supabase.from('lotes').update(fila).eq('id', lote.id) : supabase.from('lotes').insert(fila);
       const { data, error } = await consulta.select('id').single();

@@ -5,7 +5,8 @@ import { useVentas, useRegistrarVenta } from '../data/ventas';
 import { useAnalisisLotes, useAnalisisLote } from '../data/analisis';
 import { pesoActual, formatCOP } from '../domain/breakeven';
 import { costoAcumuladoAnimal } from '../domain/costos';
-import { HEMBRAS_REPRODUCTIVAS } from '../domain/lotes';
+import { esVientre } from '../domain/animales';
+import { precioPorAnimal } from '../domain/precios';
 import { estadoContratos, resultadoVenta, siguioRecomendacion } from '../domain/decision';
 import { ConDatos } from '../components/EstadoCarga';
 import RecomendacionBadge from '../components/RecomendacionBadge';
@@ -16,6 +17,8 @@ import Chapeta from '../components/ui/Chapeta';
 import Stat from '../components/ui/Stat';
 import EmptyState from '../components/ui/EmptyState';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
+import CampoPesos from '../components/ui/CampoPesos';
+import { mensajeNombre, numeroAPesos, pesosANumero } from '../utils/validar';
 import { formatFecha, hoyISO, formatKg, formatPct, numeroParaCampo, cantidad } from '../utils/format';
 import { mensajeError } from '../lib/errores';
 
@@ -95,29 +98,39 @@ export function NuevaVenta() {
   return <ConDatos queries={datos.queries}>{() => <NuevaVentaContenido datos={datos} />}</ConDatos>;
 }
 
+const PASOS = ['¿Qué vende?', '¿A quién y a cuánto?', 'Confirmar'];
+
+// Spec 019 · R2: asistente de venta en 3 pasos. R1: `?animal=<id>` vende solo ese animal.
 function NuevaVentaContenido({ datos }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const registrar = useRegistrarVenta();
   const lotes = datos.lotes.data.filter((l) => l.estado === 'activo' || l.estado === 'listo');
+  const animalUnico = params.get('animal');
+  const [paso, setPaso] = useState(0);
   const [loteId, setLoteId] = useState(params.get('lote') ?? lotes[0]?.id ?? '');
   const [form, setForm] = useState({
     fecha: hoyISO(),
     comprador: '',
-    precioKg: String(datos.precios.data.precioActual?.precioCOP ?? ''),
+    precioKg: '',
     destarePct: numeroParaCampo(datos.parametros.data.destarePct),
     notas: '',
   });
   const set = (c, v) => setForm((f) => ({ ...f, [c]: v }));
-  const analisis = useAnalisisLote(datos, loteId, form.precioKg);
+  const precio = pesosANumero(form.precioKg);
+  const analisis = useAnalisisLote(datos, loteId, precio);
 
   const animalesLote = useMemo(() => datos.hato.data.animales.filter((a) => a.loteId === loteId), [datos.hato.data, loteId]);
   const vendibles = animalesLote
-    .filter((a) => a.estado === 'Activo' && a.categoria !== 'vientre') // R2 / D2
-    .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno));
-  const vientres = animalesLote.filter((a) => a.estado === 'Activo' && a.categoria === 'vientre').length;
+    .filter((a) => a.estado === 'Activo' && !esVientre(a.categoria)) // R2 / D2 (los tres tipos de vientre)
+    .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno, 'es', { numeric: true }));
+  const vientres = animalesLote.filter((a) => a.estado === 'Activo' && esVientre(a.categoria)).length;
 
-  const [seleccion, setSeleccion] = useState(null); // Map animalId → peso (texto); null = todos con su peso actual
+  // Map animalId → peso (texto); null = todos con su peso actual. Con ?animal= arranca solo con ese.
+  const [seleccion, setSeleccion] = useState(() => {
+    const unico = animalUnico && datos.hato.data.animales.find((a) => a.id === animalUnico);
+    return unico ? new Map([[unico.id, numeroParaCampo(pesoActual(unico))]]) : null;
+  });
   const filas = vendibles.map((a) => ({
     animal: a,
     incluido: seleccion ? seleccion.has(a.id) : true,
@@ -138,11 +151,11 @@ function NuevaVentaContenido({ datos }) {
   }
 
   const incluidos = filas.filter((f) => f.incluido);
-  const precio = Number(form.precioKg);
+  const pesoDe = (f) => Number(String(f.peso).replace(',', '.')) || 0;
   const destare = Number(String(form.destarePct).replace(',', '.'));
   const vista = resultadoVenta(
     incluidos.map((f) => ({
-      pesoKg: Number(String(f.peso).replace(',', '.')) || 0,
+      pesoKg: pesoDe(f),
       costoCop: costoAcumuladoAnimal(f.animal, datos.costos.reparto).total,
       contratoId: f.animal.contratoId,
       porcentajeTenedor: f.animal.porcentajeTenedor,
@@ -151,22 +164,61 @@ function NuevaVentaContenido({ datos }) {
     // D8 acumulado (011 R5): cuentan todas las ventas ya registradas, sea cual sea la fecha de esta.
     estadoContratos(datos.ventas.data),
   );
-  const terneras = incluidos.filter((f) => HEMBRAS_REPRODUCTIVAS.includes(f.animal.categoria)).length;
+  const terneras = incluidos.filter((f) => f.animal.categoria === 'ternera').length;
+  const kilos = incluidos.reduce((s, f) => s + pesoDe(f), 0);
+
+  // Spec 021: precio sugerido = precio de la zona de cada animal, ponderado por su peso.
+  function precioSugerido() {
+    if (!analisis?.rangos) return null;
+    const porAnimal = precioPorAnimal(analisis.rangos, datos.precios.data.precioActual?.precioCOP ?? null);
+    let total = 0;
+    let peso = 0;
+    for (const f of incluidos) {
+      const p = porAnimal(f.animal, pesoDe(f));
+      if (!(p > 0)) return null;
+      total += p * pesoDe(f);
+      peso += pesoDe(f);
+    }
+    return peso > 0 ? Math.round(total / peso) : null;
+  }
+
+  function validarPaso(n) {
+    if (n === 0) {
+      if (!incluidos.length) return 'Selecciona al menos un animal.';
+      for (const f of incluidos) {
+        const p = Math.round(pesoDe(f) * 10) / 10;
+        if (!(p > 0 && p < 1500)) return `El peso de ${f.animal.numeroInterno} debe estar entre 0,1 y 1.499 kg.`;
+      }
+    }
+    if (n === 1) {
+      const nombre = mensajeNombre(form.comprador, 'el nombre del comprador');
+      if (nombre) return nombre;
+      if (!(precio > 0)) return 'Escribe el precio por kilo.';
+      if (precio > 100_000) return 'Revisa el precio por kilo: parece tener un cero de más.';
+      if (!(destare >= 0 && destare <= 15)) return 'El destare debe estar entre 0 y 15 %.';
+      if (!form.fecha || form.fecha > hoyISO()) return 'La fecha de la venta no puede ser futura.';
+    }
+    return null;
+  }
+
+  function siguiente() {
+    const problema = validarPaso(paso);
+    if (problema) return setError(problema);
+    setError('');
+    if (paso === 0 && !form.precioKg) {
+      const sugerido = precioSugerido();
+      if (sugerido) set('precioKg', numeroAPesos(sugerido));
+    }
+    setPaso((p) => p + 1);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!form.comprador.trim()) return setError('Escribe el nombre del comprador.');
-    if (!Number.isInteger(precio) || precio <= 0) return setError('El precio por kilo debe ser un número entero mayor que cero.');
-    if (!(destare >= 0 && destare <= 15)) return setError('El destare debe estar entre 0 y 15 %.');
-    if (!form.fecha || form.fecha > hoyISO()) return setError('La fecha de la venta no puede ser futura.');
-    if (!incluidos.length) return setError('Selecciona al menos un animal.');
-    const animales = [];
-    for (const f of incluidos) {
-      const p = Math.round(Number(String(f.peso).replace(',', '.')) * 10) / 10;
-      if (!(p > 0 && p < 1500)) return setError(`El peso de ${f.animal.numeroInterno} debe estar entre 0,1 y 1.499 kg.`);
-      animales.push({ animalId: f.animal.id, pesoKg: p, costoCop: costoAcumuladoAnimal(f.animal, datos.costos.reparto).total });
-    }
+    if (paso < 2) return siguiente();
+    const problema = validarPaso(0) || validarPaso(1);
+    if (problema) return setError(problema);
     setError('');
+    const animales = incluidos.map((f) => ({ animalId: f.animal.id, pesoKg: Math.round(pesoDe(f) * 10) / 10, costoCop: costoAcumuladoAnimal(f.animal, datos.costos.reparto).total }));
     const r = analisis?.resultado;
     registrar.mutate(
       {
@@ -186,98 +238,147 @@ function NuevaVentaContenido({ datos }) {
 
   return (
     <div className="space-y-5">
-      <Link to="/ventas" className="inline-flex min-h-12 items-center gap-1 text-sm text-gray-600 hover:text-brand-700 md:min-h-0">
-        <ArrowLeft size={16} aria-hidden="true" /> Ventas
+      <Link to="/ventas" className="inline-flex min-h-12 items-center gap-1 text-base text-gray-600 hover:text-brand-700">
+        <ArrowLeft size={18} aria-hidden="true" /> Ventas
       </Link>
       <h1 className="text-3xl font-bold text-gray-900">Registrar venta</h1>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
-        <Card>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <Field label="Lote" className="md:col-span-3">
-              <Select
-                value={loteId}
-                onChange={(e) => {
-                  setLoteId(e.target.value);
-                  setSeleccion(null);
-                }}
-              >
-                {lotes.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.nombre}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Comprador" required>
-              <Input value={form.comprador} onChange={(e) => set('comprador', e.target.value)} />
-            </Field>
-            <Field label="Precio por kilo (COP)" required>
-              <Input type="text" inputMode="numeric" value={form.precioKg} onChange={(e) => set('precioKg', e.target.value.replace(/\D/g, ''))} />
-            </Field>
-            <Field label="Destare (%)">
-              <Input type="text" inputMode="decimal" value={form.destarePct} onChange={(e) => set('destarePct', e.target.value)} />
-            </Field>
-            <Field label="Fecha de la venta">
-              <Input type="date" value={form.fecha} max={hoyISO()} onChange={(e) => set('fecha', e.target.value)} />
-            </Field>
-            <Field label="Notas" className="md:col-span-2">
-              <Input value={form.notas} onChange={(e) => set('notas', e.target.value)} />
-            </Field>
-          </div>
-        </Card>
+      <ol className="grid grid-cols-3 gap-2" aria-label="Pasos">
+        {PASOS.map((p, i) => (
+          <li
+            key={p}
+            aria-current={i === paso ? 'step' : undefined}
+            className={`rounded-lg px-2 py-2 text-center text-sm font-semibold ${i === paso ? 'bg-brand-700 text-white' : i < paso ? 'bg-brand-100 text-brand-800' : 'bg-gray-100 text-gray-600'}`}
+          >
+            {i + 1}. {p}
+          </li>
+        ))}
+      </ol>
 
-        {analisis?.resultado && (
-          <Card titulo="Lo que recomienda el sistema hoy">
-            <div className="flex flex-wrap items-center gap-3">
-              <RecomendacionBadge recomendacion={analisis.resultado.recomendacion} />
-              <p className="text-sm text-gray-700">{analisis.resultado.razones[0]}</p>
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        {paso === 0 && (
+          <>
+            <Card>
+              <Field label="Lote">
+                <Select
+                  value={loteId}
+                  onChange={(e) => {
+                    setLoteId(e.target.value);
+                    setSeleccion(null);
+                  }}
+                >
+                  {lotes.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.nombre}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </Card>
+            <Card titulo={`Animales (${incluidos.length} de ${vendibles.length})`}>
+              {vientres > 0 && <p className="mb-2 text-base text-gray-600">{vientres === 1 ? '1 vientre no aparece: no se vende.' : `${vientres} vientres no aparecen: no se venden.`}</p>}
+              <div className="mb-3 flex flex-wrap gap-2">
+                <Button variante="secundario" tamano="sm" onClick={() => setSeleccion(null)}>
+                  Todos
+                </Button>
+                <Button variante="secundario" tamano="sm" onClick={() => setSeleccion(new Map())}>
+                  Ninguno
+                </Button>
+              </div>
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {filas.map((f) => (
+                  <li key={f.animal.id} className={`flex min-h-16 items-center gap-3 rounded-xl border-2 px-3 py-2 ${f.incluido ? 'border-brand-600 bg-brand-50' : 'border-gray-200 bg-white'}`}>
+                    {/* Spec 019 · R2 (verificación 011): toda la fila izquierda es el control para incluir el animal. */}
+                    <label className="flex min-h-12 flex-1 cursor-pointer items-center gap-3">
+                      <input type="checkbox" className="size-7 accent-brand-700" checked={f.incluido} onChange={() => alternar(f.animal)} aria-label={`Vender ${f.animal.numeroInterno}`} />
+                      <Chapeta numero={f.animal.numeroInterno} />
+                    </label>
+                    <label className="w-28">
+                      <span className="sr-only">Peso de venta de {f.animal.numeroInterno} (kg)</span>
+                      <Input type="text" inputMode="decimal" value={f.peso} disabled={!f.incluido} onChange={(e) => cambiarPeso(f.animal, e.target.value)} className="text-right" />
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              {terneras > 0 && (
+                <p role="status" className="mt-3 rounded-lg bg-alerta-50 px-3 py-2 text-base text-alerta-900">
+                  Incluye {terneras} {terneras === 1 ? 'ternera' : 'terneras'}. Verifica que no tengan potencial reproductivo antes de venderlas.
+                </p>
+              )}
+            </Card>
+          </>
+        )}
+
+        {paso === 1 && (
+          <Card>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Field label="Comprador" required>
+                <Input value={form.comprador} maxLength={80} onChange={(e) => set('comprador', e.target.value)} />
+              </Field>
+              <Field label="Precio por kilo" required ayuda="Viene con el precio de la zona; cámbialo por el que se negoció.">
+                <CampoPesos value={form.precioKg} onChange={(v) => set('precioKg', v)} />
+              </Field>
+              <Field label="Destare (%)">
+                <Input type="text" inputMode="decimal" value={form.destarePct} onChange={(e) => set('destarePct', e.target.value)} />
+              </Field>
+              <Field label="Fecha de la venta">
+                <Input type="date" value={form.fecha} max={hoyISO()} onChange={(e) => set('fecha', e.target.value)} />
+              </Field>
+              <Field label="Notas" ayuda="Opcional" className="md:col-span-2">
+                <Input value={form.notas} maxLength={500} onChange={(e) => set('notas', e.target.value)} />
+              </Field>
             </div>
           </Card>
         )}
 
-        <Card titulo={`Animales (${incluidos.length} de ${vendibles.length})`}>
-          {vientres > 0 && <p className="mb-2 text-sm text-gray-600">{vientres === 1 ? '1 vientre no aparece: no se vende.' : `${vientres} vientres no aparecen: no se venden.`}</p>}
-          {terneras > 0 && (
-            <p role="status" className="mb-2 rounded-lg bg-alerta-50 px-3 py-2 text-sm text-alerta-900">
-              Incluye {terneras} {terneras === 1 ? 'ternera' : 'terneras'}. Verifica que no tengan potencial reproductivo antes de venderlas.
-            </p>
-          )}
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {filas.map((f) => (
-              <li key={f.animal.id} className="flex min-h-12 items-center gap-2 rounded-lg border border-gray-200 px-2 py-1">
-                <input type="checkbox" className="size-5 accent-brand-700" checked={f.incluido} onChange={() => alternar(f.animal)} aria-label={`Vender ${f.animal.numeroInterno}`} />
-                <Chapeta numero={f.animal.numeroInterno} />
-                <label className="ml-auto w-28">
-                  <span className="sr-only">Peso de venta de {f.animal.numeroInterno} (kg)</span>
-                  <Input type="text" inputMode="decimal" value={f.peso} disabled={!f.incluido} onChange={(e) => cambiarPeso(f.animal, e.target.value)} className="text-right" />
-                </label>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card titulo="Resultado de esta venta">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Stat label="Ingreso" value={pesos(vista.ingreso)} />
-            <Stat label="Costo acumulado" value={pesos(vista.costo)} />
-            <Stat
-              label="A los tenedores"
-              value={pesos(vista.participacion)}
-              sub={vista.liquidaciones.some((l) => l.pagadoAntes > 0 || l.gananciaAcumulada !== l.ganancia) ? 'Con lo acumulado y lo ya pagado del contrato' : undefined}
-            />
-            <Stat label="Margen neto" value={pesos(vista.margenNeto)} tono={tono(vista.margenNeto)} />
-          </div>
-        </Card>
+        {paso === 2 && (
+          <>
+            <Card titulo="Resultado de esta venta">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                <Stat label="Reses" value={incluidos.length} sub={`${formatKg(Math.round(kilos))} en total`} />
+                <Stat label="Precio por kilo" value={pesos(precio)} sub={`Destare ${formatPct(destare || 0)}`} />
+                <Stat label="Ingreso" value={pesos(vista.ingreso)} />
+                <Stat label="Costo acumulado" value={pesos(vista.costo)} />
+                <Stat
+                  label="A los tenedores"
+                  value={pesos(vista.participacion)}
+                  sub={vista.liquidaciones.some((l) => l.pagadoAntes > 0 || l.gananciaAcumulada !== l.ganancia) ? 'Con lo acumulado y lo ya pagado del contrato' : undefined}
+                />
+                <Stat label="Margen neto" value={pesos(vista.margenNeto)} tono={tono(vista.margenNeto)} sub="Para Santa Rita" />
+              </div>
+              <p className="mt-3 text-base text-gray-700">
+                A {form.comprador.trim()}, el {formatFecha(form.fecha)}.
+              </p>
+            </Card>
+            {analisis?.resultado && (
+              <Card titulo="Lo que recomienda el sistema hoy">
+                <div className="flex flex-wrap items-center gap-3">
+                  <RecomendacionBadge recomendacion={analisis.resultado.recomendacion} />
+                  <p className="text-base text-gray-700">{analisis.resultado.razones[0]}</p>
+                </div>
+              </Card>
+            )}
+          </>
+        )}
 
         <FormError>{error}</FormError>
-        <div className="flex justify-end gap-2">
-          <Button variante="fantasma" onClick={() => navigate('/ventas')}>
-            Cancelar
-          </Button>
-          <Button type="submit" icono={BadgeDollarSign} disabled={registrar.isPending}>
-            {registrar.isPending ? 'Guardando…' : 'Guardar venta'}
-          </Button>
+        <div className="flex flex-wrap justify-between gap-2">
+          {paso === 0 ? (
+            <Button variante="fantasma" onClick={() => navigate(animalUnico ? `/animales/${animalUnico}` : '/ventas')}>
+              Cancelar
+            </Button>
+          ) : (
+            <Button variante="secundario" icono={ArrowLeft} onClick={() => (setError(''), setPaso((p) => p - 1))}>
+              Atrás
+            </Button>
+          )}
+          {paso < 2 ? (
+            <Button type="submit">Siguiente</Button>
+          ) : (
+            <Button type="submit" icono={BadgeDollarSign} disabled={registrar.isPending}>
+              {registrar.isPending ? 'Guardando…' : 'Guardar venta'}
+            </Button>
+          )}
         </div>
       </form>
     </div>

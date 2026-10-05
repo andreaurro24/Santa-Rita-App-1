@@ -1,4 +1,4 @@
-// Botón del sistema. En celular mide al menos 48 px de alto (R5).
+// Botón del sistema. En celular mide al menos 56 px de alto (spec 015 · R4; base de 18 px).
 const VARIANTES = {
   primario: 'bg-brand-700 text-white hover:bg-brand-800 disabled:bg-brand-400',
   secundario: 'bg-white text-brand-800 ring-1 ring-inset ring-borde-control hover:bg-gray-50',
@@ -8,8 +8,8 @@ const VARIANTES = {
 };
 
 const TAMANOS = {
-  md: 'min-h-12 px-4 text-base md:min-h-10 md:text-sm',
-  sm: 'min-h-12 min-w-12 px-3 text-sm md:min-h-9 md:min-w-9',
+  md: 'min-h-[3.2rem] px-5 text-base md:min-h-11 md:text-sm',
+  sm: 'min-h-[3.2rem] min-w-[3.2rem] px-3 text-sm md:min-h-9 md:min-w-9',
 };
 
 export default function Button({ variante = 'primario', tamano = 'md', icono: Icono, className = '', children, ...props }) {

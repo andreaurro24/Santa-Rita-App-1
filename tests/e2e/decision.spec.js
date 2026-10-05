@@ -65,6 +65,9 @@ test('010: el lote en la meta recomienda vender, con equilibrio real, escenarios
   await page.goto('/#/recomendacion');
   await page.getByLabel('Lote a evaluar').selectOption({ label: 'Lote 2025-B (Ceba – próximo a venta)' });
   await expect(page.getByText('Vender ahora')).toBeVisible();
+  // Spec 015 · R5: las cifras de detalle están plegadas en "Ver detalles".
+  await expect(page.getByText('Punto de equilibrio real').first()).toBeHidden();
+  await page.getByText('Ver detalles').click();
   await expect(page.getByText('Punto de equilibrio real').first()).toBeVisible();
   for (const fila of ['Hoy', 'En 2 semanas', 'En 4 semanas', 'En 8 semanas']) await expect(page.getByRole('cell', { name: new RegExp(`^${fila}`) })).toBeVisible();
   await expect(page.getByText(/^[−+]10 %/).first()).toBeVisible();
@@ -85,7 +88,7 @@ test('010 R5: con un precio muy bajo recomienda no vender', async ({ page }) => 
   await iniciarSesion(page);
   await page.goto('/#/recomendacion');
   await page.getByLabel('Lote a evaluar').selectOption({ label: 'Lote 2026-A (Ceba – mitad de ciclo)' });
-  await page.getByLabel('Precio de mercado (COP/kg)').fill('1000');
+  await page.getByLabel('Probar con otro precio por kilo').fill('1000');
   await expect(page.getByText('No vender todavía')).toBeVisible();
   await expect(page.getByText(/dejaría una pérdida/)).toBeVisible();
 });
@@ -104,9 +107,12 @@ test('011 R1–R6: vender 2 animales de un lote, ver el resultado, la comparaci�
     else await casillas.nth(i).uncheck();
   }
   await expect(page.getByRole('heading', { name: `Animales (2 de ${total})` })).toBeVisible();
-  await page.getByRole('button', { name: 'Guardar venta' }).click();
+  // Spec 019 · R2: asistente en 3 pasos; cada paso valida lo suyo.
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.getByRole('button', { name: 'Siguiente' }).click();
   await expect(page.getByRole('alert')).toHaveText('Escribe el nombre del comprador.');
   await page.getByLabel('Comprador').fill(COMPRADOR);
+  await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Guardar venta' }).click();
 
   await expect(page.getByRole('heading', { name: /^Venta de Lote 2025-B/ })).toBeVisible();
@@ -126,7 +132,7 @@ test('011 R2: la base de datos no deja vender un vientre ni un animal de otro lo
   const supabase = await clientePrueba();
   const { lote } = await ids(supabase);
   const { data: hembra } = await supabase.from('animales').select('id').eq('lote_id', lote['CRIA-2025-2026']).eq('sexo', 'Hembra').limit(1).single();
-  await supabase.from('animales').update({ categoria: 'vientre' }).eq('id', hembra.id);
+  await supabase.from('animales').update({ categoria: 'vientre_mayor' }).eq('id', hembra.id); // spec 016 · R5
   try {
     const base = { fecha: '2026-09-20', comprador: COMPRADOR, precio_kg: 8000, destare: 0, recomendacion: null, notas: null };
     const vientre = await supabase.rpc('registrar_venta', { ...base, lote: lote['CRIA-2025-2026'], animales: [{ animal_id: hembra.id, peso_kg: 200, costo_cop: 0 }] });

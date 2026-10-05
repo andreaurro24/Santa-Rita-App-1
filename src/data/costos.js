@@ -4,10 +4,11 @@ import { supabase } from '../lib/supabase';
 import { repartirCostos } from '../domain/costos';
 import { useHato } from './hato';
 
-// Spec 008 · gastos por lote o por animal.
+// Spec 008 · gastos por lote o por animal. Spec 020 · R4: o de la finca entera (fincaId, sin lote).
 const mapCosto = (c) => ({
   id: c.id,
   loteId: c.lote_id,
+  fincaId: c.finca_id,
   animalId: c.animal_id,
   categoria: c.categoria,
   descripcion: c.descripcion,
@@ -21,7 +22,7 @@ export function useCostos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('costos')
-        .select('id, lote_id, animal_id, categoria, descripcion, monto_cop, fecha')
+        .select('id, lote_id, finca_id, animal_id, categoria, descripcion, monto_cop, fecha')
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -35,8 +36,9 @@ export function useGuardarCosto() {
   return useMutation({
     mutationFn: async (c) => {
       const fila = {
-        lote_id: c.loteId,
-        animal_id: c.animalId || null,
+        lote_id: c.fincaId ? null : c.loteId,
+        finca_id: c.fincaId || null,
+        animal_id: c.fincaId ? null : c.animalId || null,
         categoria: c.categoria,
         descripcion: c.descripcion.trim(),
         monto_cop: c.montoCop,
@@ -89,7 +91,8 @@ export function useRepartoCostos() {
   const historia = useHistoriaLotes();
   const reparto = useMemo(() => {
     if (!hato.data || !costos.data || !historia.data) return null;
-    const animales = hato.data.animales.map((a) => ({ ...a, fechaSalida: historia.data.salidas.get(a.id) ?? null }));
+    // Spec 016 · R3: un animal dado de baja (muerte o pérdida) deja de recibir gastos del lote (DT-02-1).
+    const animales = hato.data.animales.map((a) => ({ ...a, fechaSalida: historia.data.salidas.get(a.id) ?? a.fechaBaja ?? null }));
     return repartirCostos(costos.data, animales, historia.data.movimientos);
   }, [hato.data, costos.data, historia.data]);
   return { queries: [hato, costos, historia], reparto, costos: costos.data };

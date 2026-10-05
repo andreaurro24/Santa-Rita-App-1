@@ -29,22 +29,22 @@ test('R1, R3, R4: un gasto de $1.000.000 en un lote de 30 suma $33.333 a cada an
 
   await iniciarSesion(page);
   await page.goto(`/#/costos?lote=${loteId}`);
-  await expect(page.getByRole('heading', { name: 'Insumos y costos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Gastos', level: 1 })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
-  let hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+  await page.getByRole('button', { name: 'Anotar gasto' }).first().click();
+  let hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
   await hoja.getByLabel('Categoría').selectOption('suplemento');
-  await hoja.getByLabel('Monto (COP)').fill('1000000');
+  await hoja.getByLabel('Monto').fill('1000000');
   await hoja.getByLabel('Descripción').fill(`${PREFIJO} suplemento del lote`);
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja).toHaveCount(0);
   await expect(page.getByText(`${PREFIJO} suplemento del lote`)).toBeVisible();
 
-  await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
-  hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+  await page.getByRole('button', { name: 'Anotar gasto' }).first().click();
+  hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
   await hoja.getByLabel('¿Para quién?').selectOption({ label: `Solo el animal ${b.numero_interno}` });
   await hoja.getByLabel('Categoría').selectOption('medicamentos');
-  await hoja.getByLabel('Monto (COP)').fill('50000');
+  await hoja.getByLabel('Monto').fill('50000');
   await hoja.getByLabel('Descripción').fill(`${PREFIJO} tratamiento de ${b.numero_interno}`);
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja).toHaveCount(0);
@@ -67,15 +67,15 @@ test('R2: validaciones en la interfaz y en la base de datos', async ({ page }) =
   const { loteId, animales } = await datosLote(supabase);
   await iniciarSesion(page);
   await page.goto(`/#/costos?lote=${loteId}`);
-  await page.getByRole('button', { name: 'Registrar gasto' }).first().click();
-  const hoja = page.getByRole('dialog', { name: 'Registrar gasto' });
+  await page.getByRole('button', { name: 'Anotar gasto' }).first().click();
+  const hoja = page.getByRole('dialog', { name: 'Anotar gasto' });
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja.getByRole('alert')).toHaveText(/Describe el gasto/);
   await hoja.getByLabel('Descripción').fill(`${PREFIJO} inválido`);
-  await hoja.getByLabel('Monto (COP)').fill('-5');
-  await hoja.getByRole('button', { name: 'Guardar' }).click();
-  await expect(hoja.getByRole('alert')).toHaveText(/número de pesos/); // "-5" no es un monto válido
-  await hoja.getByLabel('Monto (COP)').fill('1000');
+  // Spec 018 · R1: el campo de pesos solo acepta dígitos (el "-" no entra) y pone los puntos de miles.
+  await hoja.getByLabel('Monto').fill('-5');
+  await expect(hoja.getByLabel('Monto')).toHaveValue('5');
+  await hoja.getByLabel('Monto').fill('1000');
   await hoja.getByLabel('Fecha').fill('2099-01-01');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja.getByRole('alert')).toHaveText(/no puede ser futura/);
@@ -103,7 +103,7 @@ test('R5, R6: resumen del lote, edición y borrado con confirmación', async ({ 
 
   await page.getByRole('button', { name: `Editar gasto ${PREFIJO} sal` }).click();
   const hoja = page.getByRole('dialog', { name: 'Editar gasto' });
-  await hoja.getByLabel('Monto (COP)').fill('400000');
+  await hoja.getByLabel('Monto').fill('400000');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(resumen).toContainText('$1.000.000');
 

@@ -4,7 +4,8 @@
 import { pesoActual, formatCOP } from './breakeven';
 import { gdpTotal, diasEntre, pesoEstimadoHoy } from './gdp';
 import { costoAcumuladoAnimal, repartirCostos } from './costos';
-import { formatNumero, formatPct } from '../utils/format';
+import { formatPct } from '../utils/format';
+import { esVientre } from './animales';
 
 export const ESCENARIOS_SEMANAS = [0, 2, 4, 8];
 export const SENSIBILIDAD = [-0.1, -0.05, 0.05, 0.1];
@@ -75,6 +76,11 @@ export function estadoContratos(ventas, { antesDe = null } = {}) {
   return estado;
 }
 
+// Spec 021 · R3: el precio puede ser uno solo (número) o uno por animal según su categoría y su
+// peso a la fecha de venta (función `(animal, pesoKg) => $/kg`).
+const precioDe = (precioKg, a, peso) => (typeof precioKg === 'function' ? precioKg(a, peso) : precioKg);
+const escalarPrecio = (precioKg, factor) => (typeof precioKg === 'function' ? (a, peso) => precioKg(a, peso) * factor : precioKg * factor);
+
 // Resultado económico de vender ya (dias = 0) o dentro de `dias`, al precio dado.
 function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias, gastoDiarioPorAnimal, contratosPrevios }) {
   let pesoVendible = 0;
@@ -84,7 +90,7 @@ function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias,
   for (const a of vendibles) {
     const peso = pesoBase.get(a.id) + (gdpTotal(a.pesos) ?? 0) * dias;
     const vendibleKg = peso * (1 - destarePct / 100);
-    const ingresoA = vendibleKg * precioKg;
+    const ingresoA = vendibleKg * precioDe(precioKg, a, peso);
     const costoA = costoBase.get(a.id) + gastoDiarioPorAnimal * dias;
     ganancias.push({ contratoId: a.contratoId, porcentaje: a.porcentajeTenedor, ganancia: ingresoA - costoA });
     pesoVendible += vendibleKg;
@@ -101,6 +107,7 @@ function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias,
     participacion,
     margenNeto: ingreso - costo - participacion,
     equilibrioKg: pesoVendible > 0 ? costo / pesoVendible : null, // D10
+    precioMedio: pesoVendible > 0 ? ingreso / pesoVendible : null, // 021: promedio ponderado por kilo
   };
 }
 
@@ -109,23 +116,23 @@ function resultado(vendibles, { costoBase, pesoBase, precioKg, destarePct, dias,
  * @param {object[]} e.animales       animales del lote (forma de useHato)
  * @param {object[]} e.costos         gastos del lote (forma de useCostos)
  * @param {Map}   [e.reparto]         reparto de costos de toda la finca (useRepartoCostos); si falta, se calcula solo con el lote
- * @param {number|null} e.precioKg    precio del kilo en pie
+ * @param {number|function|null} e.precioKg  precio del kilo en pie, o `(animal, pesoKg) => $/kg` (spec 021)
  * @param {number} e.destarePct       destare en %
  * @param {number|null} e.metaKg      meta pactada del lote (si no, promedio de metas)
- * @param {object|null} e.clima       { isFallback, resumenLluvia7d }
  * @param {string|null} e.pasto       nivel más crítico reciente: 'verde' | 'amarillo' | 'rojo' | null
  * @param {string} e.hoy              'AAAA-MM-DD' (Bogotá)
  * @param {Map}   [e.contratosPrevios] estado de los contratos por las ventas ya hechas (estadoContratos)
  */
-export function analizarLoteV2({ animales, costos, reparto = null, precioKg, destarePct = 0, metaKg = null, clima = null, pasto = null, hoy, contratosPrevios = new Map() }) {
+export function analizarLoteV2({ animales, costos, reparto = null, precioKg, destarePct = 0, metaKg = null, pasto = null, hoy, contratosPrevios = new Map() }) {
   const activos = animales.filter((a) => a.estado === 'Activo');
-  const vendibles = activos.filter((a) => a.categoria !== 'vientre'); // R7 / D2
+  const vendibles = activos.filter((a) => !esVientre(a.categoria)); // R7 / D2 (los tres tipos de vientre, spec 016)
   const excluidos = activos.length - vendibles.length;
   const razones = [];
   if (excluidos) razones.push(`${excluidos} ${excluidos === 1 ? 'vientre se excluyó' : 'vientres se excluyeron'} del cálculo: no se venden.`);
 
-  if (!precioKg || precioKg <= 0 || !vendibles.length) {
-    razones.unshift(!vendibles.length ? 'El lote no tiene animales para vender.' : 'Falta el precio del kilo en pie: regístralo en Mercado y clima.');
+  const sinPrecio = typeof precioKg === 'function' ? vendibles.some((a) => !(precioKg(a, pesoActual(a)) > 0)) : !(precioKg > 0);
+  if (sinPrecio || !vendibles.length) {
+    razones.unshift(!vendibles.length ? 'El lote no tiene animales para vender.' : 'Falta el precio del kilo: regístralo en Precio y pasto.');
     return { recomendacion: 'SIN_DATOS', razones, nAnimales: vendibles.length, excluidos };
   }
 
@@ -141,24 +148,27 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
 
   const hoyR = resultado(vendibles, { ...base, dias: 0 });
   const escenarios = ESCENARIOS_SEMANAS.map((semanas) => ({ semanas, ...resultado(vendibles, { ...base, dias: semanas * 7 }) }));
-  const sensibilidad = SENSIBILIDAD.map((f) => ({ variacion: f, precioKg: precioKg * (1 + f), ...resultado(vendibles, { ...base, precioKg: precioKg * (1 + f), dias: 0 }) }));
+  const sensibilidad = SENSIBILIDAD.map((f) => {
+    const r = resultado(vendibles, { ...base, precioKg: escalarPrecio(precioKg, 1 + f), dias: 0 });
+    return { variacion: f, ...r, precioKg: r.precioMedio };
+  });
 
   const pesoPromedio = vendibles.reduce((s, a) => s + pesoBase.get(a.id), 0) / vendibles.length;
-  const meta = metaKg ?? vendibles.reduce((s, a) => s + a.pesoObjetivo, 0) / vendibles.length;
-  const avancePct = (pesoPromedio / meta) * 100;
-  const metaAlcanzada = pesoPromedio >= meta;
+  // Spec 016 · R6: el peso objetivo es opcional; la meta sale de los animales que lo tienen.
+  const conObjetivo = vendibles.filter((a) => a.pesoObjetivo > 0);
+  const meta = metaKg ?? (conObjetivo.length ? conObjetivo.reduce((s, a) => s + a.pesoObjetivo, 0) / conObjetivo.length : null);
+  const avancePct = meta ? (pesoPromedio / meta) * 100 : null;
+  const metaAlcanzada = meta != null && pesoPromedio >= meta;
 
-  const climaUsable = clima && !clima.isFallback;
-  const sequia = climaUsable && clima.resumenLluvia7d < 2;
-  const riesgoPasto = pasto === 'rojo' || sequia;
+  // Spec 015 · R1: el riesgo de pasto sale solo del semáforo que registra Miguel (sin clima).
+  const riesgoPasto = pasto === 'rojo';
   const futuros = escenarios.slice(1);
   const mejorFuturo = futuros.reduce((m, e) => (e.margenNeto > m.margenNeto ? e : m), futuros[0]);
 
   razones.push(
-    `Punto de equilibrio real: ${pesos(hoyR.equilibrioKg)}/kg, con compra, gastos y ${formatPct(destarePct)} de destare. El precio de hoy es ${pesos(precioKg)}/kg.`,
+    `Punto de equilibrio real: ${pesos(hoyR.equilibrioKg)}/kg, con compra, gastos y ${formatPct(destarePct)} de destare. El precio de hoy es ${pesos(hoyR.precioMedio)}/kg.`,
   );
   if (hoyR.participacion > 0) razones.push(`La parte de los tenedores "Al partir" hoy sería ${pesos(hoyR.participacion)}.`);
-  if (clima && clima.isFallback) razones.push('El pronóstico está sin conexión: no se usó la lluvia para recomendar.'); // R6
   if (pasto === 'amarillo') razones.push('El pasto está en amarillo: vigílalo en la próxima visita.');
 
   let recomendacion;
@@ -190,11 +200,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     }
   } else if (riesgoPasto) {
     recomendacion = 'VENDER_ANTICIPADO';
-    razones.unshift(
-      pasto === 'rojo'
-        ? `El pasto está en rojo: se recomienda anticipar la venta mientras el margen es positivo (${pesos(hoyR.margenNeto)}).`
-        : `Casi no se pronostica lluvia (${formatNumero(clima.resumenLluvia7d)} mm en 7 días): riesgo de escasez de pasto. Se recomienda anticipar la venta con margen positivo (${pesos(hoyR.margenNeto)}).`,
-    );
+    razones.unshift(`El pasto está en rojo: se recomienda anticipar la venta mientras el margen es positivo (${pesos(hoyR.margenNeto)}).`);
     // D4: decir cuánto se deja de ganar al anticipar.
     if (mejorFuturo.margenNeto > hoyR.margenNeto) {
       razones.push(
@@ -204,7 +210,7 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
   } else if (mejorFuturo.margenNeto > hoyR.margenNeto) {
     recomendacion = 'ESPERAR';
     razones.unshift(
-      `Esperar ${mejorFuturo.semanas} semanas subiría el margen de ${pesos(hoyR.margenNeto)} a ${pesos(mejorFuturo.margenNeto)}: los animales ganan más de lo que cuesta mantenerlos. El lote va en el ${Math.round(avancePct)} % de la meta.`,
+      `Esperar ${mejorFuturo.semanas} semanas subiría el margen de ${pesos(hoyR.margenNeto)} a ${pesos(mejorFuturo.margenNeto)}: los animales ganan más de lo que cuesta mantenerlos.${Number.isFinite(avancePct) ? ` El lote va en el ${Math.round(avancePct)} % de la meta.` : ''}`,
     );
   } else {
     recomendacion = 'VENDER';

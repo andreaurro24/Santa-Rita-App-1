@@ -71,6 +71,21 @@ describe('repartirCostos + costoAcumuladoAnimal (R3, R4, D9)', () => {
     expect(costoAcumuladoAnimal(tarde, reparto).deLote).toBe(0);
   });
 
+  it('spec 020 · R4: un gasto de la finca entera (sin lote) no se reparte ni queda como sin repartir', () => {
+    const a = animal('a', '2026-01-01');
+    const reparto = repartirCostos([{ loteId: null, fincaId: 'F', animalId: null, categoria: 'otros', montoCop: 300_000, fecha: '2026-03-01' }], [a]);
+    expect(costoAcumuladoAnimal(a, reparto).gastos).toBe(0);
+    expect(reparto.sinRepartir).toHaveLength(0);
+  });
+
+  it('spec 016 · R3: un animal dado de baja no recibe gastos de lote posteriores', () => {
+    const vivo = animal('v', '2026-01-01');
+    const muerto = animal('m', '2026-01-01', { estado: 'Muerto', fechaSalida: '2026-04-01' });
+    const reparto = repartirCostos([costo(100_000, '2026-05-01')], [vivo, muerto]);
+    expect(costoAcumuladoAnimal(muerto, reparto).deLote).toBe(0);
+    expect(costoAcumuladoAnimal(vivo, reparto).deLote).toBe(100_000);
+  });
+
   it('cría propia sin costo de compra', () => {
     const a = animal('a', '2026-01-01', { costoCompra: null });
     expect(costoAcumuladoAnimal(a, repartirCostos([costo(10_000, '2026-02-01')], [a])).total).toBe(10_000);

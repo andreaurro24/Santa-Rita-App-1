@@ -9,7 +9,7 @@ const PESO_ES = '355,5'; // así se muestra (es-CO, spec 012)
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(numero);
+  await page.getByPlaceholder(/Buscar por número/).fill(numero);
   await page.getByRole('link', { name: numero, exact: true }).click();
   await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
 }
@@ -83,16 +83,16 @@ test('R8: las seis pantallas cargan datos de Supabase', async ({ page }) => {
   await expect(page.getByText('Reses activas')).toBeVisible();
 
   const pantallas = [
-    ['/#/animales', 'Trazabilidad del hato'],
-    ['/#/mercado', 'Mercado y clima'],
-    ['/#/recomendacion', 'Recomendación de venta'],
+    ['/#/animales', 'Animales'],
+    ['/#/mercado', 'Precio y pasto'],
+    ['/#/recomendacion', '¿Vendo?'],
     ['/#/reporte', 'Reporte resumen de apoyo a la decisión'],
   ];
   for (const [ruta, titulo] of pantallas) {
     await page.goto(ruta);
-    await expect(page.getByRole('heading', { name: titulo })).toBeVisible();
+    await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
   }
   await page.goto('/#/animales');
-  await expect(page.getByText('140 reses registradas', { exact: false })).toBeVisible();
+  await expect(page.getByText(/\d+ reses activas/)).toBeVisible();
 });

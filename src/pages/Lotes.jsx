@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, MoveRight, CheckCircle2, Receipt } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useLotes, useGuardarLote } from '../data/lotes';
-import { resumenLote, vientresHaciaCeba } from '../domain/lotes';
+import { resumenLote, tenedoresDelLote, vientresHaciaCeba } from '../domain/lotes';
+import { mensajeNombre } from '../utils/validar';
 import { useRepartoCostos } from '../data/costos';
 import { resumenCostosLote } from '../domain/costos';
 import { formatCOP } from '../domain/breakeven';
@@ -44,6 +45,7 @@ function textoProyeccion(p) {
   if (p.tipo === 'meta_alcanzada') return 'Meta alcanzada';
   if (p.tipo === 'meta_estimada') return `Ya debería estar en la meta (peso estimado ${formatKg(p.pesoEstimadoHoy)}): confírmalo con un pesaje`;
   if (p.tipo === 'sin_animales') return 'Sin animales';
+  if (p.tipo === 'sin_meta') return 'Sin meta de peso';
   return 'Sin datos suficientes';
 }
 
@@ -55,8 +57,8 @@ export function LotesLista() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lotes y ciclos</h1>
-          <p className="text-sm text-gray-500">Cada lote con su meta pactada y la fecha en que la alcanzaría al ritmo actual.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Lotes</h1>
+          <p className="text-base text-gray-600">Cada lote con su meta pactada y la fecha en que la alcanzaría al ritmo actual.</p>
         </div>
         <Button icono={Plus} onClick={() => setNuevo(true)}>
           Nuevo lote
@@ -74,7 +76,13 @@ export function LotesLista() {
                       <h2 className="mr-auto text-lg font-bold text-gray-900">{l.nombre}</h2>
                       <Badge tono={l.tipo === 'cria' ? 'cuero' : 'potrero'}>{l.tipo === 'cria' ? 'Cría' : 'Ceba'}</Badge>
                       <Badge tono={ESTADO_LOTE[l.estado].tono}>{ESTADO_LOTE[l.estado].label}</Badge>
+                      {tenedoresDelLote(l.animales).map((t) => (
+                        <Badge key={t} tono="cuero">
+                          Al partir · {t}
+                        </Badge>
+                      ))}
                     </div>
+                    {l.descripcion && <p className="mb-2 text-base text-gray-700">{l.descripcion}</p>}
                     <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                       <Stat label="Reses" value={r.nActivos} />
                       <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${formatKg(r.pesoPromedio)}` : '—'} />
@@ -148,6 +156,12 @@ function DetalleContenido({ lote }) {
             {lote.codigo}, {lote.tipo === 'cria' ? 'cría' : 'ceba'}
             {lote.fechaInicio ? `, desde el ${formatFecha(lote.fechaInicio)}` : ''}. Estado: {ESTADO_LOTE[lote.estado].label.toLowerCase()}.
           </p>
+          {tenedoresDelLote(lote.animales).map((t) => (
+            <Badge key={t} tono="cuero" className="mr-1 mt-1">
+              Al partir · {t}
+            </Badge>
+          ))}
+          {lote.descripcion && <p className="mt-2 max-w-prose text-base text-gray-800">{lote.descripcion}</p>}
         </div>
         <Button variante="secundario" icono={Pencil} onClick={() => setEditando(true)}>
           Editar lote
@@ -249,6 +263,7 @@ function LoteForm({ lote, onClose }) {
     fechaInicio: lote?.fechaInicio ?? hoyISO(),
     pesoMeta: lote?.pesoMeta ?? '',
     estado: lote?.estado ?? 'activo',
+    descripcion: lote?.descripcion ?? '',
   });
   const [error, setError] = useState('');
   const [confirmarHembras, setConfirmarHembras] = useState(false);
@@ -261,7 +276,10 @@ function LoteForm({ lote, onClose }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!form.codigo.trim() || !form.nombre.trim()) return setError('El código y el nombre del lote son obligatorios.');
+    // Spec 018 · R2: nombres sin caracteres raros. Spec 020 · R2: descripción opcional.
+    const problema = mensajeNombre(form.codigo, 'el código', { maximo: 30 }) || mensajeNombre(form.nombre, 'el nombre del lote');
+    if (problema) return setError(problema);
+    if (form.descripcion.trim().length > 300) return setError('La descripción puede tener hasta 300 caracteres.');
     if (form.pesoMeta !== '' && !(Number(form.pesoMeta) > 0 && Number(form.pesoMeta) < 1500)) return setError('La meta de peso debe estar entre 1 y 1.499 kg.');
     if (form.fechaInicio && form.fechaInicio > hoyISO()) return setError('La fecha de inicio no puede ser futura.');
     if (hembras.length && !confirmarHembras) {
@@ -305,6 +323,14 @@ function LoteForm({ lote, onClose }) {
         </Field>
         <Field label="Nombre" required className="sm:col-span-2">
           <Input value={form.nombre} onChange={(e) => set('nombre', e.target.value)} placeholder="Lote 2027-A (Ceba)" />
+        </Field>
+        <Field label="Descripción" ayuda="Opcional, por ejemplo: novillos comprados en Valledupar para vender en diciembre" className="sm:col-span-2">
+          <textarea
+            className="input min-h-24"
+            maxLength={300}
+            value={form.descripcion}
+            onChange={(e) => set('descripcion', e.target.value)}
+          />
         </Field>
         <Field label="Fecha de inicio">
           <Input type="date" value={form.fechaInicio ?? ''} max={hoyISO()} onChange={(e) => set('fechaInicio', e.target.value)} />

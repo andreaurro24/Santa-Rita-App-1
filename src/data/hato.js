@@ -9,8 +9,9 @@ import { formatPct } from '../utils/format';
 const HATO_KEY = ['hato'];
 
 const SELECT_ANIMALES = `
-  id, numero_interno, chapeta_ica, marca_finca, sexo, categoria, origen, fecha_ingreso,
-  fecha_nacimiento, peso_ingreso_kg, peso_objetivo_kg, costo_compra_cop, estado,
+  id, especie, numero_interno, chapeta_ica, marca_finca, sexo, categoria, origen, fecha_ingreso,
+  fecha_nacimiento, peso_ingreso_kg, peso_objetivo_kg, costo_compra_cop, precio_compra_kg_cop, estado,
+  dueno, color, foto_path, fecha_baja, motivo_baja,
   lote:lotes ( id, codigo, nombre, tipo ),
   finca:fincas ( id, nombre, tipo ),
   potrero:potreros ( id, nombre ),
@@ -26,16 +27,26 @@ export function mapAnimal(row) {
   const tenedor = row.contrato?.tenedor;
   return {
     id: row.id,
+    especie: row.especie ?? 'bovino',
     numeroInterno: row.numero_interno,
-    chapetaICA: row.chapeta_ica,
+    chapetaICA: row.chapeta_ica ?? '',
     marcaFinca: row.marca_finca,
     sexo: row.sexo,
     categoria: row.categoria,
     origen: capitalizar(row.origen),
     fechaIngreso: row.fecha_ingreso,
-    pesoIngreso: Number(row.peso_ingreso_kg),
-    pesoObjetivo: Number(row.peso_objetivo_kg),
+    fechaNacimiento: row.fecha_nacimiento ?? null,
+    pesoIngreso: row.peso_ingreso_kg != null ? Number(row.peso_ingreso_kg) : null,
+    // Spec 016 · R6: el peso objetivo es opcional.
+    pesoObjetivo: row.peso_objetivo_kg != null ? Number(row.peso_objetivo_kg) : null,
     costoCompra: row.costo_compra_cop != null ? Number(row.costo_compra_cop) : null,
+    precioCompraKg: row.precio_compra_kg_cop ?? null,
+    dueno: row.dueno ?? null,
+    color: row.color ?? null,
+    fotoPath: row.foto_path ?? null,
+    // Spec 016 · R3: la baja (muerte o pérdida) cuenta como salida para el reparto de gastos.
+    fechaBaja: row.fecha_baja ?? null,
+    motivoBaja: row.motivo_baja ?? null,
     lote: row.lote?.codigo,
     loteId: row.lote?.id,
     loteNombre: row.lote?.nombre,
@@ -70,11 +81,15 @@ function agruparLotes(animales) {
   return [...map.values()].sort((x, y) => orden(x) - orden(y) || x.codigo.localeCompare(y.codigo));
 }
 
+// Spec 016 · R8: los caballos van aparte (`caballos`); `animales` y `lotes` son solo el ganado
+// bovino, así los módulos de pesaje, lotes, costos y venta no cambian.
 async function fetchHato() {
   const { data, error } = await supabase.from('animales').select(SELECT_ANIMALES).order('numero_interno');
   if (error) throw error;
-  const animales = data.map(mapAnimal);
-  return { animales, lotes: agruparLotes(animales) };
+  const todos = data.map(mapAnimal);
+  const animales = todos.filter((a) => a.especie !== 'equino');
+  const caballos = todos.filter((a) => a.especie === 'equino');
+  return { animales, caballos, lotes: agruparLotes(animales) };
 }
 
 export function useHato() {
@@ -115,28 +130,116 @@ function useMutacionHato(mutationFn) {
 }
 
 // Nuevo animal. `contratoId` y `fincaId` vienen de useContratosVigentes cuando es "Al partir".
+// Spec 016: especie, dueño, color, compra por kilo y peso objetivo opcional.
 export function useAddAnimal() {
   return useMutacionHato(async (nuevo) => {
     const fincaId = nuevo.contratoId ? nuevo.fincaId : await fincaPropiaId();
     // Animal + pesaje de ingreso en una sola transacción (función SQL registrar_animal).
     const { data, error } = await supabase.rpc('registrar_animal', {
       datos: {
+        especie: nuevo.especie ?? 'bovino',
         numero_interno: nuevo.numeroInterno.trim(),
-        chapeta_ica: nuevo.chapetaICA.trim().toUpperCase(),
+        chapeta_ica: nuevo.chapetaICA?.trim().toUpperCase() || null,
         sexo: nuevo.sexo,
         categoria: nuevo.categoria,
-        origen: 'compra',
+        origen: nuevo.origen ?? 'compra',
         fecha_ingreso: nuevo.fechaIngreso,
-        peso_ingreso_kg: nuevo.pesoIngreso,
-        peso_objetivo_kg: nuevo.pesoObjetivo,
-        costo_compra_cop: nuevo.costoCompra,
-        lote_id: nuevo.loteId,
+        fecha_nacimiento: nuevo.fechaNacimiento || null,
+        peso_ingreso_kg: nuevo.pesoIngreso ?? null,
+        peso_objetivo_kg: nuevo.pesoObjetivo ?? null,
+        costo_compra_cop: nuevo.costoCompra ?? null,
+        precio_compra_kg_cop: nuevo.precioCompraKg ?? null,
+        lote_id: nuevo.loteId ?? null,
         finca_id: fincaId,
         contrato_id: nuevo.contratoId ?? null,
+        dueno: nuevo.dueno?.trim() || null,
+        color: nuevo.color?.trim() || null,
       },
     });
     if (error) throw error;
     return data;
+  });
+}
+
+// Spec 016 · R1: editar los datos del animal (no el peso ni la fecha de ingreso: son el primer pesaje).
+export function useEditarAnimal() {
+  return useMutacionHato(async ({ id, cambios }) => {
+    const fila = {
+      numero_interno: cambios.numeroInterno.trim(),
+      chapeta_ica: cambios.chapetaICA?.trim().toUpperCase() || null,
+      sexo: cambios.sexo,
+      categoria: cambios.categoria,
+      origen: cambios.origen,
+      fecha_nacimiento: cambios.fechaNacimiento || null,
+      peso_objetivo_kg: cambios.pesoObjetivo ?? null,
+      costo_compra_cop: cambios.costoCompra ?? null,
+      precio_compra_kg_cop: cambios.precioCompraKg ?? null,
+      dueno: cambios.dueno?.trim() || null,
+      color: cambios.color?.trim() || null,
+    };
+    const { data, error } = await supabase.from('animales').update(fila).eq('id', id).select('id');
+    if (error) throw error;
+    if (!data?.length) throw Object.assign(new Error('sin_permiso'), { code: '42501' });
+  });
+}
+
+// Spec 016 · R3: dar de baja por muerte o pérdida (conserva historial y costos).
+export function useDarDeBaja() {
+  return useMutacionHato(async ({ id, estado, fecha, motivo }) => {
+    const { error } = await supabase
+      .from('animales')
+      .update({ estado, fecha_baja: fecha, motivo_baja: motivo?.trim() || null })
+      .eq('id', id);
+    if (error) throw error;
+  });
+}
+
+// Spec 016 · R2: eliminar un animal registrado por error. La base de datos lo impide (23503) si
+// ya está en una venta. La foto se borra después; si falla, solo queda un archivo huérfano.
+export function useEliminarAnimal() {
+  return useMutacionHato(async ({ id, fotoPath }) => {
+    const { data, error } = await supabase.from('animales').delete().eq('id', id).select('id');
+    if (error) throw error;
+    if (!data?.length) throw Object.assign(new Error('sin_permiso'), { code: '42501' });
+    if (fotoPath) {
+      const { borrarFoto } = await import('../lib/fotos');
+      await borrarFoto(fotoPath).catch(() => {});
+    }
+  });
+}
+
+// Spec 017: guarda (o quita) la ruta de la foto del animal.
+export function useGuardarFoto() {
+  return useMutacionHato(async ({ id, fotoPath }) => {
+    const { error } = await supabase.from('animales').update({ foto_path: fotoPath }).eq('id', id);
+    if (error) throw error;
+  });
+}
+
+// Spec 016 · R8: venta de un caballo por precio del animal (función SQL vender_equino).
+export function useVenderCaballo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, fecha, comprador, precioCop, notas }) => {
+      const { error } = await supabase.rpc('vender_equino', { animal: id, fecha, comprador: comprador.trim(), precio_cop: precioCop, notas: notas || null });
+      if (error) throw error;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: HATO_KEY });
+      queryClient.invalidateQueries({ queryKey: ['venta-caballo', id] });
+    },
+  });
+}
+
+export function useVentaCaballo(animalId, habilitado) {
+  return useQuery({
+    queryKey: ['venta-caballo', animalId],
+    enabled: Boolean(habilitado),
+    queryFn: async () => {
+      const { data, error } = await supabase.from('ventas_equinos').select('fecha, comprador, precio_cop, notas').eq('animal_id', animalId).maybeSingle();
+      if (error) throw error;
+      return data ? { fecha: data.fecha, comprador: data.comprador, precioCop: Number(data.precio_cop), notas: data.notas } : null;
+    },
   });
 }
 

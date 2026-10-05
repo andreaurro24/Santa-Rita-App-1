@@ -1,6 +1,7 @@
 // Spec 006 · resumen del lote y fecha proyectada para llegar a la meta pactada (D3).
 import { pesoActual } from './breakeven';
 import { gdpLote, pesoEstimadoHoy } from './gdp';
+import { esVientre } from './animales';
 
 function sumarDias(iso, dias) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -16,12 +17,16 @@ export function resumenLote(lote, hoy) {
     return { nActivos: 0, pesoPromedio: null, meta: lote.pesoMeta ?? null, avancePct: null, gdp: null, proyeccion: { tipo: 'sin_animales' } };
   }
   const pesoPromedio = redondear1(activos.reduce((s, a) => s + pesoActual(a), 0) / activos.length);
-  const meta = lote.pesoMeta ?? redondear1(activos.reduce((s, a) => s + a.pesoObjetivo, 0) / activos.length);
-  const avancePct = redondear1((pesoPromedio / meta) * 100);
+  // Spec 016 · R6: el peso objetivo es opcional; la meta sale de los animales que lo tienen.
+  const conObjetivo = activos.filter((a) => a.pesoObjetivo > 0);
+  const meta = lote.pesoMeta ?? (conObjetivo.length ? redondear1(conObjetivo.reduce((s, a) => s + a.pesoObjetivo, 0) / conObjetivo.length) : null);
+  const avancePct = meta ? redondear1((pesoPromedio / meta) * 100) : null;
   const gdp = gdpLote(activos);
 
   let proyeccion;
-  if (pesoPromedio >= meta) {
+  if (meta == null) {
+    proyeccion = { tipo: 'sin_meta' };
+  } else if (pesoPromedio >= meta) {
     proyeccion = { tipo: 'meta_alcanzada' }; // R4: sugerir marcar el lote como listo
   } else if (gdp == null || gdp <= 0) {
     proyeccion = { tipo: 'sin_datos' }; // R3
@@ -44,10 +49,20 @@ export function resumenLote(lote, hoy) {
 
 // R8 / D2: hembras que se quieren pasar a un lote de ceba (que se vende). Incluye vientres y
 // terneras: una ternera puede tener potencial reproductivo, y D2 dice que esas no se venden.
-export const HEMBRAS_REPRODUCTIVAS = ['vientre', 'ternera'];
+// Spec 016 · R5: los tres tipos de vientre (menor, mayor, parida) cuentan.
+export const HEMBRAS_REPRODUCTIVAS = ['vientre', 'vientre_menor', 'vientre_mayor', 'vientre_parida', 'ternera'];
+
+export const esHembraReproductiva = (categoria) => categoria === 'ternera' || esVientre(categoria);
 
 export function vientresHaciaCeba(animales, loteDestino) {
   if (!loteDestino || loteDestino.tipo !== 'ceba') return [];
-  return animales.filter((a) => HEMBRAS_REPRODUCTIVAS.includes(a.categoria));
+  return animales.filter((a) => esHembraReproductiva(a.categoria));
 }
 
+
+// Spec 020 · R3: tenedores "Al partir" que tienen animales activos del lote (para marcarlo).
+export function tenedoresDelLote(animales) {
+  const nombres = new Set();
+  for (const a of animales ?? []) if (a.estado === 'Activo' && a.esquema === 'Al partir' && a.tenedor) nombres.add(a.tenedor.split(' – ')[0]);
+  return [...nombres];
+}

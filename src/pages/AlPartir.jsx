@@ -27,6 +27,8 @@ import Modal from '../components/ui/Modal';
 import { Field, Input, Select, FormError } from '../components/ui/Field';
 import { formatFecha, formatoGdp, hoyISO, formatKg, formatPct } from '../utils/format';
 import { mensajeError } from '../lib/errores';
+import CampoPesos from '../components/ui/CampoPesos';
+import { mensajeNombre, numeroAPesos, pesosANumero } from '../utils/validar';
 
 const promedio = (xs) => (xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 10) / 10 : null);
 
@@ -249,8 +251,10 @@ function TenedorForm({ tenedor, onClose }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!form.nombre.trim()) return setError('Escribe el nombre del tenedor.');
-    if (!form.fincaId && !form.fincaNueva.trim()) return setError('Elige la finca del tenedor o escribe el nombre de una nueva.');
+    // Spec 018 · R2: nombres sin caracteres raros (también lo valida la base de datos).
+    const problema = mensajeNombre(form.nombre, 'el nombre del tenedor') || (!form.fincaId ? mensajeNombre(form.fincaNueva, 'el nombre de la finca nueva') : '');
+    if (problema) return setError(problema);
+    if (form.telefono && !/^[0-9 +()-]{7,20}$/.test(form.telefono.trim())) return setError('El teléfono solo puede tener números, espacios y + ( ) -.');
     setError('');
     guardar.mutate(form, { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) });
   }
@@ -308,8 +312,8 @@ function ContratoForm({ contrato, onClose }) {
     id: contrato?.id,
     tenedorId: contrato?.tenedor.id ?? '',
     fechaInicio: contrato?.fechaInicio ?? hoyISO(),
-    precioAnimalCop: contrato?.precioAnimalCop ?? '',
-    precioKgCop: contrato?.precioKgCop ?? '',
+    precioAnimalCop: numeroAPesos(contrato?.precioAnimalCop ?? ''),
+    precioKgCop: numeroAPesos(contrato?.precioKgCop ?? ''),
     porcentaje: contrato?.porcentaje ?? 50,
     estado: contrato?.estado ?? 'vigente',
   });
@@ -322,12 +326,9 @@ function ContratoForm({ contrato, onClose }) {
     if (!form.tenedorId) return setError('Elige el tenedor.');
     if (String(form.porcentaje).trim() === '' || !(pct >= 0 && pct <= 100)) return setError('Escribe el porcentaje de la ganancia neta, entre 0 y 100.');
     if (form.fechaInicio && form.fechaInicio > hoyISO()) return setError('La fecha de inicio no puede ser futura.');
-    for (const [campo, nombre] of [['precioAnimalCop', 'precio del animal'], ['precioKgCop', 'precio por kilo']]) {
-      if (form[campo] !== '' && !Number.isInteger(Number(form[campo]))) return setError(`El ${nombre} va en pesos enteros, sin decimales.`);
-      if (form[campo] !== '' && !(Number(form[campo]) >= 0)) return setError(`El ${nombre} no puede ser negativo.`);
-    }
+    // Spec 018 · R1: los campos de pesos llevan puntos de miles; se guardan como enteros.
     setError('');
-    guardar.mutate(form, {
+    guardar.mutate({ ...form, precioAnimalCop: pesosANumero(form.precioAnimalCop), precioKgCop: pesosANumero(form.precioKgCop) }, {
       onSuccess: (id) => {
         onClose();
         if (!contrato) navigate(`/al-partir/${id}`);
@@ -369,10 +370,10 @@ function ContratoForm({ contrato, onClose }) {
           <Input type="date" value={form.fechaInicio ?? ''} max={hoyISO()} onChange={(e) => set('fechaInicio', e.target.value)} />
         </Field>
         <Field label="Precio del animal (COP)">
-          <Input type="number" min="0" step="1" inputMode="numeric" value={form.precioAnimalCop} onChange={(e) => set('precioAnimalCop', e.target.value)} />
+          <CampoPesos value={form.precioAnimalCop} onChange={(v) => set('precioAnimalCop', v)} />
         </Field>
         <Field label="Precio por kilo (COP)">
-          <Input type="number" min="0" step="1" inputMode="numeric" value={form.precioKgCop} onChange={(e) => set('precioKgCop', e.target.value)} />
+          <CampoPesos value={form.precioKgCop} onChange={(v) => set('precioKgCop', v)} />
         </Field>
         <Field label="Estado" className="sm:col-span-2">
           <Select value={form.estado} onChange={(e) => set('estado', e.target.value)}>

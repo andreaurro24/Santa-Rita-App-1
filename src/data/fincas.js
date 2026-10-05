@@ -9,7 +9,7 @@ export function useFincas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fincas')
-        .select('id, nombre, tipo, municipio, potreros ( id, nombre, area_ha )')
+        .select('id, nombre, tipo, municipio, propietario, potreros ( id, nombre, area_ha ), tenedores ( id, nombre )')
         .order('tipo', { ascending: true })
         .order('nombre');
       if (error) throw error;
@@ -18,6 +18,9 @@ export function useFincas() {
         nombre: f.nombre,
         tipo: f.tipo,
         municipio: f.municipio,
+        // Spec 020 · R1: a nombre de quién está (el tenedor, si es finca de tenedor).
+        propietario: f.propietario,
+        tenedores: f.tenedores ?? [],
         potreros: (f.potreros ?? [])
           .map((p) => ({ id: p.id, nombre: p.nombre, areaHa: p.area_ha != null ? Number(p.area_ha) : null }))
           .sort((a, b) => a.nombre.localeCompare(b.nombre)),
@@ -94,5 +97,31 @@ export function useMovimientos(animalId) {
         loteHacia: m.hacia_lote?.nombre ?? null,
       }));
     },
+  });
+}
+
+// Spec 020 · R1: crear o editar una finca a nombre de una persona. Si es de un tenedor, se enlaza un
+// tenedor ya registrado en "Al partir" (tenedorId) o se crea uno nuevo (tenedorNuevo).
+export function useGuardarFinca() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, nombre, tipo, municipio, propietario, tenedorId, tenedorNuevo }) => {
+      const fila = { nombre: nombre.trim(), tipo, municipio: municipio?.trim() || null, propietario: propietario?.trim() || null };
+      const { data, error } = id
+        ? await supabase.from('fincas').update(fila).eq('id', id).select('id').single()
+        : await supabase.from('fincas').insert(fila).select('id').single();
+      if (error) throw error;
+      if (tipo === 'tenedor') {
+        if (tenedorNuevo?.trim()) {
+          const r = await supabase.from('tenedores').insert({ nombre: tenedorNuevo.trim(), finca_id: data.id });
+          if (r.error) throw r.error;
+        } else if (tenedorId) {
+          const r = await supabase.from('tenedores').update({ finca_id: data.id }).eq('id', tenedorId);
+          if (r.error) throw r.error;
+        }
+      }
+      return data.id;
+    },
+    onSuccess: () => ['fincas', 'tenedores', 'contratos', 'contratos-vigentes', 'hato'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
   });
 }

@@ -3,8 +3,9 @@ import { Target } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useLotes } from '../data/lotes';
 import { useVentas } from '../data/ventas';
-import { usePrecios } from '../data/precios';
-import { useClima, useTRM } from '../data/externos';
+import { usePrecios, usePreciosReferencia } from '../data/precios';
+import { useCondicionPasto } from '../data/pasto';
+import { rangosVigentes } from '../domain/precios';
 import { calcularKpis, LINEA_BASE } from '../domain/kpis';
 import { diasEntre } from '../domain/gdp';
 import { ConDatos } from '../components/EstadoCarga';
@@ -18,22 +19,29 @@ export default function Indicadores() {
   const lotes = useLotes();
   const ventas = useVentas();
   const precios = usePrecios();
-  const { data: clima } = useClima();
-  const { data: trm } = useTRM();
+  const referencia = usePreciosReferencia();
+  const pasto = useCondicionPasto();
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Indicadores del proyecto</h1>
         <p className="text-sm text-gray-500">Las metas del proyecto frente al punto de partida (AS-IS), calculadas con los datos de la finca.</p>
       </div>
-      <ConDatos queries={[hato, lotes, ventas, precios]}>
+      <ConDatos queries={[hato, lotes, ventas, precios, referencia, pasto]}>
         {() => {
           const hoy = hoyISO();
           const precio = precios.data.precioActual;
           const fuentes = [
             { nombre: 'Precio del kilo en pie', activa: Boolean(precio && diasEntre(precio.fecha, hoy) <= 45), detalle: precio ? `boletín del ${formatFecha(precio.fecha)}` : 'sin registrar' },
-            { nombre: 'Clima (Open-Meteo)', activa: Boolean(clima && !clima.isFallback), detalle: clima ? (clima.isFallback ? 'sin conexión' : 'en vivo') : 'consultando' },
-            { nombre: 'TRM (datos.gov.co)', activa: Boolean(trm && !trm.isFallback), detalle: trm ? (trm.isFallback ? 'sin conexión' : 'en vivo') : 'consultando' },
+            // Spec 015 · R1: sin clima ni TRM; spec 021: precios de la zona por categoría.
+            (() => {
+              const gordo = rangosVigentes(referencia.data).get('gordo');
+              return { nombre: 'Precios de la zona por categoría', activa: Boolean(gordo && diasEntre(gordo.fecha, hoy) <= 45), detalle: gordo ? `actualizados el ${formatFecha(gordo.fecha)}` : 'sin registrar' };
+            })(),
+            (() => {
+              const ultimo = [...pasto.data].sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+              return { nombre: 'Estado del pasto', activa: Boolean(ultimo && diasEntre(ultimo.fecha, hoy) <= 30), detalle: ultimo ? `registrado el ${formatFecha(ultimo.fecha)}` : 'sin registrar' };
+            })(),
           ];
           const k = calcularKpis({ animales: hato.data.animales, lotes: lotes.data, ventas: ventas.data, hoy, fuentes });
           const filas = [

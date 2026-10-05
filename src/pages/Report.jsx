@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Printer } from 'lucide-react';
 import { useAnalisisLotes, useAnalisisLote } from '../data/analisis';
-import { useTRM } from '../data/externos';
 import { ConDatos } from '../components/EstadoCarga';
 import { useAuth } from '../context/AuthContext';
-import { formatCOP } from '../domain/breakeven';
 import { formatFecha, hoyISO } from '../utils/format';
 import AnalisisVenta from '../components/AnalisisVenta';
 import MarcaSR from '../components/MarcaSR';
@@ -24,7 +22,6 @@ function ReporteContenido({ datos }) {
   const [loteId, setLoteId] = useState(lotes[0]?.id ?? '');
   const [notas, setNotas] = useState('');
   const analisis = useAnalisisLote(datos, loteId, '');
-  const { data: trm } = useTRM();
 
   return (
     <div className="space-y-5">
@@ -68,12 +65,11 @@ function ReporteContenido({ datos }) {
             <div className="text-sm text-gray-600 md:text-right">
               <p>Generado el {formatFecha(hoyISO())}</p>
               <p>Por {user?.nombre}</p>
-              {trm && <p>TRM: ${formatCOP(trm.valor)} por dólar{trm.isFallback ? ' (respaldo)' : ''}</p>}
             </div>
           </header>
 
           <h2 className="mb-4 text-2xl font-bold text-gray-900">{analisis.lote.nombre}</h2>
-          <AnalisisVenta analisis={analisis} compacto />
+          <AnalisisVenta analisis={analisis} detallesAbiertos />
 
           {notas && (
             <>

@@ -21,7 +21,7 @@ const CSV = [
 test('R1–R4: vista previa con errores por fila e importación de las válidas', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByRole('link', { name: 'Importar censo' }).click();
+  await page.getByRole('link', { name: /Impórtalos desde Excel/ }).click();
   await expect(page.getByRole('heading', { name: 'Importar censo' })).toBeVisible();
 
   await page.getByLabel('Archivo CSV del censo').setInputFiles({ name: 'censo.csv', mimeType: 'text/csv', buffer: Buffer.from(CSV, 'utf-8') });

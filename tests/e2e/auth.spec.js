@@ -8,7 +8,7 @@ test('R2: sin sesión, una ruta protegida lleva al login y tras entrar vuelve a 
   await expect(page).toHaveURL(/#\/login$/);
   await entrar(page);
   await expect(page).toHaveURL(/#\/animales$/);
-  await expect(page.getByRole('heading', { name: 'Trazabilidad del hato' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Animales', level: 1 })).toBeVisible();
 });
 
 test('R1: contraseña incorrecta muestra un error y no entra', async ({ page }) => {

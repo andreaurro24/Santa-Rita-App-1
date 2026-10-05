@@ -9,8 +9,8 @@ const TONOS = {
 
 export default function Badge({ tono = 'neutro', icono: Icono, className = '', children }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${TONOS[tono]} ${className}`}>
-      {Icono && <Icono size={12} aria-hidden="true" />}
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium ${TONOS[tono]} ${className}`}>
+      {Icono && <Icono size={14} aria-hidden="true" />}
       {children}
     </span>
   );

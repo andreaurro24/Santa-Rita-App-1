@@ -104,7 +104,7 @@ test('la base de datos impide pesar dos veces el mismo animal en una jornada', a
 test('R5, R7: un peso más bajo que el de hace 14 días o más marca "Pierde peso" en la ficha y en el panel', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número interno/).fill(ANIMAL_PERDIDA);
+  await page.getByPlaceholder(/Buscar por número/).fill(ANIMAL_PERDIDA);
   await page.getByRole('link', { name: ANIMAL_PERDIDA, exact: true }).click();
   await expect(page.getByText('Pierde peso')).toHaveCount(0);
   await page.getByRole('button', { name: 'Registrar peso' }).click();
@@ -117,6 +117,7 @@ test('R5, R7: un peso más bajo que el de hace 14 días o más marca "Pierde pes
   await expect(page.getByText(/Ganancia diaria \(último periodo\)/)).toBeVisible();
 
   await page.goto('/#/');
-  const tarjeta = page.getByRole('region', { name: 'Pierden peso' }).or(page.locator('section', { hasText: 'Pierden peso' }));
-  await expect(tarjeta.getByRole('link', { name: ANIMAL_PERDIDA, exact: true })).toBeVisible();
+  // Spec 015 · R3: el panel agrupa las alertas en "Para revisar".
+  const tarjeta = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Para revisar' }) });
+  await expect(tarjeta.getByRole('link').filter({ hasText: ANIMAL_PERDIDA }).filter({ hasText: 'perdiendo peso' })).toBeVisible();
 });

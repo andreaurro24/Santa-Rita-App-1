@@ -29,3 +29,42 @@ export function useAddPrecio() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PRECIOS_KEY }),
   });
 }
+
+// Spec 021 · rangos de precio por zona y categoría (historial completo; el vigente lo elige el dominio).
+const REFERENCIA_KEY = ['precios-referencia'];
+
+export function usePreciosReferencia() {
+  return useQuery({
+    queryKey: REFERENCIA_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('precios_referencia')
+        .select('id, categoria, zona, precio_min_cop, precio_max_cop, fecha, fuente, created_at')
+        .order('fecha', { ascending: false });
+      if (error) throw error;
+      return data.map((r) => ({
+        id: r.id,
+        categoria: r.categoria,
+        zona: r.zona,
+        precioMin: r.precio_min_cop,
+        precioMax: r.precio_max_cop,
+        fecha: r.fecha,
+        fuente: r.fuente,
+        creado: r.created_at,
+      }));
+    },
+  });
+}
+
+export function useAddPrecioReferencia() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ categoria, precioMin, precioMax, fecha, fuente }) => {
+      const { error } = await supabase
+        .from('precios_referencia')
+        .insert({ categoria, precio_min_cop: precioMin, precio_max_cop: precioMax, fecha, fuente: fuente.trim() });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: REFERENCIA_KEY }),
+  });
+}

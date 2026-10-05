@@ -19,7 +19,7 @@ test.describe('celular 375×812', () => {
       expect.soft(main.width, `${ruta} área útil`).toBeGreaterThanOrEqual(360);
     }
     const nav = page.getByRole('navigation', { name: 'Principal' });
-    await expect(nav.getByRole('link', { name: 'Hato' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Animales' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Más' })).toBeVisible();
   });
 
@@ -44,8 +44,8 @@ test.describe('celular 375×812', () => {
     await expect(page.getByRole('table')).toBeHidden();
     await expect(page.getByRole('link', { name: /0101/ })).toBeVisible();
     await page.getByRole('button', { name: 'Más' }).click();
-    await page.getByRole('dialog', { name: 'Más secciones' }).getByRole('link', { name: 'Mercado y clima' }).click();
-    await expect(page.getByRole('heading', { name: 'Mercado y clima' })).toBeVisible();
+    await page.getByRole('dialog', { name: 'Más secciones' }).getByRole('link', { name: 'Precio y pasto' }).click();
+    await expect(page.getByRole('heading', { name: 'Precio y pasto' })).toBeVisible();
   });
 
   test('R9: el formulario de nuevo animal es una hoja inferior con Guardar siempre visible', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('celular 375×812', () => {
 test('R4: en escritorio hay navegación lateral y no inferior', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await iniciarSesion(page);
-  await expect(page.getByRole('complementary').getByRole('link', { name: 'Mercado y clima' })).toBeVisible();
+  await expect(page.getByRole('complementary').getByRole('link', { name: 'Precio y pasto' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Más' })).toBeHidden();
   await page.goto('/#/animales');
   await expect(page.getByRole('table')).toBeVisible();

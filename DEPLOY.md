@@ -37,19 +37,31 @@ La app usa rutas con `#` (HashRouter), así que no necesita reglas de reescritur
 
 **Nunca** pongas la llave `service_role` ni contraseñas en Vercel: el cliente no las necesita.
 
-## 3. Supabase antes de usarlo con datos reales
+## 3. Supabase: producción y pruebas
 
-1. Crea un proyecto de **producción** aparte del de desarrollo (`santa-rita-dev`) y aplica las
-   migraciones de `supabase/migrations/` en orden.
-2. En **Authentication → Sign In / Providers**, desactiva el registro público (*Allow new users
+**Producción** es el proyecto `eiszvbwwpqcqognkcfew` (el que usa Vercel). Desde el Sprint 05
+(spec 014) tiene solo datos reales: no se cargan datos de ejemplo ni se corren pruebas ahí.
+
+1. En **Authentication → Sign In / Providers**, desactiva el registro público (*Allow new users
    to sign up*) y activa la protección de contraseñas filtradas.
-3. Crea el usuario de Miguel en **Authentication → Users → Add user** y dale su perfil:
+2. Crea el usuario de Miguel en **Authentication → Users → Add user** (marca *Auto Confirm User*)
+   y dale su perfil en el **SQL Editor**:
    ```sql
-   insert into public.perfiles (id, nombre, rol) values ('<uuid>', 'Miguel Ángel Lacouture', 'dueno');
+   insert into public.perfiles (id, nombre, rol)
+   select id, 'Miguel Ángel', 'dueno' from auth.users where email = '<correo de Miguel>';
    ```
-4. En **Authentication → URL Configuration** agrega la URL de Vercel como *Site URL*.
-5. No corras `npm run db:seed` contra producción: el script solo acepta el proyecto de
-   desarrollo.
+3. En **Authentication → URL Configuration** pon la URL de Vercel como *Site URL*.
+
+**Pruebas** (`npm run db:seed` y `npm run test:e2e`) necesitan un proyecto de Supabase aparte,
+porque borran y crean datos. `scripts/proyectos.mjs` se niega a correrlos contra producción.
+
+1. Crea un proyecto gratis (por ejemplo `santa-rita-pruebas`). La organización actual llegó al
+   límite de 2 proyectos gratis por miembro: hay que pausar uno o crearlo desde otra cuenta.
+2. Aplica las migraciones de `supabase/migrations/` en orden.
+3. Crea un usuario de prueba con perfil `dueno` (nunca la cuenta de Miguel).
+4. Pon la URL y la llave publicable de ese proyecto en `.env.local`, el usuario en `.env.test` y
+   `PROYECTO_PRUEBAS=<ref>` en `.env.test` (ver `.env.example`).
+5. `npm run db:seed` carga los datos de ejemplo y `npm run test:e2e` corre la suite.
 
 ## 4. Comprobar
 
