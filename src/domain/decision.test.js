@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analizarLoteV2, estadoContratos, gastoDiarioLote, repartirGastosVenta, resultadoVenta, siguioRecomendacion, simularVenta } from './decision';
+import { analizarLoteV2, estadoContratos, gastoDiarioLote, gastosVentaPorContrato, repartirGastosVenta, resultadoVenta, siguioRecomendacion, simularVenta } from './decision';
 
 // Lote de números redondos para calcular a mano:
 // 2 novillos de 300 kg, compra $600.000 c/u, meta 350 kg, GDP 1 kg/día (270 → 300 en 30 días).
@@ -215,6 +215,12 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
     expect(r.gastosVenta).toBe(680_000);
     expect(r.margenNeto).toBe(6_800_000 - 4_500_000 - 680_000 - 300_000);
     expect(r.margenPct).toBeCloseTo((1_320_000 / 6_800_000) * 100, 6);
+  });
+
+  it('spec 025 · R8: la parte de las comisiones que le toca a cada contrato', () => {
+    const porContrato = gastosVentaPorContrato({ animales: vendidos, precioKg: 8_000, gastosVenta: 680_000 });
+    expect(porContrato.get('C1')).toBe(400_000); // 240.000 + 160.000
+    expect([...porContrato.keys()]).toEqual(['C1']);
   });
 
   it('spec 025 · R7: la liquidación acumulada usa los gastos guardados en cada venta', () => {

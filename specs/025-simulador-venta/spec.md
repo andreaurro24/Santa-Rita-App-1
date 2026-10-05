@@ -62,9 +62,12 @@ varios lotes (decisión del usuario del 2026-10-05).
 - R7 — Las comisiones y el transporte deberán restarse **antes** de calcular la parte de los
   tenedores. La parte se calcula sobre la ganancia neta del contrato, de forma acumulada (D8): la
   comisión de cada animal es proporcional a su valor bruto.
-- R8 — La lista de ventas, el detalle, "Al partir" y el reporte deberán mostrar los lotes de cada
-  venta ("Lote A y Lote B") y las comisiones. El "Margen esperado vs. real" de la spec 011 sigue
-  funcionando.
+- R8 — La lista de ventas, el detalle y "Al partir" (sección "Ventas del contrato") deberán mostrar
+  los lotes de cada venta ("Lote A y Lote B") y las comisiones (en Al partir, la parte que le toca
+  al contrato). El "Margen esperado vs. real" de la spec 011 sigue funcionando: el esperado es el
+  beneficio neto que mostraba el simulador al confirmar, con comisiones y transporte.
+  *Corrección r1 (A1, M2): el reporte imprimible es de apoyo antes de vender, por lote, y no lista
+  ventas; se quitó de R8.*
 - R9 — "Vender este animal" desde la ficha deberá abrir el simulador con solo ese animal elegido.
 
 ## Fuera de alcance

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, UserPlus, UserPen, ClipboardCheck, Handshake, AlertTriangle } from 'lucide-react';
 import { useHato } from '../data/hato';
 import { useVentas } from '../data/ventas';
-import { estadoContratos } from '../domain/decision';
+import { estadoContratos, gastosVentaPorContrato, resultadoVenta } from '../domain/decision';
 import { useFincas } from '../data/fincas';
 import {
   useContratos,
@@ -100,7 +100,7 @@ export function ContratoDetalle() {
       {() => {
         const contrato = contratos.data.find((c) => c.id === contratoId);
         return contrato ? (
-          <DetalleContrato contrato={contrato} animales={hato.data.animales} liquidado={estadoContratos(ventas.data).get(contrato.id) ?? null} />
+          <DetalleContrato contrato={contrato} animales={hato.data.animales} liquidado={estadoContratos(ventas.data).get(contrato.id) ?? null} ventas={ventas.data} />
         ) : (
           <EmptyState titulo="Ese contrato no existe" accion={<Link to="/al-partir" className="font-medium text-brand-700">Ver contratos</Link>} />
         );
@@ -128,7 +128,40 @@ function LiquidacionContrato({ liquidado }) {
   );
 }
 
-function DetalleContrato({ contrato, animales, liquidado }) {
+// Spec 025 · R8: cada venta con animales del contrato, con sus lotes, su parte de las comisiones y
+// el transporte, y lo que se le pagó al tenedor en esa venta.
+function VentasContrato({ contratoId, ventas }) {
+  const pesos = (n) => `${n < 0 ? '−' : ''}$${formatCOP(Math.round(Math.abs(n)))}`;
+  const suyas = ventas
+    .filter((v) => v.animales.some((a) => a.contratoId === contratoId))
+    .map((v) => {
+      const l = resultadoVenta(v.animales, v, estadoContratos(ventas, { antesDe: v.id })).liquidaciones.find((x) => x.contratoId === contratoId);
+      return { v, l, gastos: gastosVentaPorContrato(v).get(contratoId) ?? 0 };
+    });
+  if (!suyas.length) return null;
+  return (
+    <Card titulo="Ventas del contrato">
+      <ul className="divide-y divide-gray-100">
+        {suyas.map(({ v, l, gastos }) => (
+          <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-base">
+            <span>
+              <Link to={`/ventas/${v.id}`} className="font-semibold text-brand-700 hover:underline">
+                {formatFecha(v.fecha)} · {v.titulo}
+              </Link>
+              <span className="block text-sm text-gray-600">
+                {l?.animales ?? 0} {l?.animales === 1 ? 'res' : 'reses'} del contrato, ganancia neta {pesos(l?.ganancia ?? 0)}
+                {gastos > 0 ? `, después de ${pesos(gastos)} de comisiones y transporte` : ''}.
+              </span>
+            </span>
+            <span className="cifra font-bold text-earth-700">Pagado {pesos(l?.monto ?? 0)}</span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function DetalleContrato({ contrato, animales, liquidado, ventas = [] }) {
   const [editando, setEditando] = useState(false);
   const [editandoTenedor, setEditandoTenedor] = useState(false);
   const [asignando, setAsignando] = useState(false);
@@ -182,6 +215,7 @@ function DetalleContrato({ contrato, animales, liquidado }) {
 
       {/* 011 R5 · D8 acumulado: lo liquidado al tenedor en todas las ventas del contrato (verificación D8, Medio). */}
       {liquidado && <LiquidacionContrato liquidado={liquidado} />}
+      <VentasContrato contratoId={contrato.id} ventas={ventas} />
 
       <Card titulo={`Animales (${suyos.length})`}>
         {suyos.length === 0 ? (

@@ -59,6 +59,17 @@ export function repartirGastosVenta(brutos, gastosVenta = 0) {
   return brutos.map((b) => (total > 0 ? (gastosVenta * b) / total : gastosVenta / brutos.length));
 }
 
+// Spec 025 · R8: cuánto de las comisiones y el transporte de una venta le toca a cada contrato.
+export function gastosVentaPorContrato({ animales, precioKg, destarePct = 0, gastosVenta = 0 }) {
+  const brutos = animales.map((a) => a.pesoKg * (1 - destarePct / 100) * precioKg);
+  const gastos = repartirGastosVenta(brutos, gastosVenta);
+  const porContrato = new Map();
+  animales.forEach((a, i) => {
+    if (a.contratoId) porContrato.set(a.contratoId, (porContrato.get(a.contratoId) ?? 0) + gastos[i]);
+  });
+  return porContrato;
+}
+
 const gananciasVenta = (animales, { precioKg, destarePct = 0, gastosVenta = 0 }) => {
   const brutos = animales.map((a) => a.pesoKg * (1 - destarePct / 100) * precioKg);
   const gastos = repartirGastosVenta(brutos, gastosVenta);

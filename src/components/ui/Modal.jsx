@@ -25,6 +25,7 @@ export default function Modal({ titulo, onClose, pie, children }) {
             {titulo}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Cerrar"
             className="-mr-2 flex size-12 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:size-10"

@@ -51,7 +51,7 @@ test.describe('celular 375×812', () => {
   test('R9: el formulario de nuevo animal es una hoja inferior con Guardar siempre visible', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/#/animales');
-    await page.getByRole('button', { name: 'Registrar animal' }).click();
+    await page.getByRole('button', { name: 'Añadir animal' }).click();
     const dialogo = page.getByRole('dialog');
     const caja = await dialogo.boundingBox();
     expect(caja.x).toBe(0);

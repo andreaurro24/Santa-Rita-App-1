@@ -157,7 +157,7 @@ export function cuentaCompra({ modo, precioKg, total, peso }, formato) {
   if (modo === 'kilo') {
     const calculado = totalDesdeKilo(precioKg, kg);
     if (!calculado) return { falta: 'Escribe el precio por kilo para ver el total.' };
-    return { calculado, cuenta: `$${formato(precioKg)} × ${kgTexto} = $${formato(calculado)}` };
+    return { calculado, cuenta: `$${formato(precioKg)} × ${kgTexto} = $${formato(calculado)} por animal` };
   }
   const calculado = kiloDesdeTotal(total, kg);
   if (!calculado) return { falta: 'Escribe el precio del animal para ver el precio por kilo.' };

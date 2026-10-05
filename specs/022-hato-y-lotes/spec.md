@@ -42,7 +42,9 @@ La meta de peso se quita del lote, porque es de cada animal.
   | Dueño | |
 
   Se puede ordenar por animal, peso actual, peso inicial y precio. El conteo va abajo ("1–20 de 34
-  animales"), con páginas de 20.
+  animales"), con páginas de 20. *Corrección r1 (M1): para que la tabla quepa sin desplazarse,
+  la chapeta tiene columna desde 1280 px y la raza y el dueño desde 1536 px; en pantallas más
+  angostas esos datos se muestran debajo del nombre del animal.*
 - R4 — En el celular, cada animal deberá verse como una tarjeta con:
   - miniatura;
   - nombre;

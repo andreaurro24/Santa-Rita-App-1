@@ -73,7 +73,7 @@ test('023 · R1–R6: registrar con nombre sugerido, raza, nacimiento sin mes, t
   await hoja.getByLabel('Peso objetivo (kg)').fill('450');
   // R6: por kilo multiplica; por animal divide.
   await hoja.getByLabel('Precio por kilo').pressSequentially('9000');
-  await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$9.000 × 250 kg = $2.250.000');
+  await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$9.000 × 250 kg = $2.250.000 por animal');
   await hoja.getByText('Compré por animal', { exact: true }).click();
   await hoja.getByLabel('Precio por animal').pressSequentially('2250000');
   await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$2.250.000 ÷ 250 kg = $9.000 por kilo');
@@ -155,8 +155,8 @@ test('025 · R1–R8: simular la venta de dos lotes con transporte, guardarla un
   await page.getByLabel('Comprador').fill(`${P} comprador`);
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Guardar venta' }).dblclick(); // 025 · R5: doble toque
-  await expect(page.getByRole('heading', { name: new RegExp(`^Venta de ${P} Lote VA y ${P} Lote VB`) })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Comisiones y transporte')).toBeVisible();
+  await expect(page.getByRole('heading', { name: new RegExp(`^Venta de ${P} Lote V[AB] y ${P} Lote V[AB]`) })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Comisiones y transporte', { exact: true })).toBeVisible();
   await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado real' }) })).toContainText(textoNeto.replace('+', '').trim());
 
   const { data: ventas } = await supabase.from('ventas').select('id, gastos_venta_cop, venta_animales ( lote_id )').eq('comprador', `${P} comprador`);

@@ -142,7 +142,7 @@ test('016 · R1, R4, R7 y 018: registrar con dueño y compra por kilo (miles en 
   const precio = hoja.getByLabel('Precio por kilo');
   await precio.pressSequentially('8000');
   await expect(precio).toHaveValue('8.000'); // 018 · R1
-  await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$8.000 × 250 kg = $2.000.000'); // 023 · R6
+  await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$8.000 × 250 kg = $2.000.000 por animal'); // 023 · R6
   await expect(hoja.getByText('Precio por animal')).toBeVisible(); // 016 · R7
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja).toHaveCount(0);
@@ -187,9 +187,8 @@ test('016 · R5, R6: un vientre parida no pide peso objetivo y la base de datos 
   await expect(hoja.getByText('no se venden ni llevan peso objetivo')).toBeVisible();
 
   const id = await animalPorRpc(supabase, `${P}-V`, { sexo: 'Hembra', categoria: 'vientre_parida' });
-  const loteId = await loteSeed(supabase);
-  const venta = await supabase.rpc('registrar_venta', { lote: loteId, fecha: '2026-10-01', comprador: `${P} comprador`, precio_kg: 8000, destare: 0, recomendacion: null, notas: null, animales: [{ animal_id: id, peso_kg: 400, costo_cop: 0 }] });
-  expect(venta.error?.message).toMatch(/^vientre_no_se_vende/);
+  const venta = await supabase.rpc('registrar_venta', { fecha: '2026-10-01', comprador: `${P} comprador`, precio_kg: 8000, destare: 0, gastos_venta: 0, recomendacion: null, notas: null, animales: [{ animal_id: id, peso_kg: 400, costo_cop: 0 }] });
+  expect(venta.error?.message).toMatch(/vientre/);
   const malo = await supabase.from('animales').update({ dueno: 'Ana<script>' }).eq('id', id);
   expect(malo.error?.code).toBe('23514');
 });

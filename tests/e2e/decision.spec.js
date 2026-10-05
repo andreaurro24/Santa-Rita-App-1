@@ -108,7 +108,7 @@ test('011 R1–R6: vender 2 animales de un lote, ver el resultado, la comparaci�
     if (i < 2) vendidos.push((await casillas.nth(i).getAttribute('aria-label')).replace('Vender ', ''));
     else await casillas.nth(i).uncheck();
   }
-  await expect(page.getByText('2 cabezas', { exact: true })).toBeVisible();
+  await expect(page.locator('aside').getByText('2 cabezas', { exact: true })).toBeVisible();
   // Spec 025 · R5: simular → datos → confirmar; cada paso valida lo suyo.
   await page.getByRole('button', { name: 'Confirmar venta' }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
@@ -130,17 +130,17 @@ test('011 R1–R6: vender 2 animales de un lote, ver el resultado, la comparaci�
   await expect(page.getByRole('link', { name: /Lote 2025-B/ })).toContainText(COMPRADOR);
 });
 
-test('011 R2: la base de datos no deja vender un vientre ni un animal de otro lote', async () => {
+test('011 R2 y 025 · R6: la base de datos no deja vender un vientre ni gastos de venta negativos', async () => {
   const supabase = await clientePrueba();
   const { lote } = await ids(supabase);
   const { data: hembra } = await supabase.from('animales').select('id').eq('lote_id', lote['CRIA-2025-2026']).eq('sexo', 'Hembra').limit(1).single();
   await supabase.from('animales').update({ categoria: 'vientre_mayor' }).eq('id', hembra.id); // spec 016 · R5
   try {
-    const base = { fecha: '2026-09-20', comprador: COMPRADOR, precio_kg: 8000, destare: 0, recomendacion: null, notas: null };
-    const vientre = await supabase.rpc('registrar_venta', { ...base, lote: lote['CRIA-2025-2026'], animales: [{ animal_id: hembra.id, peso_kg: 200, costo_cop: 0 }] });
-    expect(vientre.error?.message).toMatch(/^vientre_no_se_vende/);
-    const otro = await supabase.rpc('registrar_venta', { ...base, lote: lote['LOTE-2026-A'], animales: [{ animal_id: hembra.id, peso_kg: 200, costo_cop: 0 }] });
-    expect(otro.error?.message).toMatch(/^animal_de_otro_lote/);
+    const base = { fecha: '2026-09-20', comprador: COMPRADOR, precio_kg: 8000, destare: 0, gastos_venta: 0, recomendacion: null, notas: null };
+    const vientre = await supabase.rpc('registrar_venta', { ...base, animales: [{ animal_id: hembra.id, peso_kg: 200, costo_cop: 0 }] });
+    expect(vientre.error?.message).toMatch(/vientre/);
+    const negativo = await supabase.rpc('registrar_venta', { ...base, gastos_venta: -1, animales: [{ animal_id: hembra.id, peso_kg: 200, costo_cop: 0 }] });
+    expect(negativo.error?.message).toMatch(/^gastos_negativos/);
     const { count } = await supabase.from('ventas').select('id', { count: 'exact', head: true }).eq('comprador', COMPRADOR);
     expect(count).toBe(0);
   } finally {

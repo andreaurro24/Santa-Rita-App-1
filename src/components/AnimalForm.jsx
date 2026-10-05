@@ -30,7 +30,7 @@ import { mensajeNombre, numeroAPesos, pesosANumero } from '../utils/validar';
 import { mensajeError } from '../lib/errores';
 
 const leerKg = (t) => Number(String(t).replace(',', '.'));
-const pesoValido = (n) => n > 0 && n < 1500;
+const pesoValido = (n) => n >= 1 && n < 1500; // corrección r1 (B5): "entre 1 y 1.499 kg"
 
 // Specs 016, 023 y 024 · registrar o editar un animal (bovino o caballo).
 // - 023 · R1: "Nombre" con número sugerido (Luna-042). 016 · R4: dueño escrito o de la lista.
@@ -125,6 +125,10 @@ export default function AnimalForm({ especie = 'bovino', animal = null, lotes = 
       if (!pesoValido(leerKg(pesoActualCampo))) return 'El peso actual debe estar entre 1 y 1.499 kg.';
       if (!form.loteId) return 'Selecciona un lote.';
     }
+    // Corrección r1 (B1): no pudo nacer después de llegar a la finca.
+    const { fechaNacimiento } = nacimientoDesdeMesAnio(form.mesNacimiento, form.anioNacimiento);
+    const ingreso = editando ? animal.fechaIngreso : esCaballo ? hoy : form.fechaIngreso;
+    if (fechaNacimiento && ingreso && fechaNacimiento > ingreso) return 'El nacimiento no puede ser después de la fecha de ingreso.';
     if (!esCaballo && form.pesoObjetivo !== '' && pidePesoObjetivo(form.categoria)) {
       const objetivo = leerKg(form.pesoObjetivo);
       if (!pesoValido(objetivo)) return 'El peso objetivo debe estar entre 1 y 1.499 kg (o déjalo vacío).';

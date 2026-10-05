@@ -159,7 +159,7 @@ function Simulador({ datos }) {
   const [error, setError] = useState('');
 
   const elegidos = [...seleccion.entries()].map(([id, peso]) => ({ animal: porId.get(id), peso })).filter((f) => f.animal);
-  const pesoDe = (f) => leerNumero(f.peso) || 0;
+  const pesoDe = (f) => Math.round((leerNumero(f.peso) || 0) * 10) / 10; // corrección r1 (B7): igual que lo guardado
   const destare = leerNumero(form.destarePct);
 
   // R3: precio de la zona de cada animal, ponderado por su peso.
@@ -253,7 +253,9 @@ function Simulador({ datos }) {
       recomendacion,
       razon: analisis.length === 1 ? analisis[0].razones[0] : lotesElegidos.map((l, i) => `${l.nombre}: ${analisis[i]?.razones[0] ?? 'sin datos'}`).join(' · '),
       equilibrioKg: analisis.length === 1 ? (analisis[0].hoy?.equilibrioKg ?? null) : null,
-      margenNeto: analisis.every((a) => a.hoy?.margenNeto != null) ? analisis.reduce((s, a) => s + a.hoy.margenNeto, 0) : null,
+      // Corrección r1 (M2): el margen esperado es el beneficio neto que mostraba el simulador para
+      // ESTOS animales, con comisiones y transporte (no el de los lotes completos).
+      margenNeto: Math.round(r.margenNeto),
       fecha: hoyISO(),
     };
   }
@@ -324,7 +326,7 @@ function Simulador({ datos }) {
         ))}
       </ol>
 
-      <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start">
+      <form id="form-venta" onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start">
         <div className="space-y-4">
           {paso === 0 && (
             <>
@@ -443,10 +445,15 @@ function Simulador({ datos }) {
       {/* R2: en el celular, el beneficio neto queda a la vista encima del menú. */}
       {paso === 0 && elegidos.length > 0 && (
         <div className="no-print fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-gray-200 bg-white px-4 py-2 shadow-lg md:hidden">
-          <p className="flex items-baseline justify-between gap-3 text-base">
-            <span className="text-gray-600">Beneficio neto</span>
-            <span className={`cifra text-xl font-bold ${r.margenNeto < 0 ? 'text-peligro' : 'text-brand-800'}`}>{pesos(r.margenNeto)}</span>
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-base">
+              <span className="block text-sm text-gray-600">Beneficio neto</span>
+              <span className={`cifra text-xl font-bold ${r.margenNeto < 0 ? 'text-peligro' : 'text-brand-800'}`}>{pesos(r.margenNeto)}</span>
+            </p>
+            <Button type="submit" form="form-venta" icono={BadgeDollarSign}>
+              Confirmar venta
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -466,15 +473,18 @@ function TarjetaLoteVenta({ lote, seleccion, precio, destare, abierto, onAbrir, 
   return (
     <li className={`rounded-xl border-2 bg-white ${marcados ? 'border-brand-600 bg-brand-50/50' : 'border-gray-200'}`}>
       <div className="flex items-start gap-3 p-4">
-        <input
-          ref={casilla}
-          type="checkbox"
-          className="mt-1 size-7 shrink-0 accent-brand-700"
-          checked={n > 0 && marcados === n}
-          disabled={!n}
-          onChange={() => onMarcar(marcados < n)}
-          aria-label={`Vender el lote ${lote.nombre}`}
-        />
+        {/* Corrección r1 (M3): el área táctil de la casilla mide 48 px. */}
+        <label className="-m-2.5 flex size-12 shrink-0 cursor-pointer items-center justify-center">
+          <input
+            ref={casilla}
+            type="checkbox"
+            className="size-7 accent-brand-700"
+            checked={n > 0 && marcados === n}
+            disabled={!n}
+            onChange={() => onMarcar(marcados < n)}
+            aria-label={`Vender el lote ${lote.nombre}`}
+          />
+        </label>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-lg font-bold text-gray-900">

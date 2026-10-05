@@ -95,7 +95,7 @@ describe('spec 023 · R3 nacimiento por mes y año', () => {
 describe('spec 023 · R6 cuenta de la compra', () => {
   const f = (n) => new Intl.NumberFormat('es-CO').format(n);
   it('por kilo multiplica y por animal divide', () => {
-    expect(cuentaCompra({ modo: 'kilo', precioKg: 9000, peso: 450 }, f)).toEqual({ calculado: 4050000, cuenta: '$9.000 × 450 kg = $4.050.000' });
+    expect(cuentaCompra({ modo: 'kilo', precioKg: 9000, peso: 450 }, f)).toEqual({ calculado: 4050000, cuenta: '$9.000 × 450 kg = $4.050.000 por animal' });
     expect(cuentaCompra({ modo: 'animal', total: 4050000, peso: 450 }, f)).toEqual({ calculado: 9000, cuenta: '$4.050.000 ÷ 450 kg = $9.000 por kilo' });
   });
   it('dice qué falta', () => {

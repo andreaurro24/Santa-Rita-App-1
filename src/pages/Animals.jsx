@@ -308,7 +308,7 @@ function Encabezado({ campo, orden, onOrdenar, children, derecha = false }) {
 
 const CABECERA = 'border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-600';
 
-function CeldaAnimal({ a, url }) {
+function CeldaAnimal({ a, url, ocultas = false }) {
   return (
     <td className="px-4 py-2">
       <Link to={`/animales/${a.id}`} className="flex items-center gap-3 rounded-md">
@@ -316,6 +316,13 @@ function CeldaAnimal({ a, url }) {
         <span className="min-w-0">
           <span className="block truncate text-base font-semibold text-brand-800 hover:underline">{a.numeroInterno}</span>
           <EstadoPunto estado={a.estado} />
+          {/* 022 · R3: en pantallas medianas, chapeta, raza y dueño van aquí en vez de en su columna. */}
+          {ocultas && (
+            <span className="block truncate text-sm text-gray-600 2xl:hidden">
+              <span className="xl:hidden">{a.chapetaICA ? `${a.chapetaICA} · ` : ''}</span>
+              {[a.raza, a.dueno].filter(Boolean).join(' · ')}
+            </span>
+          )}
         </span>
       </Link>
     </td>
@@ -350,7 +357,7 @@ function TablaGanado({ items, url, orden, onOrdenar }) {
         <tbody className="divide-y divide-gray-100">
           {items.map((a) => (
             <tr key={a.id} className="h-16 hover:bg-brand-50/60">
-              <CeldaAnimal a={a} url={url} />
+              <CeldaAnimal a={a} url={url} ocultas />
               <td className="hidden whitespace-nowrap px-4 py-2 text-gray-700 xl:table-cell">{a.chapetaICA || '—'}</td>
               <td className="px-4 py-2">
                 <span className="inline-flex flex-wrap items-center gap-1">

@@ -64,7 +64,7 @@ test('R5: la base de datos rechaza un peso inválido aunque se salte la interfaz
 test('R5: no se puede registrar un animal con un número interno que ya existe', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByRole('button', { name: 'Registrar animal' }).click();
+  await page.getByRole('button', { name: 'Añadir animal' }).click();
   const dialogo = page.getByRole('dialog');
   await dialogo.getByLabel(/^Nombre/).fill('0101');
   await dialogo.getByLabel(/Chapeta ICA/).fill('COL-E2E-DUPLICADO');
