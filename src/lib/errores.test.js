@@ -3,7 +3,7 @@ import { mensajeError } from './errores';
 
 describe('mensajeError', () => {
   it('distingue número interno y chapeta repetidos (también con índices normalizados)', () => {
-    expect(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "animales_numero_interno_key"' })).toMatch(/número interno/);
+    expect(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "animales_numero_interno_key"' })).toMatch(/con ese nombre/);
     expect(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "animales_chapeta_ica_normalizada_key"' })).toMatch(/chapeta ICA/);
     expect(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "precios_mercado_fecha_fuente_key"' })).toMatch(/precio registrado/);
   });

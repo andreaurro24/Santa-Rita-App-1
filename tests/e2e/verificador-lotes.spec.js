@@ -288,12 +288,12 @@ test('VRF 006 R8/D2: la interfaz advierte al pasar un vientre a ceba, y cómo se
   await page.goto('/#/animales');
   await page.getByRole('button', { name: 'Registrar animal' }).first().click();
   const n = page.getByRole('dialog', { name: 'Registrar animal' });
-  await n.getByLabel('Número interno').fill(`${P}-NH`);
+  await n.getByLabel(/^Nombre/).fill(`${P}-NH`);
   await n.getByLabel('Chapeta ICA / Sinigán').fill(`${P}-NH-CH`);
   await n.getByLabel('Sexo').selectOption('Hembra');
   await n.getByLabel('Categoría').selectOption('ternera');
   await n.getByRole('combobox', { name: /^Lote/ }).selectOption(loteA.id);
-  await n.getByLabel('Peso de ingreso (kg)').fill('150');
+  await n.getByLabel('Peso inicial (kg)').fill('150');
   await n.getByLabel('Peso objetivo pactado (kg)').fill('300');
   await n.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForTimeout(800);
@@ -492,7 +492,7 @@ test.describe('celular 375×812', () => {
     r.movimientos = movs.length;
 
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número/).fill(n1);
+    await page.getByPlaceholder(/Buscar por nombre/).fill(n1);
     await page.getByRole('link', { name: new RegExp(`^${n1}`) }).first().tap();
     const ubic = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) });
     await expect(ubic).toContainText(nombrePot);

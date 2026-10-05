@@ -39,7 +39,7 @@ export function useGuardarLote() {
         nombre: lote.nombre.trim(),
         tipo: lote.tipo,
         fecha_inicio: lote.fechaInicio || null,
-        peso_meta_kg: lote.pesoMeta === '' || lote.pesoMeta == null ? null : Number(lote.pesoMeta),
+        // Spec 022 · R6: el lote ya no tiene meta propia; no se envía peso_meta_kg.
         estado: lote.estado,
         descripcion: lote.descripcion?.trim() || null,
       };

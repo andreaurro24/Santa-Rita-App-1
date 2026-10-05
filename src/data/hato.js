@@ -10,7 +10,7 @@ const HATO_KEY = ['hato'];
 
 const SELECT_ANIMALES = `
   id, especie, numero_interno, chapeta_ica, marca_finca, sexo, categoria, origen, fecha_ingreso,
-  fecha_nacimiento, peso_ingreso_kg, peso_objetivo_kg, costo_compra_cop, precio_compra_kg_cop, estado,
+  fecha_nacimiento, nacimiento_mes_conocido, raza, peso_ingreso_kg, peso_objetivo_kg, costo_compra_cop, precio_compra_kg_cop, estado,
   dueno, color, foto_path, fecha_baja, motivo_baja,
   lote:lotes ( id, codigo, nombre, tipo ),
   finca:fincas ( id, nombre, tipo ),
@@ -36,6 +36,9 @@ export function mapAnimal(row) {
     origen: capitalizar(row.origen),
     fechaIngreso: row.fecha_ingreso,
     fechaNacimiento: row.fecha_nacimiento ?? null,
+    // Spec 023 · R3: si no se sabe el mes, la fecha es el 1 de enero del año.
+    nacimientoMesConocido: row.nacimiento_mes_conocido ?? null,
+    raza: row.raza ?? null,
     pesoIngreso: row.peso_ingreso_kg != null ? Number(row.peso_ingreso_kg) : null,
     // Spec 016 · R6: el peso objetivo es opcional.
     pesoObjetivo: row.peso_objetivo_kg != null ? Number(row.peso_objetivo_kg) : null,
@@ -145,7 +148,10 @@ export function useAddAnimal() {
         origen: nuevo.origen ?? 'compra',
         fecha_ingreso: nuevo.fechaIngreso,
         fecha_nacimiento: nuevo.fechaNacimiento || null,
+        nacimiento_mes_conocido: nuevo.fechaNacimiento ? nuevo.nacimientoMesConocido : null,
         peso_ingreso_kg: nuevo.pesoIngreso ?? null,
+        // Spec 023 · R4: si el peso actual es distinto del inicial, la base de datos guarda un pesaje de hoy.
+        peso_actual_kg: nuevo.pesoActual ?? null,
         peso_objetivo_kg: nuevo.pesoObjetivo ?? null,
         costo_compra_cop: nuevo.costoCompra ?? null,
         precio_compra_kg_cop: nuevo.precioCompraKg ?? null,
@@ -154,6 +160,7 @@ export function useAddAnimal() {
         contrato_id: nuevo.contratoId ?? null,
         dueno: nuevo.dueno?.trim() || null,
         color: nuevo.color?.trim() || null,
+        raza: nuevo.raza?.trim() || null,
       },
     });
     if (error) throw error;
@@ -161,7 +168,7 @@ export function useAddAnimal() {
   });
 }
 
-// Spec 016 · R1: editar los datos del animal (no el peso ni la fecha de ingreso: son el primer pesaje).
+// Spec 016 · R1 y 023 · R7: editar los datos del animal (no el peso ni la fecha de ingreso: son el primer pesaje).
 export function useEditarAnimal() {
   return useMutacionHato(async ({ id, cambios }) => {
     const fila = {
@@ -171,6 +178,8 @@ export function useEditarAnimal() {
       categoria: cambios.categoria,
       origen: cambios.origen,
       fecha_nacimiento: cambios.fechaNacimiento || null,
+      nacimiento_mes_conocido: cambios.fechaNacimiento ? cambios.nacimientoMesConocido : null,
+      raza: cambios.raza?.trim() || null,
       peso_objetivo_kg: cambios.pesoObjetivo ?? null,
       costo_compra_cop: cambios.costoCompra ?? null,
       precio_compra_kg_cop: cambios.precioCompraKg ?? null,
@@ -221,6 +230,23 @@ export function useGuardarFoto() {
   return useMutacionHato(async ({ id, fotoPath }) => {
     const { error } = await supabase.from('animales').update({ foto_path: fotoPath }).eq('id', id);
     if (error) throw error;
+  });
+}
+
+// Spec 024 · R5: pone, cambia o quita la foto de un animal sin dejar archivos sueltos.
+// `recorte` sale de lib/fotos.recortar (o null para quitar). La anterior se borra al final.
+export function useCambiarFoto() {
+  return useMutacionHato(async ({ id, recorte, anterior }) => {
+    const { subirFotoConMiniatura, borrarFoto } = await import('../lib/fotos');
+    const ruta = recorte ? await subirFotoConMiniatura(id, recorte) : null;
+    const { data, error } = await supabase.from('animales').update({ foto_path: ruta }).eq('id', id).select('id');
+    if (error || !data?.length) {
+      if (ruta) await borrarFoto(ruta).catch(() => {});
+      throw error ?? Object.assign(new Error('sin_permiso'), { code: '42501' });
+    }
+    // La foto anterior ya no la usa nadie; si no se puede borrar solo queda un archivo sin uso.
+    if (anterior) await borrarFoto(anterior).catch(() => {});
+    return ruta;
   });
 }
 

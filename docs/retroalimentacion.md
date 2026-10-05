@@ -29,3 +29,17 @@ quién lo dijo y qué se hizo. Lo que no entra en el sprint actual queda como "p
 | 20 | Gastos a la finca o al lote, mostrando si el lote está "Al partir" | Juan | Hecho · spec 020 |
 | 21 | Ir anotando la retroalimentación para no perderla | Juan | Hecho: esta bitácora |
 | 22 | Estado de la documentación del curso | Juan | Pendiente: el equipo dice qué documento necesita |
+
+## 2026-10-05 · Comparación con un proyecto ganadero de referencia (capturas del equipo)
+
+| # | Pedido | Quién | Estado |
+|---|---|---|---|
+| 23 | Lotes y animales en la misma página, con Crear lote, Editar lotes y Añadir animal arriba | Equipo | Sprint 06 · spec 022 |
+| 24 | Crear lote igual que hoy, pero sin meta de peso (la meta es de cada animal) | Equipo | Sprint 06 · spec 022 |
+| 25 | Foto desde el formulario del animal, tomada o elegida en el celular, recortada en un cuadrado, de cualquier peso y sin problemas de storage | Equipo | Sprint 06 · spec 024 |
+| 26 | Nombre del animal con su número (Luna-042) en vez de número interno; la app sugiere el número | Equipo | Sprint 06 · spec 023 |
+| 27 | Raza, con las más comunes de Colombia | Equipo | Sprint 06 · spec 023 |
+| 28 | Nacimiento por mes y año, con "mes desconocido" | Equipo | Sprint 06 · spec 023 |
+| 29 | Compra por kilo o por animal mostrando las dos y la cuenta (kilos × precio, o precio ÷ kilos) | Equipo | Sprint 06 · spec 023 |
+| 30 | Tres pesos: inicial, actual (puede ser igual al inicial) y objetivo opcional | Equipo | Sprint 06 · spec 023 |
+| 31 | Simulador de venta por lotes como el de la referencia, y que una venta pueda tener varios lotes | Equipo | Sprint 06 · spec 025 |

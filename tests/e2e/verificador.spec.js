@@ -25,9 +25,9 @@ const mananaBogota = () => new Date(Date.parse(`${hoyBogota()}T12:00:00Z`) + 86_
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(numero);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(numero);
   await page.getByRole('link', { name: numero, exact: true }).click();
-  await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: `Animal ${numero}` })).toBeVisible();
 }
 
 async function abrirNuevoAnimal(page) {
@@ -37,9 +37,9 @@ async function abrirNuevoAnimal(page) {
 }
 
 async function llenarAnimal(dialogo, { numero, chapeta, ingreso = '200', objetivo = '350' }) {
-  await dialogo.getByLabel(/Número interno/).fill(numero);
+  await dialogo.getByLabel(/^Nombre/).fill(numero);
   await dialogo.getByLabel(/Chapeta ICA/).fill(chapeta);
-  await dialogo.getByLabel(/Peso de ingreso/).fill(ingreso);
+  await dialogo.getByLabel(/Peso inicial/).fill(ingreso);
   await dialogo.getByLabel(/Peso objetivo/).fill(objetivo);
 }
 
@@ -62,7 +62,7 @@ test('VRF R2: una ruta profunda (#/animales/:id) vuelve a esa ficha tras entrar'
   await page.goto(`/#/animales/${data.id}`);
   await expect(page).toHaveURL(/#\/login$/);
   await entrar(page);
-  await expect(page.getByRole('heading', { name: 'Animal N° 0101' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Animal 0101' })).toBeVisible();
 });
 
 test('VRF R3: sesión expirada (refresh inválido) vuelve a /login y vacía la caché', async ({ page }) => {
@@ -240,14 +240,14 @@ test('VRF animal: registro válido persiste tras recargar y en otra sesión', as
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByText('reses activas', { exact: false })).toBeVisible();
   await page.reload();
-  await page.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-1`);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(`${PREFIJO}-1`);
   await expect(page.getByRole('link', { name: `${PREFIJO}-1`, exact: true })).toBeVisible();
 
   const otra = await browser.newContext();
   const page2 = await otra.newPage();
   await iniciarSesion(page2);
   await page2.goto('/#/animales');
-  await page2.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-1`);
+  await page2.getByPlaceholder(/Buscar por nombre/).fill(`${PREFIJO}-1`);
   await expect(page2.getByRole('link', { name: `${PREFIJO}-1`, exact: true })).toBeVisible();
   await otra.close();
 });
@@ -261,10 +261,10 @@ test('VRF animal: validaciones del formulario (vacíos, cero, negativos, objetiv
   await llenarAnimal(dialogo, { numero: `${PREFIJO}-X`, chapeta: `${PREFIJO}-CH-X`, ingreso: '0' });
   await guardar.click();
   await expect(dialogo.getByRole('alert')).toHaveText(/peso de ingreso debe estar entre/);
-  await dialogo.getByLabel(/Peso de ingreso/).fill('-5');
+  await dialogo.getByLabel(/Peso inicial/).fill('-5');
   await guardar.click();
   await expect(dialogo.getByRole('alert')).toHaveText(/peso de ingreso debe estar entre/);
-  await dialogo.getByLabel(/Peso de ingreso/).fill('300');
+  await dialogo.getByLabel(/Peso inicial/).fill('300');
   await dialogo.getByLabel(/Peso objetivo/).fill('250');
   await guardar.click();
   await expect(dialogo.getByRole('alert')).toHaveText('El peso objetivo debe ser mayor que el peso de ingreso.');
@@ -301,7 +301,7 @@ test('VRF animal: número interno repetido con espacios y chapeta con espacios t
   const dialogo = await abrirNuevoAnimal(page);
   await llenarAnimal(dialogo, { numero: ' 0101 ', chapeta: `${PREFIJO}-CH-6` });
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con ese número interno/, { timeout: 15_000 });
+  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con ese nombre/, { timeout: 15_000 });
   // Y saltando la interfaz (API directa, sin el trim del cliente):
   const supabase = await clientePrueba();
   const { data: a101 } = await supabase.from('animales').select('lote_id, chapeta_ica').eq('numero_interno', '0101').single();
@@ -510,9 +510,9 @@ test('VRF consola y red: recorrido de las 6 pantallas sin errores de consola ni 
   await iniciarSesion(page);
   await page.goto('/#/animales');
   await expect(page.getByText(/\d+ reses activas/)).toBeVisible();
-  await page.getByPlaceholder(/Buscar por número/).fill('0101');
+  await page.getByPlaceholder(/Buscar por nombre/).fill('0101');
   await page.getByRole('link', { name: '0101', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Animal N° 0101' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Animal 0101' })).toBeVisible();
   for (const [ruta, titulo] of [
     ['/#/mercado', 'Precio y pasto'],
     ['/#/recomendacion', 'Recomendación de venta'],

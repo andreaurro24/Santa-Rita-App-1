@@ -232,7 +232,7 @@ test('VRF 011 R1–R6: asistente de venta del lote V contra el cálculo a mano (
   r.fichaV1Acciones = await page.locator('main button').evaluateAll((bs) => bs.filter((b) => b.checkVisibility()).map((b) => b.innerText.trim()).filter(Boolean));
   r.fichaV1DiceVendido = /vendid/i.test(await page.locator('main').innerText());
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(`${P}-V1`);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(`${P}-V1`);
   r.hatoV1 = (await page.locator('main table tbody').innerText().catch(() => '')).replace(/\s+/g, ' ');
   await page.goto('/#/indicadores');
   await page.reload();
@@ -397,7 +397,7 @@ test.describe('celular 375×812', () => {
     r.lista = { desborde: await page.evaluate(medirDesborde) };
     // Ronda 2 (011 Medio 5): en las tarjetas del celular el vendido también se marca.
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número/).fill(`${P}-V1`);
+    await page.getByPlaceholder(/Buscar por nombre/).fill(`${P}-V1`);
     await page.waitForTimeout(500);
     r.tarjetaV1 = (await page.locator('main ul li').filter({ hasText: `${P}-V1` }).first().innerText().catch(() => 'SIN TARJETA')).replace(/\s+/g, ' ');
     await page.screenshot({ path: `${DIR}/04-lista-celular.png`, fullPage: true });

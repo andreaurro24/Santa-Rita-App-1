@@ -24,36 +24,47 @@ async function limpiar() {
 test.beforeAll(limpiar);
 test.afterAll(limpiar);
 
-test('R2, R3: cada lote muestra su proyección y el 2026-A tiene una fecha futura coherente con su GDP', async ({ page }) => {
+test('R2, R3 y spec 022 · R1/R7: los lotes están en Animales y el detalle muestra la proyección', async ({ page }) => {
+  const supabase = await clientePrueba();
   await iniciarSesion(page);
-  await page.goto('/#/lotes');
-  await expect(page.getByRole('heading', { name: 'Lotes', level: 1 })).toBeVisible();
-  const tarjeta = page.getByRole('link', { name: /Lote 2026-A/ });
-  await expect(tarjeta).toContainText(/Llega a la meta: \d{2} de [a-z]{3} de \d{4} \(en \d+ días\)/);
-  await expect(page.getByRole('link', { name: /Lote 2025-B/ })).toContainText('Meta alcanzada');
+  await page.goto('/#/lotes'); // 022 · R7: lleva a Animales
+  await expect(page).toHaveURL(/#\/animales$/);
+  await expect(page.getByRole('heading', { name: 'Animales', level: 1 })).toBeVisible();
+  const tarjeta = page.getByRole('button', { name: /Lote 2026-A/ });
+  await expect(tarjeta).toContainText(/cabezas?/);
+  await tarjeta.click(); // 022 · R1: filtra la tabla y la URL lo recuerda
+  await expect(page).toHaveURL(/lote=/);
+  await expect(tarjeta).toHaveAttribute('aria-pressed', 'true');
+  const { data: lote } = await supabase.from('lotes').select('id').eq('codigo', 'LOTE-2026-A').single();
+  await page.goto(`/#/lotes/${lote.id}`);
+  await expect(page.getByText(/Llega a la meta/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Volver a Animales' })).toBeVisible();
 });
 
 test('R1: crear y editar un lote', async ({ page }) => {
   await iniciarSesion(page);
-  await page.goto('/#/lotes');
-  await page.getByRole('button', { name: 'Nuevo lote' }).click();
+  // Spec 022 · R2/R6: "Crear lote" desde Animales, sin meta de peso.
+  await page.goto('/#/animales');
+  await page.getByRole('button', { name: 'Crear lote' }).first().click();
   const dialogo = page.getByRole('dialog', { name: 'Nuevo lote' });
+  await expect(dialogo.getByLabel(/Meta de peso/)).toHaveCount(0);
   await dialogo.getByLabel('Código').fill(LOTE_NUEVO.toLowerCase());
   await dialogo.getByLabel('Nombre').fill('Lote de prueba E2E');
-  await dialogo.getByLabel('Meta de peso pactada (kg)').fill('360');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await expect(page.getByRole('heading', { name: 'Lote de prueba E2E' })).toBeVisible();
-  await expect(page.getByText(`${LOTE_NUEVO}, ceba`)).toBeVisible(); // el código se guarda en mayúsculas
-  await expect(page.getByText('Este lote no tiene animales activos')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Lote de prueba E2E/ })).toHaveAttribute('aria-pressed', 'true');
+  const supabase = await clientePrueba();
+  const { data: creado } = await supabase.from('lotes').select('codigo, peso_meta_kg').eq('codigo', LOTE_NUEVO).single();
+  expect(creado).toEqual({ codigo: LOTE_NUEVO, peso_meta_kg: null }); // el código se guarda en mayúsculas
 
-  await page.getByRole('button', { name: 'Editar lote' }).click();
-  await page.getByRole('dialog', { name: 'Editar lote' }).getByLabel('Meta de peso pactada (kg)').fill('380');
+  // "Editar lotes" → Editar
+  await page.getByRole('button', { name: 'Editar lotes' }).click();
+  await page.getByRole('dialog', { name: 'Editar lotes' }).locator('li').filter({ hasText: 'Lote de prueba E2E' }).getByRole('button', { name: 'Editar' }).click();
+  await page.getByRole('dialog', { name: 'Editar lote' }).getByLabel('Nombre').fill('Lote de prueba E2E editado');
   await page.getByRole('dialog', { name: 'Editar lote' }).getByRole('button', { name: 'Guardar' }).click();
-  await expect(page.getByText('380 kg')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Lote de prueba E2E editado/ })).toBeVisible();
 
   // Código repetido
-  await page.goto('/#/lotes');
-  await page.getByRole('button', { name: 'Nuevo lote' }).click();
+  await page.getByRole('button', { name: 'Crear lote' }).first().click();
   const otro = page.getByRole('dialog', { name: 'Nuevo lote' });
   await otro.getByLabel('Código').fill(LOTE_NUEVO);
   await otro.getByLabel('Nombre').fill('Duplicado');
@@ -93,7 +104,7 @@ test('R5–R7: crear un potrero, mover 2 animales a él y ver la ubicación y el
   expect(count).toBe(2);
 
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(primero);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(primero);
   await page.getByRole('link', { name: primero, exact: true }).click();
   const ubicacion = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) });
   await expect(ubicacion).toContainText(POTRERO);

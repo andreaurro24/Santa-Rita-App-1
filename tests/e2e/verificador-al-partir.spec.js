@@ -289,7 +289,7 @@ test.describe('celular 375×812', () => {
     hoja = page.getByRole('dialog', { name: /Asignar animales/ });
     await hoja.getByRole('button', { name: /^Asignar/ }).tap();
     r.asignarSinSeleccion = await alertaDe(hoja);
-    await hoja.getByLabel('Buscar por número interno').fill(P);
+    await hoja.getByLabel('Buscar por nombre').fill(P);
     for (const a of animales) await hoja.getByRole('checkbox', { name: `Asignar ${a.numero}` }).check();
     r.hojaAsignar = await hoja.evaluate((el) => ({ abajo: Math.round(el.getBoundingClientRect().bottom), pieVisible: el.querySelector('[data-dialogo-pie]').getBoundingClientRect().bottom <= innerHeight }));
     await page.screenshot({ path: `${DIR}/03-asignar.png` });
@@ -330,14 +330,14 @@ test.describe('celular 375×812', () => {
     // En la ficha: el peso de la visita (U1) y el "no encontrado" (U2).
     await page.goto(`/#/animales/${animales[0].id}`);
     await page.reload();
-    await expect(page.getByRole('heading', { name: `Animal N° ${animales[0].numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${animales[0].numero}` })).toBeVisible();
     r.fichaU1 = {
       peso: await page.getByText('200 kg', { exact: true }).count(),
       pierdePeso: await page.getByText('Pierde peso').count(),
       ubicacion: (await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) }).innerText()).replace(/\s+/g, ' ').slice(0, 200),
     };
     await page.goto(`/#/animales/${animales[1].id}`);
-    await expect(page.getByRole('heading', { name: `Animal N° ${animales[1].numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${animales[1].numero}` })).toBeVisible();
     r.fichaU2NoEncontrado = await page.getByText(/no encontrado/i).count();
     await page.screenshot({ path: `${DIR}/06-ficha-no-encontrado.png`, fullPage: true });
 

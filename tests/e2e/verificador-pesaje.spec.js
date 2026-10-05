@@ -360,7 +360,7 @@ test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ro
   await page.reload(); // el hato quedó en caché antes de crear los animales de prueba
   for (const [k, { id, numero }] of Object.entries(casos)) {
     await page.goto(`/#/animales/${id}`);
-    await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${numero}` })).toBeVisible();
     const stat = async (label) => (await page.getByText(label).locator('..').innerText()).replace(/\s+/g, ' ');
     r[k] = {
       alertaFicha: (await page.getByText('Pierde peso').count()) > 0,
@@ -370,7 +370,7 @@ test('VRF 004 R5/R7 (ronda 2): regla de 14 días + caída > 8 kg; casos de la ro
     await page.screenshot({ path: `${DIR}/r2-gdp-${k}.png` });
   }
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(`${PREFIJO}-`);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(`${PREFIJO}-`);
   r.hato = {};
   for (const k of Object.keys(casos)) {
     const fila = page.getByRole('row', { name: new RegExp(`${PREFIJO}-${k}\\b`) });

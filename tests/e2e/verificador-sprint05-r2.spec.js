@@ -240,10 +240,10 @@ test.describe('celular 375×812', () => {
     await iniciarSesion(page);
     await page.goto('/#/animales?nuevo=1');
     let hoja = page.getByRole('dialog', { name: 'Registrar animal' });
-    await hoja.getByLabel('Número interno').fill(`${P}-COL`);
+    await hoja.getByLabel(/^Nombre/).fill(`${P}-COL`);
     await hoja.getByLabel('Chapeta ICA').fill(`${P}-COL-CH`);
     await hoja.getByRole('combobox', { name: /^Lote/ }).selectOption({ value: LOTE });
-    await hoja.getByLabel('Peso de ingreso').fill('250');
+    await hoja.getByLabel('Peso inicial').fill('250');
     r.colorAlRegistrar = await hoja.getByLabel('Color').count();
     await hoja.getByLabel('Color').fill('Pardo');
     await page.screenshot({ path: `${DIR}/a2-registrar-375.png`, fullPage: true });

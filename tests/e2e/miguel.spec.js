@@ -16,7 +16,8 @@ async function limpiar() {
   }
   const { data: animales } = await supabase.from('animales').select('id, foto_path').like('numero_interno', `${P}%`);
   const fotos = (animales ?? []).map((a) => a.foto_path).filter(Boolean);
-  if (fotos.length) await supabase.storage.from('fotos-animales').remove(fotos);
+  // Spec 024: cada foto tiene su miniatura (-mini) al lado.
+  if (fotos.length) await supabase.storage.from('fotos-animales').remove([...fotos, ...fotos.map((r) => r.replace(/(\.[a-z]+)$/, '-mini$1'))]);
   for (const a of animales ?? []) {
     await supabase.from('ventas_equinos').delete().eq('animal_id', a.id);
     await supabase.from('animales').delete().eq('id', a.id);
@@ -130,18 +131,19 @@ test('016 · R1, R4, R7 y 018: registrar con dueño y compra por kilo (miles en 
   await page.goto('/#/animales?nuevo=1');
   let hoja = page.getByRole('dialog', { name: 'Registrar animal' });
   // 018 · R2: caracteres raros no.
-  await hoja.getByLabel('Número interno').fill(`${P}<1>`);
+  await hoja.getByLabel(/^Nombre/).fill(`${P}<1>`);
   await hoja.getByLabel('Chapeta ICA').fill(`${P}-CH1`);
-  await hoja.getByLabel('Peso de ingreso').fill('250');
+  await hoja.getByLabel('Peso inicial').fill('250');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja.getByRole('alert')).toContainText('solo puede tener letras');
-  await hoja.getByLabel('Número interno').fill(`${P}-1`);
+  await hoja.getByLabel(/^Nombre/).fill(`${P}-1`);
   await hoja.getByLabel('Dueño').fill(`${P} Familia`);
-  await hoja.getByText('Por kilo', { exact: true }).click();
+  await hoja.getByText('Compré por kilo', { exact: true }).click();
   const precio = hoja.getByLabel('Precio por kilo');
   await precio.pressSequentially('8000');
   await expect(precio).toHaveValue('8.000'); // 018 · R1
-  await expect(hoja.getByText('Total aproximado: $2.000.000')).toBeVisible(); // 016 · R7
+  await expect(hoja.getByTestId('cuenta-compra')).toHaveText('$8.000 × 250 kg = $2.000.000'); // 023 · R6
+  await expect(hoja.getByText('Precio por animal')).toBeVisible(); // 016 · R7
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja).toHaveCount(0);
   const { data: a } = await supabase.from('animales').select('id, dueno, costo_compra_cop, precio_compra_kg_cop, peso_objetivo_kg').eq('numero_interno', `${P}-1`).single();
@@ -199,7 +201,7 @@ test('016 · R8: registrar un caballo con precio en miles y venderlo por precio 
   await page.getByRole('button', { name: 'Registrar caballo' }).click();
   let hoja = page.getByRole('dialog', { name: 'Registrar caballo' });
   await expect(hoja.getByLabel('Chapeta ICA')).toHaveCount(0);
-  await hoja.getByLabel('Número o nombre').fill(`${P} Relámpago`);
+  await hoja.getByLabel('Nombre').fill(`${P} Relámpago`);
   await hoja.getByLabel('Color').fill('Alazán');
   await hoja.getByLabel('Precio del animal').pressSequentially('3000000');
   await expect(hoja.getByLabel('Precio del animal')).toHaveValue('3.000.000');
@@ -254,15 +256,16 @@ test('020 · R1, R2: finca a nombre de una persona y lote con descripción', asy
   const tarjeta = page.locator('article').filter({ hasText: `${P} La Esperanza` });
   await expect(tarjeta.getByText('A nombre de: Familia Lacouture')).toBeVisible();
 
-  await page.goto('/#/lotes');
-  await page.getByRole('button', { name: 'Nuevo lote' }).click();
+  await page.goto('/#/animales');
+  await page.getByRole('button', { name: 'Crear lote' }).first().click(); // spec 022 · R2
   hoja = page.getByRole('dialog', { name: 'Nuevo lote' });
   await hoja.getByLabel('Código').fill(`${P}-L1`);
   await hoja.getByLabel('Nombre').first().fill(`${P} Lote diciembre`);
   await hoja.getByLabel('Descripción').fill('Novillos para vender en diciembre');
   await hoja.getByRole('button', { name: 'Guardar' }).click();
-  await expect(page.getByRole('heading', { name: `${P} Lote diciembre` })).toBeVisible();
-  await expect(page.getByText('Novillos para vender en diciembre')).toBeVisible();
+  await expect(page.getByRole('button', { name: new RegExp(`${P} Lote diciembre`) })).toBeVisible();
+  await page.getByRole('button', { name: 'Editar lotes' }).click();
+  await expect(page.getByRole('dialog', { name: 'Editar lotes' }).getByText('Novillos para vender en diciembre')).toBeVisible();
 });
 
 test('021 · R1, R2: actualizar el rango del ganado gordo', async ({ page }) => {
@@ -281,52 +284,57 @@ test('021 · R1, R2: actualizar el rango del ganado gordo', async ({ page }) => 
   await expect(page.getByText('Mitad: $8.700/kg')).toBeVisible();
 });
 
-test('019 · R1–R3: vender un solo animal desde su ficha en 3 pasos', async ({ page }) => {
+test('019 · R1–R3 y 025 · R9: vender un solo animal desde su ficha con el simulador', async ({ page }) => {
   test.setTimeout(90_000);
   const supabase = await clientePrueba();
   const id = await animalPorRpc(supabase, `${P}-VENTA`);
   await iniciarSesion(page);
   await page.goto(`/#/animales/${id}`);
   await page.getByRole('link', { name: 'Vender este animal' }).click();
-  await expect(page.getByRole('heading', { name: /^Animales \(1 de / })).toBeVisible();
-  await page.getByRole('button', { name: 'Siguiente' }).click();
-  await expect(page.getByLabel('Precio por kilo')).not.toHaveValue(''); // precio de la zona precargado
+  await expect(page.getByRole('heading', { name: 'Simulador de venta' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: `Vender ${P}-VENTA` })).toBeChecked();
+  await expect(page.getByText('Precio de la zona:')).toBeVisible(); // 025 · R3
+  await page.getByLabel('Precio de venta por kilo').pressSequentially('9000');
+  await page.getByRole('button', { name: 'Confirmar venta' }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await expect(page.getByRole('alert')).toContainText('comprador');
   await page.getByLabel('Comprador').fill(`${P} comprador`);
-  await page.getByLabel('Precio por kilo').fill('');
-  await page.getByLabel('Precio por kilo').pressSequentially('9000');
   await page.getByRole('button', { name: 'Siguiente' }).click();
-  const resultado = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Resultado de esta venta' }) });
-  await expect(resultado).toContainText('Reses1');
-  await expect(resultado).toContainText('$9.000');
+  await expect(page.getByRole('heading', { name: 'Confirma la venta' })).toBeVisible();
+  await expect(page.getByText(/1 res de .*\$9\.000\/kg/)).toBeVisible();
   await page.getByRole('button', { name: 'Guardar venta' }).click();
   await expect(page.getByRole('heading', { name: /^Venta de / })).toBeVisible();
   const { data } = await supabase.from('animales').select('estado').eq('id', id).single();
   expect(data.estado).toBe('vendido');
 });
 
-test('017 · R1–R4: una foto de 3000×2000 se reduce a ≤ 1280 px y ≤ 1 MB, se guarda y se ve en la lista', async ({ page }) => {
+test('017 y 024 · R1–R5: una foto de 3000×2000 se cuadra, se guarda en 800 px con su miniatura y se ve en la lista', async ({ page }) => {
   test.setTimeout(90_000);
   const supabase = await clientePrueba();
   const id = await animalPorRpc(supabase, `${P}-FOTO`);
   await iniciarSesion(page);
   await page.goto(`/#/animales/${id}`);
-  await page.getByLabel('Foto del animal').setInputFiles({ name: 'vaca.png', mimeType: 'image/png', buffer: png(3000, 2000) });
+  await page.getByLabel('Elegir de la galería').setInputFiles({ name: 'vaca.png', mimeType: 'image/png', buffer: png(3000, 2000) });
+  // 024 · R2: el recortador cuadrado se abre; "Listo" guarda.
+  const recortador = page.getByRole('dialog', { name: 'Cuadrar la foto' });
+  await expect(recortador.getByTestId('recortador')).toBeVisible({ timeout: 15_000 });
+  await recortador.getByRole('button', { name: 'Listo' }).click();
   const img = page.getByRole('img', { name: `Foto de ${P}-FOTO` });
   await expect(img).toBeVisible({ timeout: 30_000 });
   const { data } = await supabase.from('animales').select('foto_path').eq('id', id).single();
   expect(data.foto_path).toMatch(new RegExp(`^${id}/\\d+\\.(webp|jpg)$`));
   const { data: blob, error } = await supabase.storage.from('fotos-animales').download(data.foto_path);
   expect(error).toBeNull();
-  expect(blob.size).toBeLessThanOrEqual(1024 * 1024);
-  const lado = await img.evaluate((el) => Math.max(el.naturalWidth, el.naturalHeight));
-  expect(lado).toBeLessThanOrEqual(1280);
+  expect(blob.size).toBeLessThanOrEqual(300 * 1024); // 024 · R4
+  const { data: mini } = await supabase.storage.from('fotos-animales').download(data.foto_path.replace(/(\.[a-z]+)$/, '-mini$1'));
+  expect(mini.size).toBeLessThanOrEqual(40 * 1024);
+  const [ancho, alto] = await img.evaluate((el) => [el.naturalWidth, el.naturalHeight]);
+  expect([ancho, alto]).toEqual([800, 800]);
   // R3: sin sesión no se puede leer.
   const res = await fetch(`${process.env.VITE_SUPABASE_URL}/storage/v1/object/fotos-animales/${data.foto_path}`, { headers: { apikey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY } });
   expect(res.status).toBeGreaterThanOrEqual(400);
   // R4: miniatura en la lista.
   await page.goto('/#/animales');
-  await page.getByPlaceholder('Buscar por número, chapeta o dueño').fill(`${P}-FOTO`);
+  await page.getByPlaceholder('Buscar por nombre, chapeta, dueño o raza').fill(`${P}-FOTO`);
   await expect(page.locator(`img[alt="Foto de ${P}-FOTO"]`).first()).toBeAttached();
 });

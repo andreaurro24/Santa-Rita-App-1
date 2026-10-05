@@ -135,7 +135,7 @@ test.describe('celular 375×812', () => {
 
     // Ficha con la tarjeta de Ubicación (0101)
     await page.goto('/#/animales');
-    await page.getByPlaceholder(/Buscar por número/).fill('0101');
+    await page.getByPlaceholder(/Buscar por nombre/).fill('0101');
     await page.getByRole('link', { name: /^0101/ }).first().click();
     await expect(page.getByRole('heading', { name: 'Ubicación' })).toBeVisible();
     await expect(page.getByText(/Sin movimientos registrados|Movimientos/).first()).toBeVisible();

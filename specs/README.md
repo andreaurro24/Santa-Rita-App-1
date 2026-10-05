@@ -62,5 +62,9 @@ está mal escrito: reescríbelo.
 | [019 — Ventas más claras](019-ventas-claras/spec.md) | hecha | 5 |
 | [020 — Fincas, lotes y gastos de finca](020-fincas-lotes-gastos/spec.md) | hecha | 5 |
 | [021 — Precio del ganado por zona y categoría](021-precios-zona/spec.md) | hecha | 5 |
+| [022 — Animales y lotes en una sola página](022-hato-y-lotes/spec.md) | en-verificacion | 6 |
+| [023 — Registro del animal: nombre, raza, nacimiento, tres pesos y compra didáctica](023-ficha-animal-v3/spec.md) | en-verificacion | 6 |
+| [024 — Fotos desde el celular, recortadas en cuadrado](024-fotos-cuadradas/spec.md) | en-verificacion | 6 |
+| [025 — Simulador de venta por lotes y venta de varios lotes](025-simulador-venta/spec.md) | en-verificacion | 6 |
 
 Las specs 003 (gestión del hato) y 005 (sanidad) no existen como archivo: el control de permisos de Claude Code bloqueó su creación. Quedan pendientes de revisión humana.

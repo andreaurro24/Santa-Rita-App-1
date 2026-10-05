@@ -249,7 +249,7 @@ test.describe('celular 375×812', () => {
     const hoja = page.getByRole('dialog', { name: `Editar ${P}-A` });
     await expect(hoja).toBeVisible();
     const campos = {};
-    for (const c of ['Número interno', 'Chapeta ICA', 'Sexo', 'Categoría', 'Origen', 'Fecha de nacimiento', 'Peso objetivo', 'Dueño', 'Color', 'Peso de ingreso', 'Lote']) {
+    for (const c of ['Nombre', 'Chapeta ICA', 'Sexo', 'Categoría', 'Origen', 'Año', 'Peso objetivo', 'Dueño', 'Color', 'Peso inicial', 'Lote']) {
       campos[c] = await hoja.getByLabel(c, { exact: false }).count();
     }
     campos.compra = await hoja.getByText('Precio de compra').count();
@@ -319,7 +319,7 @@ test.describe('celular 375×812', () => {
     registrar('animales', r);
 
     expect.soft(campos.Color, 'R1: el color se puede editar').toBeGreaterThan(0);
-    expect.soft(campos['Peso de ingreso'], 'R1: el peso de ingreso NO se edita').toBe(0);
+    expect.soft(campos['Peso inicial'], 'R1: el peso de ingreso NO se edita').toBe(0);
     expect.soft(r.bajaFuturaUI).toMatch(/futura/);
     expect.soft(r.bajaAntesIngresoUI).toMatch(/anterior al ingreso/);
     expect.soft(fa).toMatchObject({ estado: 'perdido', fecha_baja: '2026-09-15' });
@@ -403,8 +403,8 @@ test.describe('celular 375×812', () => {
     await page.getByRole('button', { name: 'Registrar caballo' }).click();
     const hoja = page.getByRole('dialog', { name: 'Registrar caballo' });
     r.camposCaballo = {};
-    for (const c of ['Chapeta ICA', 'Peso de ingreso', 'Lote', 'Peso objetivo', 'Color', 'Dueño', 'Precio del animal', 'Número o nombre']) r.camposCaballo[c] = await hoja.getByLabel(c).count();
-    await hoja.getByLabel('Número o nombre').fill(`${P} Lucero`);
+    for (const c of ['Chapeta ICA', 'Peso inicial', 'Lote', 'Peso objetivo', 'Color', 'Dueño', 'Precio del animal', 'Nombre']) r.camposCaballo[c] = await hoja.getByLabel(c).count();
+    await hoja.getByLabel('Nombre').fill(`${P} Lucero`);
     await hoja.getByLabel('Sexo').selectOption('Hembra');
     await hoja.getByLabel('Categoría').selectOption('yegua');
     await hoja.getByLabel('Dueño').fill(`${P} Juan`);
@@ -417,11 +417,11 @@ test.describe('celular 375×812', () => {
     r.desbordeCaballos = (await page.evaluate(medirDesborde)).scrollWidth;
     // No sale en la lista de ganado ni en el buscador del ganado.
     await page.goto('/#/animales');
-    await page.getByPlaceholder('Buscar por número, chapeta o dueño').fill(`${P} Lucero`);
+    await page.getByPlaceholder('Buscar por nombre, chapeta, dueño o raza').fill(`${P} Lucero`);
     r.enGanado = await page.getByRole('link', { name: new RegExp(`${P} Lucero`) }).count();
     // Búsqueda por dueño en caballos.
     await page.goto('/#/animales?ver=caballos');
-    await page.getByPlaceholder('Buscar por número, chapeta o dueño').fill(`${P} Juan`);
+    await page.getByPlaceholder('Buscar por nombre, chapeta, dueño o raza').fill(`${P} Juan`);
     r.buscaDuenoCaballos = await page.getByRole('link', { name: new RegExp(`${P} Lucero`) }).count();
     // Inicio: reses activas no cambia.
     await page.goto('/#/');
@@ -450,7 +450,7 @@ test.describe('celular 375×812', () => {
     registrar('caballos', r);
 
     expect.soft(r.camposCaballo['Chapeta ICA']).toBe(0);
-    expect.soft(r.camposCaballo['Peso de ingreso']).toBe(0);
+    expect.soft(r.camposCaballo['Peso inicial']).toBe(0);
     expect.soft(r.caballosCreados, 'doble toque en Guardar no duplica').toBe(1);
     expect.soft(r.enGanado).toBe(0);
     expect.soft(r.resesDespues).toBe(r.resesAntes);

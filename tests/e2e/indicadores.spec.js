@@ -22,7 +22,7 @@ test('R3: las pantallas se cargan por partes y funcionan al navegar', async ({ p
   });
   await iniciarSesion(page);
   for (const [ruta, titulo] of [
-    ['/#/lotes', 'Lotes'],
+    ['/#/animales', 'Animales'], // spec 022: los lotes viven en Animales
     ['/#/costos', 'Gastos'],
     ['/#/ventas', 'Ventas'],
     ['/#/indicadores', 'Indicadores del proyecto'],
@@ -30,18 +30,18 @@ test('R3: las pantallas se cargan por partes y funcionan al navegar', async ({ p
     await page.goto(ruta);
     await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible();
   }
-  expect([...scripts].some((u) => u.includes('Lotes'))).toBe(true);
+  expect([...scripts].some((u) => u.includes('Animals'))).toBe(true);
 });
 
 test('R4: la ficha del animal se imprime sin navegación ni botones', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill('0101');
+  await page.getByPlaceholder(/Buscar por nombre/).fill('0101');
   await page.getByRole('link', { name: '0101', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Imprimir ficha' })).toBeVisible();
   await page.emulateMedia({ media: 'print' });
   await expect(page.getByRole('button', { name: 'Imprimir ficha' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Registrar peso' })).toBeHidden();
-  await expect(page.getByRole('heading', { name: 'Animal N° 0101' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Animal 0101' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Costo acumulado' })).toBeVisible();
 });

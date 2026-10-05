@@ -73,7 +73,8 @@ export function parsearCSV(texto) {
   if (lineas.length < 2) return { filas: [], ignoradas: [], error: 'El archivo no tiene filas de datos debajo de los encabezados.' };
   const primera = lineas[0].contenido;
   const sep = (primera.match(/;/g) ?? []).length >= (primera.match(/,/g) ?? []).length ? ';' : ',';
-  const encabezados = partirLinea(primera, sep).map(normalizar);
+  // Spec 023 · R1: la columna del nombre puede llamarse "nombre" o "numero_interno".
+  const encabezados = partirLinea(primera, sep).map(normalizar).map((e) => (e === 'nombre' ? 'numero_interno' : e));
   const faltan = COLUMNAS.filter((c) => c.obligatoria && !encabezados.includes(c.encabezado)).map((c) => c.encabezado);
   if (faltan.length) return { filas: [], ignoradas: [], error: `Faltan columnas: ${faltan.join(', ')}. Descarga la plantilla para ver el formato.` };
   const conocidas = new Set(COLUMNAS.map((c) => c.encabezado));
@@ -143,8 +144,8 @@ export function validarFilas(filas, { hoy, lotes, existentes }) {
     const costo = leerNumero(datos.costoCompra, { entero: true });
 
     if (numero) {
-      if (existentes.numeros.has(numero.toUpperCase())) errores.push(`El número interno ${numero} ya existe en el hato.`);
-      if (vistos.numeros.has(numero.toUpperCase())) errores.push(`El número interno ${numero} se repite en la fila ${vistos.numeros.get(numero.toUpperCase())}.`);
+      if (existentes.numeros.has(numero.toUpperCase())) errores.push(`El nombre ${numero} ya existe en el hato.`);
+      if (vistos.numeros.has(numero.toUpperCase())) errores.push(`El nombre ${numero} se repite en la fila ${vistos.numeros.get(numero.toUpperCase())}.`);
       else vistos.numeros.set(numero.toUpperCase(), linea);
     }
     if (chapeta) {
@@ -161,8 +162,8 @@ export function validarFilas(filas, { hoy, lotes, existentes }) {
     if (datos.pesoIngreso && !(pesoIngreso > 0 && pesoIngreso < 1500)) errores.push('El peso de ingreso debe estar entre 0,1 y 1.499 kg.');
     if (datos.pesoObjetivo && !(pesoObjetivo > 0 && pesoObjetivo < 1500)) errores.push('El peso objetivo debe estar entre 0,1 y 1.499 kg.');
     if (pesoIngreso && pesoObjetivo && pesoObjetivo <= pesoIngreso) errores.push('El peso objetivo debe ser mayor que el de ingreso.');
-    if (numero && numero.length > 30) errores.push('El número interno puede tener hasta 30 caracteres.');
-    if (numero && !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'()#/–-]+$/.test(numero)) errores.push('El número interno tiene caracteres no permitidos.');
+    if (numero && numero.length > 30) errores.push('El nombre puede tener hasta 30 caracteres.');
+    if (numero && !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'()#/–-]+$/.test(numero)) errores.push('El nombre tiene caracteres no permitidos.');
     if (chapeta && !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'()#/–-]{1,30}$/.test(chapeta)) errores.push('La chapeta tiene caracteres no permitidos o es muy larga.');
     if (datos.costoCompra && !(Number.isInteger(costo) && costo >= 0)) errores.push('El costo de compra debe ser un número entero de pesos.');
 

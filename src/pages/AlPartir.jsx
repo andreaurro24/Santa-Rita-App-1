@@ -440,7 +440,7 @@ function AsignarForm({ contrato, animales, onClose }) {
     >
       <form id="form-asignar" onSubmit={handleSubmit} noValidate className="space-y-3">
         <p className="text-sm text-gray-600">Los animales pasan a {contrato.tenedor.fincaNombre ?? 'la finca del tenedor'} y queda el movimiento en su historial.</p>
-        <Field label="Buscar por número interno">
+        <Field label="Buscar por nombre">
           <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} inputMode="numeric" />
         </Field>
         <ul className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">

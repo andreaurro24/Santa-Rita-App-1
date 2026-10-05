@@ -104,7 +104,7 @@ test('la base de datos impide pesar dos veces el mismo animal en una jornada', a
 test('R5, R7: un peso más bajo que el de hace 14 días o más marca "Pierde peso" en la ficha y en el panel', async ({ page }) => {
   await iniciarSesion(page);
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(ANIMAL_PERDIDA);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(ANIMAL_PERDIDA);
   await page.getByRole('link', { name: ANIMAL_PERDIDA, exact: true }).click();
   await expect(page.getByText('Pierde peso')).toHaveCount(0);
   await page.getByRole('button', { name: 'Registrar peso' }).click();

@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Pencil, Trash2, Archive, BadgeDollarSign, ImageOff, ArrowLeft, Tag, RotateCcw } from 'lucide-react';
-import { useDarDeBaja, useEliminarAnimal, useGuardarFoto, useReactivar, useVenderCaballo, useVentaCaballo } from '../data/hato';
+import { Camera, Pencil, Trash2, Archive, BadgeDollarSign, ArrowLeft, Tag, RotateCcw } from 'lucide-react';
+import { useCambiarFoto, useDarDeBaja, useEliminarAnimal, useReactivar, useVenderCaballo, useVentaCaballo } from '../data/hato';
 import { useFotos } from '../data/fotos';
 import AnimalForm from './AnimalForm';
+import CampoFoto from './CampoFoto';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
@@ -16,89 +17,51 @@ import { formatFecha, hoyISO } from '../utils/format';
 import { mensajeNombre, pesosANumero } from '../utils/validar';
 import { mensajeError } from '../lib/errores';
 
-// Spec 017 · R1, R2, R6: foto del animal (tomar o elegir, reemplazar o quitar).
+// Specs 017 y 024: foto del animal en la ficha (tomar o elegir, cuadrar, reemplazar o quitar).
 export function FotoAnimal({ animal, puedeEditar }) {
   const fotos = useFotos([animal.fotoPath]);
-  const guardar = useGuardarFoto();
-  const input = useRef(null);
-  const [estado, setEstado] = useState('');
+  const cambiar = useCambiarFoto();
   const [error, setError] = useState('');
   const url = fotos.data?.get(animal.fotoPath);
 
-  async function elegir(e) {
-    const archivo = e.target.files?.[0];
-    e.target.value = '';
-    if (!archivo) return;
+  function guardar(recorte) {
     setError('');
-    try {
-      setEstado('Reduciendo la foto…');
-      const { reducirImagen, subirFoto, borrarFoto } = await import('../lib/fotos');
-      const reducida = await reducirImagen(archivo);
-      setEstado('Subiendo…');
-      const ruta = await subirFoto(animal.id, reducida);
-      try {
-        await guardar.mutateAsync({ id: animal.id, fotoPath: ruta });
-      } catch (err) {
-        await borrarFoto(ruta).catch(() => {}); // verificación Sprint 05 (B4): sin archivos huérfanos
-        throw err;
-      }
-      // La foto anterior ya no la usa nadie; si no se puede borrar solo queda un archivo sin uso.
-      if (animal.fotoPath) await borrarFoto(animal.fotoPath).catch(() => {});
-    } catch (err) {
-      setError(err.message?.includes(' ') ? err.message : mensajeError(err));
-    } finally {
-      setEstado('');
-    }
-  }
-
-  async function quitar() {
-    setError('');
-    try {
-      const anterior = animal.fotoPath;
-      await guardar.mutateAsync({ id: animal.id, fotoPath: null });
-      const { borrarFoto } = await import('../lib/fotos');
-      await borrarFoto(anterior).catch(() => {});
-    } catch (err) {
-      setError(mensajeError(err));
-    }
+    cambiar.mutate(
+      { id: animal.id, recorte, anterior: animal.fotoPath },
+      {
+        onSettled: () => recorte?.vista && URL.revokeObjectURL(recorte.vista),
+        onError: (err) => setError(err.message?.includes(' ') ? err.message : mensajeError(err)),
+      },
+    );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {animal.fotoPath ? (
         url ? (
-          <img src={url} alt={`Foto de ${animal.numeroInterno}`} className="aspect-[4/3] w-full max-w-md rounded-xl object-cover" />
+          <img src={url} alt={`Foto de ${animal.numeroInterno}`} className="aspect-square w-full max-w-sm rounded-xl object-cover" />
         ) : (
-          <div className="flex aspect-[4/3] w-full max-w-md items-center justify-center rounded-xl bg-gray-100 text-base text-gray-600">Cargando foto…</div>
+          <div className="flex aspect-square w-full max-w-sm items-center justify-center rounded-xl bg-gray-100 text-base text-gray-600">Cargando foto…</div>
         )
       ) : (
-        <div className="flex aspect-[4/3] w-full max-w-md flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white text-base text-gray-600">
-          <Camera size={28} aria-hidden="true" />
-          Sin foto
-        </div>
+        !puedeEditar && (
+          <div className="flex aspect-square w-full max-w-sm flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white text-base text-gray-600">
+            <Camera size={28} aria-hidden="true" />
+            Sin foto
+          </div>
+        )
       )}
       {puedeEditar && (
-        <div className="no-print flex flex-wrap gap-2">
-          {/* El selector de archivo va encima del botón (invisible y del mismo tamaño): un toque lo abre. */}
-          <span className="relative inline-flex">
-            <Button variante="secundario" icono={Camera} disabled={Boolean(estado)} tabIndex={-1} aria-hidden="true">
-              {estado || (animal.fotoPath ? 'Cambiar foto' : 'Agregar foto')}
-            </Button>
-            <input
-              ref={input}
-              type="file"
-              accept="image/*"
-              disabled={Boolean(estado)}
-              className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
-              aria-label="Foto del animal"
-              title={animal.fotoPath ? 'Cambiar foto' : 'Agregar foto'}
-              onChange={elegir}
+        <div className="no-print max-w-sm">
+          {cambiar.isPending ? (
+            <p role="status" className="text-base text-gray-700">Guardando la foto…</p>
+          ) : (
+            <CampoFoto
+              sinVista
+              nombre={animal.numeroInterno}
+              onRecorte={guardar}
+              onQuitar={animal.fotoPath ? () => guardar(null) : undefined}
             />
-          </span>
-          {animal.fotoPath && !estado && (
-            <Button variante="fantasma" icono={ImageOff} onClick={quitar} disabled={guardar.isPending}>
-              Quitar foto
-            </Button>
           )}
         </div>
       )}

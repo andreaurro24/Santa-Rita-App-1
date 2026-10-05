@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analizarLoteV2, estadoContratos, gastoDiarioLote, resultadoVenta, siguioRecomendacion } from './decision';
+import { analizarLoteV2, estadoContratos, gastoDiarioLote, repartirGastosVenta, resultadoVenta, siguioRecomendacion, simularVenta } from './decision';
 
 // Lote de números redondos para calcular a mano:
 // 2 novillos de 300 kg, compra $600.000 c/u, meta 350 kg, GDP 1 kg/día (270 → 300 en 30 días).
@@ -204,6 +204,32 @@ describe('resultadoVenta (spec 011 · R5, R6)', () => {
     const r = resultadoVenta([vendidos[2]], { precioKg: 8_000 });
     expect(r.liquidaciones).toEqual([{ contratoId: 'C1', animales: 1, ganancia: -400_000, gananciaAcumulada: -400_000, pagadoAntes: 0, monto: 0, saldoAFavor: 0 }]);
     expect(r.participacion).toBe(0);
+  });
+
+  it('spec 025 · R7: comisiones y transporte se reparten por valor bruto y se restan antes de la parte del tenedor', () => {
+    // Brutos 2.800.000, 2.400.000 y 1.600.000 (total 6.800.000); $680.000 de gastos = 10 % de cada uno.
+    expect(repartirGastosVenta([2_800_000, 2_400_000, 1_600_000], 680_000)).toEqual([280_000, 240_000, 160_000]);
+    const r = resultadoVenta(vendidos, { precioKg: 8_000, gastosVenta: 680_000 });
+    // C1: (2.400.000 − 1.000.000 − 240.000) + (1.600.000 − 2.000.000 − 160.000) = 600.000 → 50 % = 300.000
+    expect(r.participacion).toBe(300_000);
+    expect(r.gastosVenta).toBe(680_000);
+    expect(r.margenNeto).toBe(6_800_000 - 4_500_000 - 680_000 - 300_000);
+    expect(r.margenPct).toBeCloseTo((1_320_000 / 6_800_000) * 100, 6);
+  });
+
+  it('spec 025 · R7: la liquidación acumulada usa los gastos guardados en cada venta', () => {
+    const ventas = [{ id: 'v1', creado: '2026-10-01T10:00:00Z', precioKg: 8_000, destarePct: 0, gastosVenta: 240_000, animales: [vendidos[1]] }];
+    // C1: 2.400.000 − 1.000.000 − 240.000 = 1.160.000 → pagado 580.000
+    expect(estadoContratos(ventas).get('C1')).toEqual({ ganancia: 1_160_000, parte: 580_000, pagado: 580_000 });
+  });
+
+  it('spec 025 · R2: el simulador da cabezas, peso total, beneficio y margen; también negativo', () => {
+    const r = simularVenta({ animales: vendidos, precioKg: 8_000, gastosVenta: 0 });
+    expect(r).toMatchObject({ cabezas: 3, pesoTotal: 850, ingreso: 6_800_000, margenNeto: 1_800_000 });
+    const malo = simularVenta({ animales: [vendidos[2]], precioKg: 8_000, gastosVenta: 100_000 });
+    expect(malo.margenNeto).toBe(1_600_000 - 2_000_000 - 100_000);
+    expect(malo.margenPct).toBeLessThan(0);
+    expect(simularVenta({ animales: [], precioKg: 8_000 }).margenPct).toBeNull();
   });
 
   it('el destare reduce el ingreso', () => {

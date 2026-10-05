@@ -137,9 +137,9 @@ async function registrar(nombre, datos) {
 
 async function abrirFicha(page) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(ANIMAL);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(ANIMAL);
   await page.getByRole('link', { name: new RegExp(`^${ANIMAL}`) }).first().click();
-  await expect(page.getByRole('heading', { name: `Animal N° ${ANIMAL}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: `Animal ${ANIMAL}` })).toBeVisible();
 }
 
 // Escenarios: pantalla o formulario abierto. `preparar` deja la página en ese estado.

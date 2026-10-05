@@ -243,12 +243,12 @@ test.describe('celular 375×812', () => {
     // Ficha: U2 y U3 muestran "No encontrado"; U1 dos visitas el mismo día (¿llaves repetidas?).
     const erroresAntesFicha = errores.length;
     await page.goto(`/#/animales/${U[1].id}`);
-    await expect(page.getByRole('heading', { name: `Animal N° ${U[1].numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${U[1].numero}` })).toBeVisible();
     await expect(page.getByText('No encontrado', { exact: true }).first()).toBeVisible({ timeout: 10_000 }).catch(() => {});
     r.fichaU2 = await page.getByText('No encontrado', { exact: true }).count();
     await page.screenshot({ path: `${DIR}/03-ficha-no-encontrado.png`, fullPage: true });
     await page.goto(`/#/animales/${U[2].id}`);
-    await expect(page.getByRole('heading', { name: `Animal N° ${U[2].numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${U[2].numero}` })).toBeVisible();
     await expect(page.getByText('No encontrado', { exact: true }).first()).toBeVisible({ timeout: 10_000 }).catch(() => {});
     r.fichaU3 = await page.getByText('No encontrado', { exact: true }).count();
     await page.waitForTimeout(500);
@@ -256,7 +256,7 @@ test.describe('celular 375×812', () => {
 
     // Devolver U1 a Santa Rita desde la ficha: deja de estar "Al partir".
     await page.goto(`/#/animales/${U[0].id}`);
-    await expect(page.getByRole('heading', { name: `Animal N° ${U[0].numero}` })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Animal ${U[0].numero}` })).toBeVisible();
     await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ubicación' }) }).getByRole('button', { name: 'Mover' }).tap();
     hoja = page.getByRole('dialog', { name: `Mover ${U[0].numero}` });
     await hoja.getByLabel('Finca de destino').selectOption({ label: 'Finca Santa Rita' });

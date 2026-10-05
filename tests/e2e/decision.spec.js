@@ -98,17 +98,19 @@ test('011 R1–R6: vender 2 animales de un lote, ver el resultado, la comparaci�
   const { lote } = await ids(supabase);
   await iniciarSesion(page);
   await page.goto(`/#/ventas/nueva?lote=${lote['LOTE-2025-B']}`);
-  await expect(page.getByRole('heading', { name: 'Registrar venta' })).toBeVisible();
-  const casillas = page.getByRole('checkbox', { name: /^Vender / });
+  await expect(page.getByRole('heading', { name: 'Simulador de venta' })).toBeVisible();
+  // Spec 025 · R1: el lote de la URL viene marcado; se abren sus animales para dejar solo 2.
+  await page.getByRole('button', { name: /^Elegir animales/ }).first().click();
+  const casillas = page.getByRole('checkbox', { name: /^Vender (?!el lote)/ });
   const total = await casillas.count();
   const vendidos = [];
   for (let i = 0; i < total; i++) {
     if (i < 2) vendidos.push((await casillas.nth(i).getAttribute('aria-label')).replace('Vender ', ''));
     else await casillas.nth(i).uncheck();
   }
-  await expect(page.getByRole('heading', { name: `Animales (2 de ${total})` })).toBeVisible();
-  // Spec 019 · R2: asistente en 3 pasos; cada paso valida lo suyo.
-  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(page.getByText('2 cabezas', { exact: true })).toBeVisible();
+  // Spec 025 · R5: simular → datos → confirmar; cada paso valida lo suyo.
+  await page.getByRole('button', { name: 'Confirmar venta' }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await expect(page.getByRole('alert')).toHaveText('Escribe el nombre del comprador.');
   await page.getByLabel('Comprador').fill(COMPRADOR);

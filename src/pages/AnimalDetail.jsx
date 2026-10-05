@@ -7,7 +7,7 @@ import { useVisitasAnimal } from '../data/alPartir';
 import { useRepartoCostos } from '../data/costos';
 import { useLotes } from '../data/lotes';
 import { FotoAnimal, AccionesAnimal, FichaCaballo } from '../components/FichaAcciones';
-import { duenosExistentes, etiquetaCategoria } from '../domain/animales';
+import { duenosExistentes, etiquetaCategoria, textoNacimiento } from '../domain/animales';
 import { CATEGORIAS_COSTO, costoAcumuladoAnimal } from '../domain/costos';
 import MoverAnimales from '../components/MoverAnimales';
 import { ConDatos } from '../components/EstadoCarga';
@@ -75,7 +75,7 @@ function FichaAnimal({ animales, caballos, lotes, reparto }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
           <h1 className="text-gray-900">
-            <span className="sr-only">Animal N° </span>
+            <span className="sr-only">Animal </span>
             <Chapeta numero={animal.numeroInterno} tamano="lg" />
           </h1>
           <p className="text-base text-gray-600">
@@ -126,11 +126,17 @@ function FichaAnimal({ animales, caballos, lotes, reparto }) {
             <Row label="Chapeta ICA / Sinigán" value={animal.chapetaICA} />
             <Row label="Sexo" value={animal.sexo} />
             <Row label="Categoría" value={etiquetaCategoria(animal.categoria)} />
+            {/* Spec 023 · R2/R3: raza y nacimiento (mes y año, o solo el año). */}
+            {animal.raza && <Row label="Raza" value={animal.raza} />}
+            {animal.fechaNacimiento && <Row label="Nacimiento" value={textoNacimiento(animal.fechaNacimiento, animal.nacimientoMesConocido, hoyISO())} />}
             <Row label="Dueño" value={animal.dueno ?? '—'} />
             {animal.color && <Row label="Color" value={animal.color} />}
             <Row label="Origen" value={animal.origen} />
             <Row label="Fecha de ingreso" value={formatFecha(animal.fechaIngreso)} />
-            <Row label="Peso de ingreso" value={`${formatKg(animal.pesoIngreso)}`} />
+            {/* Spec 023 · R4: los tres pesos. */}
+            <Row label="Peso inicial" value={`${formatKg(animal.pesoIngreso)}`} />
+            <Row label="Peso actual" value={formatKg(pesoActual(animal))} />
+            <Row label="Peso objetivo" value={animal.pesoObjetivo != null ? formatKg(animal.pesoObjetivo) : 'Sin objetivo'} />
             {animal.costoCompra != null && <Row label="Costo de compra" value={`$${formatCOP(animal.costoCompra)}`} />}
             {animal.precioCompraKg != null && <Row label="Precio de compra por kilo" value={`$${formatCOP(animal.precioCompraKg)}`} />}
             <Row

@@ -8,6 +8,10 @@ const ENFOCABLES = 'a[href], button:not([disabled]), input:not([disabled]), sele
 // - Escape lo cierra;
 // - al cerrar, el foco vuelve al control que lo abrió;
 // - el fondo no se desplaza mientras está abierto.
+// Spec 024: puede haber un diálogo encima de otro (el recortador de fotos sobre el formulario);
+// solo el de arriba responde al teclado.
+const abiertos = [];
+
 export default function useDialogo(onClose) {
   const ref = useRef(null);
   const onCloseRef = useRef(onClose);
@@ -32,7 +36,10 @@ export default function useDialogo(onClose) {
       primero.focus();
     }
 
+    abiertos.push(dialogo);
+
     function onKey(e) {
+      if (abiertos.at(-1) !== dialogo) return;
       if (e.key === 'Escape') {
         e.stopPropagation();
         onCloseRef.current();
@@ -55,6 +62,7 @@ export default function useDialogo(onClose) {
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
+      abiertos.splice(abiertos.lastIndexOf(dialogo), 1);
       document.body.style.overflow = overflow;
       if (anterior instanceof HTMLElement && anterior.isConnected) anterior.focus();
     };

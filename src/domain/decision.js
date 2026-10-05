@@ -51,12 +51,23 @@ export function partesTenedores(items, previo = new Map()) {
   return porContrato;
 }
 
-const gananciasVenta = (animales, { precioKg, destarePct = 0 }) =>
-  animales.map((a) => ({
+// Spec 025 · R7: las comisiones y el transporte de la venta se reparten entre los animales en
+// proporción a su valor bruto y se restan ANTES de calcular la parte de los tenedores (D8).
+export function repartirGastosVenta(brutos, gastosVenta = 0) {
+  const total = brutos.reduce((s, b) => s + b, 0);
+  if (!(gastosVenta > 0) || !brutos.length) return brutos.map(() => 0);
+  return brutos.map((b) => (total > 0 ? (gastosVenta * b) / total : gastosVenta / brutos.length));
+}
+
+const gananciasVenta = (animales, { precioKg, destarePct = 0, gastosVenta = 0 }) => {
+  const brutos = animales.map((a) => a.pesoKg * (1 - destarePct / 100) * precioKg);
+  const gastos = repartirGastosVenta(brutos, gastosVenta);
+  return animales.map((a, i) => ({
     contratoId: a.contratoId,
     porcentaje: a.porcentajeTenedor,
-    ganancia: a.pesoKg * (1 - destarePct / 100) * precioKg - a.costoCop,
+    ganancia: brutos[i] - a.costoCop - gastos[i],
   }));
+};
 
 // 011 R5: las ventas se liquidan en el ORDEN EN QUE SE REGISTRARON (created_at), no por su fecha.
 // Así una liquidación ya pagada nunca cambia: una venta registrada después con fecha pasada se
@@ -242,21 +253,43 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
 // Spec 011 · R5, R6: resultado real de una venta y liquidación de cada contrato "Al partir".
 // animales: [{ pesoKg, costoCop, contratoId, porcentajeTenedor }] (copias guardadas en la venta).
 // previo: estado de los contratos por las ventas anteriores (estadoContratos), D8 acumulado.
-export function resultadoVenta(animales, { precioKg, destarePct = 0 }, previo = new Map()) {
+// Spec 025 · R2/R7: `gastosVenta` son las comisiones y el transporte de toda la venta.
+export function resultadoVenta(animales, { precioKg, destarePct = 0, gastosVenta = 0 }, previo = new Map()) {
+  let pesoTotal = 0;
   let pesoVendible = 0;
   let ingreso = 0;
   let costo = 0;
   for (const a of animales) {
     const vendibleKg = a.pesoKg * (1 - destarePct / 100);
+    pesoTotal += a.pesoKg;
     pesoVendible += vendibleKg;
     ingreso += vendibleKg * precioKg;
     costo += a.costoCop;
   }
-  const liquidaciones = [...partesTenedores(gananciasVenta(animales, { precioKg, destarePct }), previo).values()].map(
+  const gastos = gastosVenta > 0 ? gastosVenta : 0;
+  const liquidaciones = [...partesTenedores(gananciasVenta(animales, { precioKg, destarePct, gastosVenta: gastos }), previo).values()].map(
     ({ contratoId, animales: n, ganancia, gananciaAcumulada, pagadoAntes, monto, saldoAFavor }) => ({ contratoId, animales: n, ganancia, gananciaAcumulada, pagadoAntes, monto, saldoAFavor }),
   );
   const participacion = liquidaciones.reduce((s, l) => s + l.monto, 0);
-  return { pesoVendible, ingreso, costo, participacion, margenNeto: ingreso - costo - participacion, liquidaciones };
+  const margenNeto = ingreso - costo - gastos - participacion;
+  return {
+    cabezas: animales.length,
+    pesoTotal,
+    pesoVendible,
+    ingreso,
+    costo,
+    gastosVenta: gastos,
+    participacion,
+    margenNeto,
+    // 025 · R2: margen sobre el valor bruto, como en la referencia.
+    margenPct: ingreso > 0 ? (margenNeto / ingreso) * 100 : null,
+    liquidaciones,
+  };
+}
+
+// Spec 025 · R2: el panel del simulador. `animales`: [{ pesoKg, costoCop, contratoId, porcentajeTenedor }].
+export function simularVenta({ animales, precioKg, destarePct = 0, gastosVenta = 0, previo = new Map() }) {
+  return resultadoVenta(animales, { precioKg: precioKg || 0, destarePct, gastosVenta }, previo);
 }
 
 // R6: se siguió la recomendación si el sistema decía vender (o vender antes) y se vendió.

@@ -1,6 +1,6 @@
 // El número interno como la chapeta amarilla que lleva el animal en la oreja: la perforación
 // arriba a la izquierda y el número en Archivo negrita. Es el único adorno fuerte de la app.
-// El texto accesible es solo el número: el contexto ("Animal N°", la columna) ya lo nombra.
+// El texto accesible es solo el número: el contexto ("Animal", la columna) ya lo nombra.
 const TAMANOS = {
   sm: 'min-w-12 pl-5 pr-2 py-0.5 text-sm',
   md: 'min-w-16 pl-6 pr-2.5 py-1 text-lg',

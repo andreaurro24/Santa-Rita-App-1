@@ -29,7 +29,7 @@ test('R1–R4: vista previa con errores por fila e importación de las válidas'
   await expect(page.getByText('2 con errores')).toBeVisible();
   await expect(page.getByText('No existe el lote NO-EXISTE.')).toBeVisible();
   await expect(page.getByText(/La fecha "31\/02\/2026" no es válida/)).toBeVisible();
-  await expect(page.getByText('El número interno 0101 ya existe en el hato.')).toBeVisible();
+  await expect(page.getByText('El nombre 0101 ya existe en el hato.')).toBeVisible();
   await expect(page.getByText(/Se omitirán las 2 filas con errores/)).toBeVisible();
 
   await page.getByRole('button', { name: 'Importar 2 animales' }).click();

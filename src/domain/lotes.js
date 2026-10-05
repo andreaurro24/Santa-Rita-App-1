@@ -10,16 +10,17 @@ function sumarDias(iso, dias) {
 
 const redondear1 = (n) => Math.round(n * 10) / 10;
 
-// R2–R4. `meta` es la meta pactada del lote; si no tiene, el promedio de las metas de sus animales.
+// R2–R4. Spec 022 · R6: la meta del lote es el promedio de los pesos objetivo de sus animales (el
+// lote ya no tiene meta propia; `peso_meta_kg` queda en la base de datos sin usar).
 export function resumenLote(lote, hoy) {
   const activos = (lote.animales ?? []).filter((a) => a.estado === 'Activo');
   if (!activos.length) {
-    return { nActivos: 0, pesoPromedio: null, meta: lote.pesoMeta ?? null, avancePct: null, gdp: null, proyeccion: { tipo: 'sin_animales' } };
+    return { nActivos: 0, pesoPromedio: null, meta: null, avancePct: null, gdp: null, proyeccion: { tipo: 'sin_animales' } };
   }
   const pesoPromedio = redondear1(activos.reduce((s, a) => s + pesoActual(a), 0) / activos.length);
   // Spec 016 · R6: el peso objetivo es opcional; la meta sale de los animales que lo tienen.
   const conObjetivo = activos.filter((a) => a.pesoObjetivo > 0);
-  const meta = lote.pesoMeta ?? (conObjetivo.length ? redondear1(conObjetivo.reduce((s, a) => s + a.pesoObjetivo, 0) / conObjetivo.length) : null);
+  const meta = conObjetivo.length ? redondear1(conObjetivo.reduce((s, a) => s + a.pesoObjetivo, 0) / conObjetivo.length) : null;
   const avancePct = meta ? redondear1((pesoPromedio / meta) * 100) : null;
   const gdp = gdpLote(activos);
 
@@ -66,3 +67,11 @@ export function tenedoresDelLote(animales) {
   for (const a of animales ?? []) if (a.estado === 'Activo' && a.esquema === 'Al partir' && a.tenedor) nombres.add(a.tenedor.split(' – ')[0]);
   return [...nombres];
 }
+
+// Estados del lote con su etiqueta y el tono de su insignia.
+export const ESTADO_LOTE = {
+  activo: { label: 'Activo', tono: 'potrero' },
+  listo: { label: 'Listo para vender', tono: 'ok' },
+  vendido: { label: 'Vendido', tono: 'neutro' },
+  cerrado: { label: 'Cerrado', tono: 'neutro' },
+};

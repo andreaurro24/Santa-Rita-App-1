@@ -9,9 +9,9 @@ const PESO_ES = '355,5'; // así se muestra (es-CO, spec 012)
 
 async function abrirAnimal(page, numero) {
   await page.goto('/#/animales');
-  await page.getByPlaceholder(/Buscar por número/).fill(numero);
+  await page.getByPlaceholder(/Buscar por nombre/).fill(numero);
   await page.getByRole('link', { name: numero, exact: true }).click();
-  await expect(page.getByRole('heading', { name: `Animal N° ${numero}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: `Animal ${numero}` })).toBeVisible();
 }
 
 test.afterAll(async () => {
@@ -66,12 +66,12 @@ test('R5: no se puede registrar un animal con un número interno que ya existe',
   await page.goto('/#/animales');
   await page.getByRole('button', { name: 'Registrar animal' }).click();
   const dialogo = page.getByRole('dialog');
-  await dialogo.getByLabel(/Número interno/).fill('0101');
+  await dialogo.getByLabel(/^Nombre/).fill('0101');
   await dialogo.getByLabel(/Chapeta ICA/).fill('COL-E2E-DUPLICADO');
-  await dialogo.getByLabel(/Peso de ingreso/).fill('200');
+  await dialogo.getByLabel(/Peso inicial/).fill('200');
   await dialogo.getByLabel(/Peso objetivo/).fill('350');
   await dialogo.getByRole('button', { name: 'Guardar' }).click();
-  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con ese número interno/);
+  await expect(dialogo.getByRole('alert')).toHaveText(/Ya existe un animal con ese nombre/);
 
   const supabase = await clientePrueba();
   const { count } = await supabase.from('animales').select('id', { count: 'exact', head: true }).eq('chapeta_ica', 'COL-E2E-DUPLICADO');

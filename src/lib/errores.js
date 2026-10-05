@@ -4,7 +4,7 @@ export function mensajeError(error) {
   const detalle = `${error.message ?? ''} ${error.details ?? ''}`;
 
   if (error.code === '23505') {
-    if (detalle.includes('numero_interno')) return 'Ya existe un animal con ese número interno. Revisa el número o busca el animal en el hato.';
+    if (detalle.includes('numero_interno')) return 'Ya existe un animal con ese nombre. Usa otro número o busca el animal en el hato.';
     if (detalle.includes('chapeta_ica')) return 'Ya existe un animal con esa chapeta ICA. Revisa la chapeta o busca el animal en el hato.';
     if (detalle.includes('lotes_codigo_key')) return 'Ya existe un lote con ese código. Usa otro código.';
     if (detalle.includes('potreros_finca_id_nombre_key') || detalle.includes('potreros_nombre_normalizado_key')) return 'Esa finca ya tiene un potrero con ese nombre.';
