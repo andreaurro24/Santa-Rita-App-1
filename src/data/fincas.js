@@ -100,27 +100,23 @@ export function useMovimientos(animalId) {
   });
 }
 
-// Spec 020 · R1: crear o editar una finca a nombre de una persona. Si es de un tenedor, se enlaza un
-// tenedor ya registrado en "Al partir" (tenedorId) o se crea uno nuevo (tenedorNuevo).
+// Spec 020 · R1: crear o editar una finca a nombre de una persona y enlazar su tenedor, todo en una
+// transacción (función SQL guardar_finca; verificación Sprint 05, M2 y M3).
 export function useGuardarFinca() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, nombre, tipo, municipio, propietario, tenedorId, tenedorNuevo }) => {
-      const fila = { nombre: nombre.trim(), tipo, municipio: municipio?.trim() || null, propietario: propietario?.trim() || null };
-      const { data, error } = id
-        ? await supabase.from('fincas').update(fila).eq('id', id).select('id').single()
-        : await supabase.from('fincas').insert(fila).select('id').single();
+      const { data, error } = await supabase.rpc('guardar_finca', {
+        finca: id ?? null,
+        nombre: nombre.trim(),
+        tipo,
+        municipio: municipio?.trim() || null,
+        propietario: propietario?.trim() || null,
+        tenedor: tipo === 'tenedor' && !tenedorNuevo ? tenedorId || null : null,
+        tenedor_nuevo: tipo === 'tenedor' ? tenedorNuevo?.trim() || null : null,
+      });
       if (error) throw error;
-      if (tipo === 'tenedor') {
-        if (tenedorNuevo?.trim()) {
-          const r = await supabase.from('tenedores').insert({ nombre: tenedorNuevo.trim(), finca_id: data.id });
-          if (r.error) throw r.error;
-        } else if (tenedorId) {
-          const r = await supabase.from('tenedores').update({ finca_id: data.id }).eq('id', tenedorId);
-          if (r.error) throw r.error;
-        }
-      }
-      return data.id;
+      return data;
     },
     onSuccess: () => ['fincas', 'tenedores', 'contratos', 'contratos-vigentes', 'hato'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
   });

@@ -216,8 +216,11 @@ export function analizarLoteV2({ animales, costos, reparto = null, precioKg, des
     recomendacion = 'VENDER';
     // R5 (decisión del 2026-09-28, DT-03-9): se vende aunque no se haya llegado a la meta pactada,
     // porque esperar ya no sube el margen; se dice explícitamente que la meta no se alcanzó.
-    razones.unshift(`Esperar ya no paga: lo que cuesta mantener el lote supera lo que gana en peso. El margen de hoy es ${pesos(hoyR.margenNeto)}.`);
-    if (Number.isFinite(avancePct)) razones.push(`El lote no llegó a la meta pactada (va en el ${Math.round(avancePct)} %): confirma con el comprador que acepta ese peso.`);
+    // Verificación Sprint 05 (B6): el aviso va en la frase principal, que se ve sin abrir detalles.
+    razones.unshift(
+      `Esperar ya no paga: lo que cuesta mantener el lote supera lo que gana en peso. El margen de hoy es ${pesos(hoyR.margenNeto)}.` +
+        (Number.isFinite(avancePct) ? ` El lote no llegó a la meta pactada (va en el ${Math.round(avancePct)} %): confirma con el comprador que acepta ese peso.` : ''),
+    );
   }
 
   return {

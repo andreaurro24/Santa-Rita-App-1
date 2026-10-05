@@ -43,10 +43,15 @@ demostración (ver `docs/retroalimentacion.md`).
 ## 2. Bitácora
 | Fecha | Spec / tarea | Resultado | Notas y desvíos |
 |---|---|---|---|
+| 2026-10-04 | 014 · T1–T3 | Bitácora del cliente, guardas en `scripts/proyectos.mjs` (seed y Playwright), DEPLOY y README | **Desvío:** no se pudo crear el proyecto de pruebas (límite de 2 proyectos gratis por miembro; sin Docker). Se verifica en producción antes de limpiarla, con la excepción temporal `E2E_PERMITIR_PRODUCCION=si`, que se quita en T4 |
+| 2026-10-04 | 014 · limpieza parcial | Borrados 1 animal, 1 pesaje, 1 gasto y 1 lote de la demostración del equipo ("DROGA Xxx bla bla", chapeta 111111) | Alteraban las pruebas (lote de 31 en vez de 30); parte de la limpieza aprobada |
+| 2026-10-04 | 015–021 | Migración 1700; menú de 4, Inicio con accesos, letra de 18 px; animales v2 y caballos; fotos; CampoPesos y nombres válidos; asistente de venta en 3 pasos; fincas, lotes y gastos de finca; precios por zona | Paquete inicial 434 kB. Los rangos iniciales de precio son estimados "por validar" |
+| 2026-10-04 | Correcciones r1 | A1 (doble toque guardaba la venta), A2 (color del ganado), M1 (montos alterados en silencio), M2/M3 (finca y tenedor: atómico con `guardar_finca`, sin quitarle la finca a otro tenedor), M4 (Pesaje vacío), M6 (caballo sin lote ni pesajes en la base), B1–B4, B6–B9; migración 1800 | B5 (miniaturas con la foto completa) queda como deuda: la transformación de imágenes de Supabase es de pago |
 
 ## 3. Verificación
 | Spec | Ronda | Veredicto | Reporte |
 |---|---|---|---|
+| 014–021 | 1 | 015, 017, 018, 020, 021 APROBADO; 016 y 019 RECHAZADO (A2, A1); 014 RECHAZADO (README) y R1 BLOQUEADO hasta T4 | [sprint05-2026-10-04](../reports/verificacion/sprint05-2026-10-04.md) |
 
 ## 4. Cierre
 

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Pencil, Trash2, Archive, BadgeDollarSign, ImageOff, ArrowLeft, Tag } from 'lucide-react';
-import { useDarDeBaja, useEliminarAnimal, useGuardarFoto, useVenderCaballo, useVentaCaballo } from '../data/hato';
+import { Camera, Pencil, Trash2, Archive, BadgeDollarSign, ImageOff, ArrowLeft, Tag, RotateCcw } from 'lucide-react';
+import { useDarDeBaja, useEliminarAnimal, useGuardarFoto, useReactivar, useVenderCaballo, useVentaCaballo } from '../data/hato';
 import { useFotos } from '../data/fotos';
 import AnimalForm from './AnimalForm';
 import Card from './ui/Card';
@@ -36,7 +36,13 @@ export function FotoAnimal({ animal, puedeEditar }) {
       const reducida = await reducirImagen(archivo);
       setEstado('Subiendo…');
       const ruta = await subirFoto(animal.id, reducida);
-      await guardar.mutateAsync({ id: animal.id, fotoPath: ruta });
+      try {
+        await guardar.mutateAsync({ id: animal.id, fotoPath: ruta });
+      } catch (err) {
+        await borrarFoto(ruta).catch(() => {}); // verificación Sprint 05 (B4): sin archivos huérfanos
+        throw err;
+      }
+      // La foto anterior ya no la usa nadie; si no se puede borrar solo queda un archivo sin uso.
       if (animal.fotoPath) await borrarFoto(animal.fotoPath).catch(() => {});
     } catch (err) {
       setError(err.message?.includes(' ') ? err.message : mensajeError(err));
@@ -92,6 +98,7 @@ export function FotoAnimal({ animal, puedeEditar }) {
 // Spec 016 · R1–R3 y spec 019 · R1: acciones sobre el animal.
 export function AccionesAnimal({ animal, lotes, duenos }) {
   const [abierto, setAbierto] = useState(null);
+  const reactivar = useReactivar();
   const activo = animal.estado === 'Activo';
   const esCaballo = animal.especie === 'equino';
   const vendible = activo && !esCaballo && !esVientre(animal.categoria) && animal.loteId;
@@ -117,6 +124,11 @@ export function AccionesAnimal({ animal, lotes, duenos }) {
       {activo && (
         <Button variante="secundario" icono={Archive} onClick={() => setAbierto('baja')}>
           Dar de baja
+        </Button>
+      )}
+      {animal.estado === 'Perdido' && (
+        <Button variante="secundario" icono={RotateCcw} disabled={reactivar.isPending} onClick={() => reactivar.mutate({ id: animal.id })}>
+          Apareció: reactivar
         </Button>
       )}
       <Button variante="fantasma" icono={Trash2} onClick={() => setAbierto('eliminar')}>

@@ -10,23 +10,23 @@ el contrato de cada funcionalidad, en [specs/](specs/README.md).
 
 ## Qué hace
 
-- **Hato:** ficha de cada animal (hierro, número interno, chapeta ICA), altas, importación del
-  censo desde CSV y alerta de pérdida de peso.
+- **Animales:** ficha de cada animal (hierro, número interno, chapeta ICA, dueño, foto), altas,
+  edición, bajas, importación del censo desde CSV y alerta de pérdida de peso. También caballos.
 - **Pesaje en el corral:** jornada por lote desde el celular, con ganancia diaria de peso (GDP)
   por animal y por lote.
 - **Lotes y ubicación:** ciclos de ceba con la fecha proyectada para llegar a la meta, fincas,
   potreros y movimientos con su historial.
 - **"Al partir":** tenedores, contratos, asignación de animales y visitas de verificación.
-- **Costos:** gastos por lote o por animal, repartidos según el lote en que estaba cada animal
-  en cada fecha.
+- **Gastos:** de la finca entera, o por lote o por animal, repartidos según el lote en que estaba
+  cada animal en cada fecha.
 - **Decisión de venta:** punto de equilibrio real, margen neto para Santa Rita (descontando a
-  los tenedores), escenarios de vender hoy o en 2, 4 u 8 semanas, pasto y clima. Incluye un
+  los tenedores), escenarios de vender hoy o en 2, 4 u 8 semanas y estado del pasto. Incluye un
   reporte imprimible.
 - **Ventas:** registro de la venta real, comparación con la recomendación y liquidación de los
   tenedores.
 - **Indicadores:** los KPI del proyecto frente a la línea base AS-IS.
-- **Datos externos:** clima (Open-Meteo) y TRM (datos.gov.co) en vivo; precio del kilo en pie
-  registrado desde los boletines de Fedegán/SIPSA.
+- **Precio de la zona:** rango del kilo en pie para Cesar y La Guajira por categoría (ternero,
+  ternera, levante, gordo y vaca), actualizable desde la app. Sin clima ni TRM desde el Sprint 05.
 
 ## Stack
 
@@ -37,13 +37,16 @@ Supabase (Auth, Postgres con RLS y funciones SQL) · Vitest · Playwright.
 
 1. `npm install`.
 2. Copia `.env.example` a `.env.local` con la URL y la llave **publicable** del proyecto
-   Supabase. Para las pruebas, crea también `.env.test` con el usuario de prueba.
+   Supabase de **pruebas**. Crea también `.env.test` con el usuario de prueba y
+   `PROYECTO_PRUEBAS=<ref>`. Producción (`eiszvbwwpqcqognkcfew`) no se usa para desarrollar: ver
+   [DEPLOY.md](DEPLOY.md).
 3. Aplica las migraciones de `supabase/migrations/` en orden (SQL Editor o Supabase CLI) y crea
    un perfil para cada usuario:
    ```sql
    insert into public.perfiles (id, nombre, rol) values ('<uuid del usuario en Auth>', 'Miguel Ángel Lacouture', 'dueno');
    ```
-4. `npm run db:seed` carga los datos de ejemplo (140 reses) en el proyecto de **desarrollo**.
+4. `npm run db:seed` carga los datos de ejemplo (140 reses) en el proyecto de **pruebas**. Se
+   niega a correr contra producción (`scripts/proyectos.mjs`), igual que `npm run test:e2e`.
 5. `npm run dev` abre la app en http://localhost:5173.
 
 | Comando | Qué hace |

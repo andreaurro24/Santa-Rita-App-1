@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Plus, MapPin, Pencil } from 'lucide-react';
 import { useFincas, useCrearPotrero, useGuardarFinca } from '../data/fincas';
 import { useHato } from '../data/hato';
@@ -146,6 +146,9 @@ function PotreroForm({ finca, onClose }) {
 function FincaForm({ finca, onClose }) {
   const guardar = useGuardarFinca();
   const tenedores = useTenedores();
+  const enviando = useRef(false); // M3: un doble toque no envía dos veces
+  // M2: solo se ofrecen tenedores sin finca (o el de esta finca); a otro no se le quita la suya.
+  const libres = tenedores.data?.filter((t) => !t.fincaId || t.fincaId === finca?.id) ?? [];
   const enlazado = finca?.tenedores?.[0];
   const [form, setForm] = useState({
     nombre: finca?.nombre ?? '',
@@ -168,6 +171,8 @@ function FincaForm({ finca, onClose }) {
       (form.tipo === 'tenedor' && nuevoTenedor ? mensajeNombre(form.tenedorNuevo, 'el nombre del tenedor') : '');
     if (problema) return setError(problema);
     if (form.tipo === 'tenedor' && !form.tenedorId) return setError('Elige el tenedor o crea uno nuevo.');
+    if (enviando.current) return;
+    enviando.current = true;
     const tenedor = tenedores.data?.find((t) => t.id === form.tenedorId);
     guardar.mutate(
       {
@@ -179,7 +184,13 @@ function FincaForm({ finca, onClose }) {
         tenedorId: nuevoTenedor ? null : form.tenedorId,
         tenedorNuevo: nuevoTenedor ? form.tenedorNuevo : null,
       },
-      { onSuccess: onClose, onError: (err) => setError(mensajeError(err)) },
+      {
+        onSuccess: onClose,
+        onError: (err) => setError(mensajeError(err)),
+        onSettled: () => {
+          enviando.current = false;
+        },
+      },
     );
   }
 
@@ -217,10 +228,10 @@ function FincaForm({ finca, onClose }) {
           </Field>
         ) : (
           <>
-            <Field label="Tenedor" required className="sm:col-span-2">
+            <Field label="Tenedor" required className="sm:col-span-2" ayuda="Aparecen los tenedores sin finca. Si ya tiene una, edita esa finca.">
               <Select value={form.tenedorId} onChange={(e) => set('tenedorId', e.target.value)}>
                 <option value="">{tenedores.isPending ? 'Cargando tenedores…' : 'Elige el tenedor'}</option>
-                {tenedores.data?.map((t) => (
+                {libres.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.nombre}
                   </option>

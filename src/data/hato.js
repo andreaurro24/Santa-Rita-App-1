@@ -194,6 +194,14 @@ export function useDarDeBaja() {
   });
 }
 
+// Verificación Sprint 05 (B8): un animal perdido que aparece vuelve a estar activo.
+export function useReactivar() {
+  return useMutacionHato(async ({ id }) => {
+    const { error } = await supabase.from('animales').update({ estado: 'activo', fecha_baja: null, motivo_baja: null }).eq('id', id);
+    if (error) throw error;
+  });
+}
+
 // Spec 016 · R2: eliminar un animal registrado por error. La base de datos lo impide (23503) si
 // ya está en una venta. La foto se borra después; si falla, solo queda un archivo huérfano.
 export function useEliminarAnimal() {

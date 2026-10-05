@@ -23,8 +23,27 @@ export function PesajeInicio() {
 }
 
 function InicioContenido({ lotes }) {
-  const navigate = useNavigate();
   const conActivos = lotes.filter((l) => l.animales.some((a) => a.estado === 'Activo'));
+  // Verificación Sprint 05 (M4): con la base vacía no hay lote que pesar; la consulta de jornadas
+  // quedaría deshabilitada y la pantalla, cargando para siempre.
+  if (!conActivos.length) {
+    return (
+      <div className="space-y-5">
+        <h1 className="text-3xl font-bold text-gray-900">Jornada de pesaje</h1>
+        <EmptyState titulo="Todavía no hay animales para pesar">
+          Registra animales en un lote y vuelve aquí para pesarlos.{' '}
+          <Link to="/animales?nuevo=1" className="font-semibold text-brand-700 underline">
+            Registrar animal
+          </Link>
+        </EmptyState>
+      </div>
+    );
+  }
+  return <InicioConLotes conActivos={conActivos} />;
+}
+
+function InicioConLotes({ conActivos }) {
+  const navigate = useNavigate();
   const [loteId, setLoteId] = useState(conActivos[0]?.id ?? '');
   const [fecha, setFecha] = useState(hoyISO());
   const [error, setError] = useState('');

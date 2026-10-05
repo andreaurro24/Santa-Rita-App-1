@@ -30,3 +30,14 @@ export function numeroAPesos(n) {
   const digitos = String(n).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
   return digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
+
+// Verificación Sprint 05 (M1): lo que no es un monto entero (centavos "12,50", decimales
+// "1500000.5", signos "-1", letras "1e6") no se convierte en silencio: se rechaza con un aviso
+// y el valor queda como estaba.
+export function entradaPesosInvalida(nuevo, anterior) {
+  if (/[^\d.\s$]/.test(nuevo)) return true; // coma, signo, letras
+  const limpio = nuevo.replace(/[\s$]/g, '');
+  const borrando = limpio.replace(/\D/g, '').length < String(anterior ?? '').replace(/\D/g, '').length;
+  // Un punto seguido de 0 a 2 dígitos al final es un decimal (al borrar es solo reacomodo de miles).
+  return !borrando && /\.\d{0,2}$/.test(limpio);
+}

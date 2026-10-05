@@ -7,6 +7,7 @@ import { formatFecha, hoyISO } from '../utils/format';
 import AnalisisVenta from '../components/AnalisisVenta';
 import MarcaSR from '../components/MarcaSR';
 import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
 import Button from '../components/ui/Button';
 import { Field, Input, Select } from '../components/ui/Field';
 
@@ -22,6 +23,14 @@ function ReporteContenido({ datos }) {
   const [loteId, setLoteId] = useState(lotes[0]?.id ?? '');
   const [notas, setNotas] = useState('');
   const analisis = useAnalisisLote(datos, loteId, '');
+  if (!lotes.length) {
+    return (
+      <div className="space-y-5">
+        <h1 className="text-3xl font-bold text-gray-900">Reporte resumen de apoyo a la decisión</h1>
+        <EmptyState titulo="Todavía no hay lotes">Cuando haya un lote con animales, aquí podrás imprimir su reporte de venta.</EmptyState>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

@@ -72,9 +72,10 @@ test('R2: validaciones en la interfaz y en la base de datos', async ({ page }) =
   await hoja.getByRole('button', { name: 'Guardar' }).click();
   await expect(hoja.getByRole('alert')).toHaveText(/Describe el gasto/);
   await hoja.getByLabel('Descripción').fill(`${PREFIJO} inválido`);
-  // Spec 018 · R1: el campo de pesos solo acepta dígitos (el "-" no entra) y pone los puntos de miles.
+  // Spec 018 · R1 (verificación Sprint 05, M1): "-5" se rechaza con aviso, no se convierte en 5.
   await hoja.getByLabel('Monto').fill('-5');
-  await expect(hoja.getByLabel('Monto')).toHaveValue('5');
+  await expect(hoja.getByLabel('Monto')).toHaveValue('');
+  await expect(hoja.getByText('Solo pesos enteros')).toBeVisible();
   await hoja.getByLabel('Monto').fill('1000');
   await hoja.getByLabel('Fecha').fill('2099-01-01');
   await hoja.getByRole('button', { name: 'Guardar' }).click();

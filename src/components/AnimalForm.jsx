@@ -173,12 +173,11 @@ export default function AnimalForm({ especie = 'bovino', animal = null, lotes = 
             ))}
           </Select>
         </Field>
-        {esCaballo && (
-          <Field label="Color" ayuda="Opcional">
-            <Input value={form.color} maxLength={40} onChange={(e) => set('color', e.target.value)} />
-          </Field>
-        )}
-        <Field label="Dueño" ayuda="Opcional. Escribe uno nuevo o elige uno de la lista." className={esCaballo ? '' : 'sm:col-span-2'}>
+        {/* Verificación Sprint 05 (A2): el color se edita también en el ganado (016 · R1). */}
+        <Field label="Color" ayuda="Opcional">
+          <Input value={form.color} maxLength={40} onChange={(e) => set('color', e.target.value)} />
+        </Field>
+        <Field label="Dueño" ayuda="Opcional. Escribe uno nuevo o elige uno de la lista.">
           <Input value={form.dueno} maxLength={80} list="lista-duenos" onChange={(e) => set('dueno', e.target.value)} autoComplete="off" />
           <datalist id="lista-duenos">
             {duenos.map((d) => (

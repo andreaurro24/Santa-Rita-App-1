@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, BadgeDollarSign, CheckCircle2, XCircle } from 'lucide-react';
 import { useVentas, useRegistrarVenta } from '../data/ventas';
@@ -108,6 +108,14 @@ function NuevaVentaContenido({ datos }) {
   const lotes = datos.lotes.data.filter((l) => l.estado === 'activo' || l.estado === 'listo');
   const animalUnico = params.get('animal');
   const [paso, setPaso] = useState(0);
+  // Verificación Sprint 05 (A1): "Guardar venta" aparece donde estaba "Siguiente"; un doble toque
+  // lo pulsaba sin ver el resumen. Se habilita un momento después de mostrar el paso 3.
+  const [listoParaGuardar, setListoParaGuardar] = useState(false);
+  useEffect(() => {
+    if (paso !== 2) return setListoParaGuardar(false);
+    const t = setTimeout(() => setListoParaGuardar(true), 800);
+    return () => clearTimeout(t);
+  }, [paso]);
   const [loteId, setLoteId] = useState(params.get('lote') ?? lotes[0]?.id ?? '');
   const [form, setForm] = useState({
     fecha: hoyISO(),
@@ -215,6 +223,7 @@ function NuevaVentaContenido({ datos }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (paso < 2) return siguiente();
+    if (!listoParaGuardar) return;
     const problema = validarPaso(0) || validarPaso(1);
     if (problema) return setError(problema);
     setError('');
@@ -373,9 +382,11 @@ function NuevaVentaContenido({ datos }) {
             </Button>
           )}
           {paso < 2 ? (
-            <Button type="submit">Siguiente</Button>
+            <Button key="siguiente" onClick={siguiente}>
+              Siguiente
+            </Button>
           ) : (
-            <Button type="submit" icono={BadgeDollarSign} disabled={registrar.isPending}>
+            <Button key="guardar" type="submit" icono={BadgeDollarSign} disabled={registrar.isPending || !listoParaGuardar}>
               {registrar.isPending ? 'Guardando…' : 'Guardar venta'}
             </Button>
           )}

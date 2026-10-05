@@ -19,17 +19,6 @@ export function usePrecios() {
   });
 }
 
-export function useAddPrecio() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ fecha, precioCOP, fuente }) => {
-      const { error } = await supabase.from('precios_mercado').insert({ fecha, precio_kg_cop: precioCOP, fuente });
-      if (error) throw error;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRECIOS_KEY }),
-  });
-}
-
 // Spec 021 · rangos de precio por zona y categoría (historial completo; el vigente lo elige el dominio).
 const REFERENCIA_KEY = ['precios-referencia'];
 

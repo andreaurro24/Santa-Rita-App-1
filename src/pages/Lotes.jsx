@@ -65,7 +65,12 @@ export function LotesLista() {
         </Button>
       </div>
       <ConDatos queries={queries}>
-        {() => (
+        {() =>
+          datos.length === 0 ? (
+            <EmptyState titulo="Todavía no hay lotes" accion={<Button icono={Plus} onClick={() => setNuevo(true)}>Nuevo lote</Button>}>
+              Un lote agrupa los animales que se compran, se ceban y se venden juntos.
+            </EmptyState>
+          ) : (
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {datos.map((l) => {
               const r = resumenLote(l, hoy);
@@ -102,7 +107,8 @@ export function LotesLista() {
               );
             })}
           </ul>
-        )}
+          )
+        }
       </ConDatos>
       {nuevo && <LoteForm onClose={() => setNuevo(false)} />}
     </div>

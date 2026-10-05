@@ -4,6 +4,7 @@ import { useAnalisisLotes, useAnalisisLote } from '../data/analisis';
 import { ConDatos } from '../components/EstadoCarga';
 import AnalisisVenta from '../components/AnalisisVenta';
 import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
 import { Field, Select } from '../components/ui/Field';
 import CampoPesos from '../components/ui/CampoPesos';
 import { pesosANumero } from '../utils/validar';
@@ -19,6 +20,14 @@ function RecomendacionContenido({ datos }) {
   const [loteId, setLoteId] = useState(lotes[0]?.id ?? '');
   const [precioManual, setPrecioManual] = useState('');
   const analisis = useAnalisisLote(datos, loteId, pesosANumero(precioManual));
+  if (!lotes.length) {
+    return (
+      <div className="space-y-5">
+        <h1 className="text-3xl font-bold text-gray-900">¿Vendo?</h1>
+        <EmptyState titulo="Todavía no hay lotes para evaluar">Crea un lote y registra sus animales; aquí verás si conviene vender hoy o esperar.</EmptyState>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
