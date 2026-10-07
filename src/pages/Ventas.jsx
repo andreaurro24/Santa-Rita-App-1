@@ -308,7 +308,7 @@ function Simulador({ datos }) {
   );
 
   return (
-    <div className="space-y-5 pb-24 md:pb-0">
+    <div className={`space-y-5 ${paso === 0 && elegidos.length ? 'pb-24 xl:pb-0' : ''}`}>
       <Link to="/ventas" className="inline-flex min-h-12 items-center gap-1 text-base text-gray-600 hover:text-brand-700">
         <ArrowLeft size={18} aria-hidden="true" /> Ventas
       </Link>
@@ -329,7 +329,7 @@ function Simulador({ datos }) {
         ))}
       </ol>
 
-      <form id="form-venta" onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start">
+      <form id="form-venta" onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
         <div className="space-y-4">
           {paso === 0 && (
             <>
@@ -417,10 +417,14 @@ function Simulador({ datos }) {
           )}
         </div>
 
-        {/* R2: el panel a la derecha (abajo en el celular). */}
-        <aside className="md:sticky md:top-6">{panel}</aside>
+        {/* R2: el panel a la derecha (abajo en el celular). Dos columnas solo desde xl (1280 px): con el
+            menú lateral de 240 px, por debajo de eso la columna de lotes quedaba de 8 a 264 px y el
+            panel tapaba las tarjetas (de 768 a ~1000 px). */}
+        <aside className="xl:sticky xl:top-6">{panel}</aside>
 
-        <div className="space-y-3 md:col-span-2">
+        {/* Solo en la columna izquierda: si abarcara las dos, "Confirmar venta" (a la derecha) quedaba
+            debajo del panel sticky y en pantallas de portátil (1280x720, 1366x768) no recibía el clic. */}
+        <div className="space-y-3 xl:col-start-1">
           <FormError>{error}</FormError>
           <div className="flex flex-wrap justify-between gap-2">
             {paso === 0 ? (
@@ -433,7 +437,7 @@ function Simulador({ datos }) {
               </Button>
             )}
             {paso < 2 ? (
-              <Button key="siguiente" type="submit" icono={paso === 0 ? BadgeDollarSign : undefined} className={paso === 0 && elegidos.length ? 'max-md:hidden' : ''}>
+              <Button key="siguiente" type="submit" icono={paso === 0 ? BadgeDollarSign : undefined} className={paso === 0 && elegidos.length ? 'max-xl:hidden' : ''}>
                 {paso === 0 ? 'Confirmar venta' : 'Siguiente'}
               </Button>
             ) : (
@@ -445,9 +449,10 @@ function Simulador({ datos }) {
         </div>
       </form>
 
-      {/* R2: en el celular, el beneficio neto queda a la vista encima del menú. */}
+      {/* R2: mientras el panel no está a la derecha (por debajo de xl), el beneficio neto queda a la
+          vista: en el celular encima del menú inferior; en tableta, al fondo junto al menú lateral. */}
       {paso === 0 && elegidos.length > 0 && (
-        <div className="no-print fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-gray-200 bg-white px-4 py-2 shadow-lg md:hidden">
+        <div className="no-print fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-gray-200 bg-white px-4 py-2 shadow-lg md:bottom-0 md:left-60 xl:hidden">
           <div className="flex items-center justify-between gap-3">
             <p className="text-base">
               <span className="block text-sm text-gray-600">Beneficio neto</span>
