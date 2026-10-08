@@ -162,8 +162,8 @@ function HatoContenido({ animales, caballos, todosLotes }) {
 
       {vista === 'ganado' && <TarjetasLote lotes={lotesConResumen} seleccionado={loteFiltro} onElegir={(id) => cambiarParam('lote', id, 'TODOS')} onCrear={puedeRegistrar ? () => setModal('lote') : null} />}
 
-      {/* R5: buscador y filtros, como en la referencia. */}
-      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 md:flex-row">
+      {/* R5: buscador y filtros, como en la referencia. En fila desde 1280 px: antes, con la barra lateral, no caben o el buscador queda muy corto. */}
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 xl:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">Buscar</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
@@ -177,8 +177,8 @@ function HatoContenido({ animales, caballos, todosLotes }) {
             className="pl-10"
           />
         </label>
-        <div className="grid grid-cols-2 gap-3 md:flex">
-          <label className="md:w-44">
+        <div className="grid grid-cols-2 gap-3 xl:flex">
+          <label className="xl:w-44">
             <span className="sr-only">Estado</span>
             <Select value={estadoFiltro} onChange={(e) => cambiarParam('estado', e.target.value, 'activos')}>
               {FILTROS_ESTADO.map(([v, label]) => (
@@ -189,7 +189,7 @@ function HatoContenido({ animales, caballos, todosLotes }) {
             </Select>
           </label>
           {vista === 'ganado' && (
-            <label className="md:w-56">
+            <label className="xl:w-56">
               <span className="sr-only">Lote</span>
               <Select value={loteFiltro} onChange={(e) => cambiarParam('lote', e.target.value, 'TODOS')}>
                 <option value="TODOS">Lote: todos</option>
@@ -293,12 +293,12 @@ function TarjetasLote({ lotes, seleccionado, onElegir, onCrear }) {
 }
 
 function Encabezado({ campo, orden, onOrdenar, children, derecha = false }) {
-  if (!campo) return <th className={`px-4 py-3 ${derecha ? 'text-right' : 'text-left'}`}>{children}</th>;
+  if (!campo) return <th className={`px-3 py-3 ${derecha ? 'text-right' : 'text-left'}`}>{children}</th>;
   const activo = orden.campo === campo;
   const Icono = activo ? (orden.dir === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown;
   return (
-    <th aria-sort={activo ? (orden.dir === 'asc' ? 'ascending' : 'descending') : 'none'} className={`px-2 py-1 ${derecha ? 'text-right' : 'text-left'}`}>
-      <button type="button" onClick={() => onOrdenar(campo)} className={`inline-flex min-h-11 items-center gap-1 rounded-md px-2 uppercase tracking-wide hover:text-gray-900 ${activo ? 'text-gray-900' : ''}`}>
+    <th aria-sort={activo ? (orden.dir === 'asc' ? 'ascending' : 'descending') : 'none'} className={`px-1 py-1 ${derecha ? 'text-right' : 'text-left'}`}>
+      <button type="button" onClick={() => onOrdenar(campo)} className={`inline-flex min-h-11 items-center gap-1 rounded-md px-1.5 uppercase tracking-wide hover:text-gray-900 ${activo ? 'text-gray-900' : ''}`}>
         {children}
         <Icono size={14} aria-hidden="true" className={activo ? '' : 'opacity-50'} />
       </button>
@@ -310,22 +310,24 @@ const CABECERA = 'border-b border-gray-200 bg-gray-50 text-xs font-semibold uppe
 
 function CeldaAnimal({ a, url, ocultas = false }) {
   return (
-    <td className="px-4 py-2">
+    <td className="px-3 py-2">
       <Link to={`/animales/${a.id}`} className="flex items-center gap-3 rounded-md">
         <Miniatura url={url(a)} alt={`Foto de ${a.numeroInterno}`} />
         <span className="min-w-0">
-          <span className="block truncate text-base font-semibold text-brand-800 hover:underline">{a.numeroInterno}</span>
+          <span className="block whitespace-nowrap text-base font-semibold text-brand-800 hover:underline">{a.numeroInterno}</span>
           <EstadoPunto estado={a.estado} />
-          {/* 022 · R3: en pantallas medianas, chapeta, raza y dueño van aquí en vez de en su columna. */}
+          {/* 022 · R3: en pantallas medianas, chapeta, raza y dueño van aquí en vez de en su columna.
+              Se parte en renglones (sin "truncate") para que la tabla quepa sin esconder la raza ni el dueño. */}
           {ocultas && (a.chapetaICA || a.raza || a.dueno) && (
-            <span className={`block truncate text-sm text-gray-600 2xl:hidden ${a.raza || a.dueno ? '' : 'xl:hidden'}`}>
-              {[a.chapetaICA, a.raza, a.dueno].filter(Boolean).map((t, i) => (
-                // La chapeta tiene su columna desde 1280 px: ahí se esconde aquí.
-                <span key={i} className={i === 0 && t === a.chapetaICA ? 'xl:hidden' : ''}>
-                  {i > 0 && ' · '}
-                  {t}
+            <span className={`block text-sm text-gray-600 2xl:hidden ${a.raza || a.dueno ? '' : 'xl:hidden'}`}>
+              {/* La chapeta tiene su columna desde 1280 px: ahí se esconde aquí, con su separador. */}
+              {a.chapetaICA && (
+                <span className="xl:hidden">
+                  <span className="whitespace-nowrap">{a.chapetaICA}</span>
+                  {(a.raza || a.dueno) && ' · '}
                 </span>
-              ))}
+              )}
+              {[a.raza, a.dueno].filter(Boolean).join(' · ')}
             </span>
           )}
         </span>
@@ -344,9 +346,9 @@ function TablaGanado({ items, url, orden, onOrdenar }) {
             <Encabezado campo="animal" orden={orden} onOrdenar={onOrdenar}>
               Animal
             </Encabezado>
-            <th className="hidden px-4 py-3 text-left xl:table-cell">Chapeta ICA</th>
+            <th className="hidden px-3 py-3 text-left xl:table-cell">Chapeta ICA</th>
             <Encabezado>Lote</Encabezado>
-            <th className="hidden px-4 py-3 text-left 2xl:table-cell">Raza</th>
+            <th className="hidden px-3 py-3 text-left 2xl:table-cell">Raza</th>
             <Encabezado campo="pesoActual" orden={orden} onOrdenar={onOrdenar} derecha>
               Peso actual
             </Encabezado>
@@ -356,28 +358,32 @@ function TablaGanado({ items, url, orden, onOrdenar }) {
             <Encabezado campo="precioKg" orden={orden} onOrdenar={onOrdenar} derecha>
               Precio x kg
             </Encabezado>
-            <th className="hidden px-4 py-3 text-left 2xl:table-cell">Dueño</th>
+            <th className="hidden px-3 py-3 text-left 2xl:table-cell">Dueño</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {items.map((a) => (
             <tr key={a.id} className="h-16 hover:bg-brand-50/60">
               <CeldaAnimal a={a} url={url} ocultas />
-              <td className="hidden whitespace-nowrap px-4 py-2 text-gray-700 xl:table-cell">{a.chapetaICA || '—'}</td>
-              <td className="px-4 py-2">
+              <td className="hidden whitespace-nowrap px-3 py-2 text-gray-700 xl:table-cell">{a.chapetaICA || '—'}</td>
+              <td className="px-3 py-2">
                 <span className="inline-flex flex-wrap items-center gap-1">
-                  <Badge tono="potrero" className="whitespace-nowrap">{a.loteNombre ?? 'Sin lote'}</Badge>
-                  {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                  <Badge tono="potrero">{a.loteNombre ?? 'Sin lote'}</Badge>
+                  {a.esquema === 'Al partir' && (
+                    <Badge tono="cuero" className="whitespace-nowrap">
+                      Al partir
+                    </Badge>
+                  )}
                 </span>
               </td>
-              <td className="hidden px-4 py-2 text-gray-700 2xl:table-cell">{a.raza ?? '—'}</td>
-              <td className="cifra whitespace-nowrap px-4 py-2 text-right text-base font-bold text-gray-900">
+              <td className="hidden px-3 py-2 text-gray-700 2xl:table-cell">{a.raza ?? '—'}</td>
+              <td className="cifra whitespace-nowrap px-3 py-2 text-right text-base font-bold text-gray-900">
                 {pierdePeso(a) && <TrendingDown size={16} className="mr-1 inline text-peligro" aria-label="Pierde peso" />}
                 {formatKg(pesoActual(a))}
               </td>
-              <td className="cifra whitespace-nowrap px-4 py-2 text-right text-gray-700">{formatKg(a.pesoIngreso)}</td>
-              <td className="cifra whitespace-nowrap px-4 py-2 text-right font-semibold text-gray-900">{precioKgCompra(a) ? `$${formatCOP(precioKgCompra(a))}` : '—'}</td>
-              <td className="hidden px-4 py-2 text-gray-700 2xl:table-cell">{a.dueno ?? '—'}</td>
+              <td className="cifra whitespace-nowrap px-3 py-2 text-right text-gray-700">{formatKg(a.pesoIngreso)}</td>
+              <td className="cifra whitespace-nowrap px-3 py-2 text-right font-semibold text-gray-900">{precioKgCompra(a) ? `$${formatCOP(precioKgCompra(a))}` : '—'}</td>
+              <td className="hidden px-3 py-2 text-gray-700 2xl:table-cell">{a.dueno ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -407,11 +413,11 @@ function TablaCaballos({ items, url, orden, onOrdenar }) {
           {items.map((a) => (
             <tr key={a.id} className="h-16 hover:bg-brand-50/60">
               <CeldaAnimal a={a} url={url} />
-              <td className="px-4 py-2 text-gray-700">{etiquetaCategoria(a.categoria)}</td>
-              <td className="px-4 py-2 text-gray-700">{a.raza ?? '—'}</td>
-              <td className="px-4 py-2 text-gray-700">{a.color ?? '—'}</td>
-              <td className="px-4 py-2 text-gray-700">{a.dueno ?? '—'}</td>
-              <td className="cifra whitespace-nowrap px-4 py-2 text-right text-gray-900">{a.costoCompra ? `$${formatCOP(a.costoCompra)}` : '—'}</td>
+              <td className="px-3 py-2 text-gray-700">{etiquetaCategoria(a.categoria)}</td>
+              <td className="px-3 py-2 text-gray-700">{a.raza ?? '—'}</td>
+              <td className="px-3 py-2 text-gray-700">{a.color ?? '—'}</td>
+              <td className="px-3 py-2 text-gray-700">{a.dueno ?? '—'}</td>
+              <td className="cifra whitespace-nowrap px-3 py-2 text-right text-gray-900">{a.costoCompra ? `$${formatCOP(a.costoCompra)}` : '—'}</td>
             </tr>
           ))}
         </tbody>

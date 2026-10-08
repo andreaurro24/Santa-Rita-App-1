@@ -1,0 +1,1701 @@
+{
+ "filas": [
+  {
+   "ruta": "#/animales",
+   "w": 375,
+   "sw": 375,
+   "cw": 375,
+   "tabla": null,
+   "tarjetas": [
+    11
+   ],
+   "dir": "column",
+   "buscador": 310,
+   "phCortado": true,
+   "selects": [
+    148,
+    148
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 390,
+   "sw": 390,
+   "cw": 390,
+   "tabla": null,
+   "tarjetas": [
+    11
+   ],
+   "dir": "column",
+   "buscador": 325,
+   "phCortado": true,
+   "selects": [
+    156,
+    156
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 768,
+   "sw": 768,
+   "cw": 768,
+   "tabla": {
+    "sw": 651,
+    "cw": 424,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 397,
+   "phCortado": false,
+   "selects": [
+    192,
+    192
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 800,
+   "sw": 800,
+   "cw": 800,
+   "tabla": {
+    "sw": 651,
+    "cw": 456,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 429,
+   "phCortado": false,
+   "selects": [
+    208,
+    208
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 900,
+   "sw": 900,
+   "cw": 900,
+   "tabla": {
+    "sw": 651,
+    "cw": 556,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 529,
+   "phCortado": false,
+   "selects": [
+    258,
+    258
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1000,
+   "sw": 1000,
+   "cw": 1000,
+   "tabla": {
+    "sw": 656,
+    "cw": 656,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 629,
+   "phCortado": false,
+   "selects": [
+    308,
+    308
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1023,
+   "sw": 1023,
+   "cw": 1023,
+   "tabla": {
+    "sw": 679,
+    "cw": 679,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 652,
+   "phCortado": false,
+   "selects": [
+    319,
+    319
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1024,
+   "sw": 1024,
+   "cw": 1024,
+   "tabla": {
+    "sw": 680,
+    "cw": 680,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 653,
+   "phCortado": false,
+   "selects": [
+    320,
+    320
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1100,
+   "sw": 1100,
+   "cw": 1100,
+   "tabla": {
+    "sw": 756,
+    "cw": 756,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 50
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 729,
+   "phCortado": false,
+   "selects": [
+    358,
+    358
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1180,
+   "sw": 1180,
+   "cw": 1180,
+   "tabla": {
+    "sw": 836,
+    "cw": 836,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 809,
+   "phCortado": false,
+   "selects": [
+    398,
+    398
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1200,
+   "sw": 1200,
+   "cw": 1200,
+   "tabla": {
+    "sw": 856,
+    "cw": 856,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 829,
+   "phCortado": false,
+   "selects": [
+    408,
+    408
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1279,
+   "sw": 1279,
+   "cw": 1279,
+   "tabla": {
+    "sw": 935,
+    "cw": 935,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 11,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 908,
+   "phCortado": false,
+   "selects": [
+    447,
+    447
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1280,
+   "sw": 1280,
+   "cw": 1280,
+   "tabla": {
+    "sw": 936,
+    "cw": 936,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 432,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1300,
+   "sw": 1300,
+   "cw": 1300,
+   "tabla": {
+    "sw": 956,
+    "cw": 956,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 452,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1366,
+   "sw": 1366,
+   "cw": 1366,
+   "tabla": {
+    "sw": 1022,
+    "cw": 1022,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 518,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1440,
+   "sw": 1440,
+   "cw": 1440,
+   "tabla": {
+    "sw": 1096,
+    "cw": 1096,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 22,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 592,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1536,
+   "sw": 1536,
+   "cw": 1536,
+   "tabla": {
+    "sw": 1192,
+    "cw": 1192,
+    "min": 1052,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "RAZA",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG",
+     "DUEÑO"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Activo"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 11,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 688,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales",
+   "w": 1920,
+   "sw": 1920,
+   "cw": 1920,
+   "tabla": {
+    "sw": 1222,
+    "cw": 1222,
+    "min": 1052,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "RAZA",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG",
+     "DUEÑO"
+    ],
+    "orden": 4,
+    "filas": 11,
+    "ejLinea": [
+     "Activo",
+     "Activo"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 11,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 718,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 375,
+   "sw": 375,
+   "cw": 375,
+   "tabla": null,
+   "tarjetas": [
+    12
+   ],
+   "dir": "column",
+   "buscador": 310,
+   "phCortado": true,
+   "selects": [
+    148,
+    148
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 390,
+   "sw": 390,
+   "cw": 390,
+   "tabla": null,
+   "tarjetas": [
+    12
+   ],
+   "dir": "column",
+   "buscador": 325,
+   "phCortado": true,
+   "selects": [
+    156,
+    156
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 768,
+   "sw": 768,
+   "cw": 768,
+   "tabla": {
+    "sw": 651,
+    "cw": 424,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 397,
+   "phCortado": false,
+   "selects": [
+    192,
+    192
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 800,
+   "sw": 800,
+   "cw": 800,
+   "tabla": {
+    "sw": 651,
+    "cw": 456,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 429,
+   "phCortado": false,
+   "selects": [
+    208,
+    208
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 900,
+   "sw": 900,
+   "cw": 900,
+   "tabla": {
+    "sw": 651,
+    "cw": 556,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 529,
+   "phCortado": false,
+   "selects": [
+    258,
+    258
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1000,
+   "sw": 1000,
+   "cw": 1000,
+   "tabla": {
+    "sw": 656,
+    "cw": 656,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 629,
+   "phCortado": false,
+   "selects": [
+    308,
+    308
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1023,
+   "sw": 1023,
+   "cw": 1023,
+   "tabla": {
+    "sw": 679,
+    "cw": 679,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 652,
+   "phCortado": false,
+   "selects": [
+    319,
+    319
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1024,
+   "sw": 1024,
+   "cw": 1024,
+   "tabla": {
+    "sw": 680,
+    "cw": 680,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 72
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 653,
+   "phCortado": false,
+   "selects": [
+    320,
+    320
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1100,
+   "sw": 1100,
+   "cw": 1100,
+   "tabla": {
+    "sw": 756,
+    "cw": 756,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 50
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 729,
+   "phCortado": false,
+   "selects": [
+    358,
+    358
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1180,
+   "sw": 1180,
+   "cw": 1180,
+   "tabla": {
+    "sw": 836,
+    "cw": 836,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 809,
+   "phCortado": false,
+   "selects": [
+    398,
+    398
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1200,
+   "sw": 1200,
+   "cw": 1200,
+   "tabla": {
+    "sw": 856,
+    "cw": 856,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 829,
+   "phCortado": false,
+   "selects": [
+    408,
+    408
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1279,
+   "sw": 1279,
+   "cw": 1279,
+   "tabla": {
+    "sw": 935,
+    "cw": 935,
+    "min": 651,
+    "cols": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "COL-CES-990011 · Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 12,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 908,
+   "phCortado": false,
+   "selects": [
+    447,
+    447
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1280,
+   "sw": 1280,
+   "cw": 1280,
+   "tabla": {
+    "sw": 936,
+    "cw": 936,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 432,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1300,
+   "sw": 1300,
+   "cw": 1300,
+   "tabla": {
+    "sw": 956,
+    "cw": 956,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 452,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1366,
+   "sw": 1366,
+   "cw": 1366,
+   "tabla": {
+    "sw": 1022,
+    "cw": 1022,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 518,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1440,
+   "sw": 1440,
+   "cw": 1440,
+   "tabla": {
+    "sw": 1096,
+    "cw": 1096,
+    "min": 875,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Brahman"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 24,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 592,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1536,
+   "sw": 1536,
+   "cw": 1536,
+   "tabla": {
+    "sw": 1192,
+    "cw": 1192,
+    "min": 1052,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "RAZA",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG",
+     "DUEÑO"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Activo"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 12,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 688,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?estado=todos",
+   "w": 1920,
+   "sw": 1920,
+   "cw": 1920,
+   "tabla": {
+    "sw": 1222,
+    "cw": 1222,
+    "min": 1052,
+    "cols": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "RAZA",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG",
+     "DUEÑO"
+    ],
+    "orden": 4,
+    "filas": 12,
+    "ejLinea": [
+     "Activo",
+     "Activo"
+    ],
+    "sueltos": 0,
+    "cortadas": 0,
+    "nLineas": 12,
+    "nombresCortados": [],
+    "badgeAltoMax": 27
+   },
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 718,
+   "phCortado": false,
+   "selects": [
+    198,
+    252
+   ],
+   "fuera": [],
+   "tab": "Ganado",
+   "vacio": null
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 375,
+   "sw": 375,
+   "cw": 375,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 310,
+   "phCortado": true,
+   "selects": [
+    148
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 390,
+   "sw": 390,
+   "cw": 390,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 325,
+   "phCortado": true,
+   "selects": [
+    156
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 768,
+   "sw": 768,
+   "cw": 768,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 397,
+   "phCortado": false,
+   "selects": [
+    192
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 800,
+   "sw": 800,
+   "cw": 800,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 429,
+   "phCortado": false,
+   "selects": [
+    208
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 900,
+   "sw": 900,
+   "cw": 900,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 529,
+   "phCortado": false,
+   "selects": [
+    258
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1000,
+   "sw": 1000,
+   "cw": 1000,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 629,
+   "phCortado": false,
+   "selects": [
+    308
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1023,
+   "sw": 1023,
+   "cw": 1023,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 652,
+   "phCortado": false,
+   "selects": [
+    319
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1024,
+   "sw": 1024,
+   "cw": 1024,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 653,
+   "phCortado": false,
+   "selects": [
+    320
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1100,
+   "sw": 1100,
+   "cw": 1100,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 729,
+   "phCortado": false,
+   "selects": [
+    358
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1180,
+   "sw": 1180,
+   "cw": 1180,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 809,
+   "phCortado": false,
+   "selects": [
+    398
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1200,
+   "sw": 1200,
+   "cw": 1200,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 829,
+   "phCortado": false,
+   "selects": [
+    408
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1279,
+   "sw": 1279,
+   "cw": 1279,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "column",
+   "buscador": 908,
+   "phCortado": false,
+   "selects": [
+    447
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1280,
+   "sw": 1280,
+   "cw": 1280,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 698,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1300,
+   "sw": 1300,
+   "cw": 1300,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 718,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1366,
+   "sw": 1366,
+   "cw": 1366,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 784,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1440,
+   "sw": 1440,
+   "cw": 1440,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 858,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1536,
+   "sw": 1536,
+   "cw": 1536,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 954,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  },
+  {
+   "ruta": "#/animales?ver=caballos",
+   "w": 1920,
+   "sw": 1920,
+   "cw": 1920,
+   "tabla": null,
+   "tarjetas": [],
+   "dir": "row",
+   "buscador": 984,
+   "phCortado": false,
+   "selects": [
+    198
+   ],
+   "fuera": [],
+   "tab": "Caballos",
+   "vacio": "Todavía no hay caballos"
+  }
+ ],
+ "hashes": {
+  "r2-375-_animales.png": "77608323af1336bc1273786143da725f",
+  "r2-390-_animales.png": "9a9c771ffde9c3de2c0e38352cd47bc3",
+  "r2-375-_animales_estado_todos.png": "9f4abe1a7bf53e3577909db632388508",
+  "r2-390-_animales_estado_todos.png": "c91fa6ba32dcf5aea7551d75ebecde08",
+  "r2-375-_animales_ver_caballos.png": "e44c43e2c8e03fca25e650f874fdad56",
+  "r2-390-_animales_ver_caballos.png": "bca1fac9483cf15dfa9cbe09334983fb"
+ },
+ "bloqueadas": [],
+ "consola": [],
+ "red": []
+}
