@@ -15,6 +15,7 @@ import {
   useRegistrarVisita,
 } from '../data/alPartir';
 import { pesoActual, formatCOP } from '../domain/breakeven';
+import { coincide } from '../domain/tabla';
 import { gdpLote, variacionSospechosa } from '../domain/gdp';
 import { ConDatos } from '../components/EstadoCarga';
 import Card from '../components/ui/Card';
@@ -434,7 +435,7 @@ function AsignarForm({ contrato, animales, onClose }) {
   const candidatos = useMemo(
     () =>
       animales
-        .filter((a) => a.estado === 'Activo' && !a.contratoId && a.numeroInterno.includes(busqueda.trim()))
+        .filter((a) => a.estado === 'Activo' && !a.contratoId && coincide(a, busqueda))
         .sort((a, b) => a.numeroInterno.localeCompare(b.numeroInterno)),
     [animales, busqueda],
   );
@@ -474,10 +475,12 @@ function AsignarForm({ contrato, animales, onClose }) {
     >
       <form id="form-asignar" onSubmit={handleSubmit} noValidate className="space-y-3">
         <p className="text-sm text-gray-600">Los animales pasan a {contrato.tenedor.fincaNombre ?? 'la finca del tenedor'} y queda el movimiento en su historial.</p>
-        <Field label="Buscar por nombre">
-          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} inputMode="numeric" />
+        {/* Sin importar mayúsculas ni tildes, como el buscador de Animales. */}
+        <Field label="Buscar por nombre o chapeta">
+          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe parte del nombre" />
         </Field>
-        <ul className="grid max-h-64 grid-cols-[repeat(auto-fill,minmax(min(11rem,100%),1fr))] gap-2 overflow-y-auto">
+        {candidatos.length === 0 && <p className="text-sm text-gray-600">{busqueda.trim() ? 'Ningún animal activo sin contrato coincide con la búsqueda.' : 'No hay animales activos sin contrato.'}</p>}
+        <ul className="flex max-h-[40vh] flex-wrap gap-2 overflow-y-auto md:grid md:max-h-64 md:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
           {candidatos.map((a) => (
             <li key={a.id}>
               <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2 has-[:checked]:border-earth-500 has-[:checked]:bg-earth-50">

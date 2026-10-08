@@ -1,0 +1,3028 @@
+{
+ "animales": [
+  {
+   "vista": "320",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 320,
+   "vw": 320,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 189,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 18,
+     "y": 256,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 322,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 497,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": true,
+     "nombreAncho": "147/157",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 140
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Levante · Brahman (147/196px)",
+    "Novillo · Levante · Brahman (147/196px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)",
+    "Novillo · Novillos de la vega · Brahman (147/274px)",
+    "Novillo · Levante · Brahman (147/196px)",
+    "Vientre parida · Novillos de la vega · Gyr (147/287px)",
+    "Novillo · Levante · Cebú comercial (147/244px)",
+    "Relámpago-003 (147/157px)",
+    "Novillo · Novillos de ceba · Cebú comercial (147/305px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (147/322px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "320",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 320,
+   "vw": 320,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 189,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 18,
+     "y": 256,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 322,
+     "w": 284,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 497,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Canelo-008",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      },
+      {
+       "t": "Vendido",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 204
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 172
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": true,
+     "nombreAncho": "147/157",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 141
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "147/147",
+     "colAncho": 147,
+     "pesoLineas": 2,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 140
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Levante · Brahman (147/196px)",
+    "Novillo · Levante · Brahman (147/196px)",
+    "Novillo · Levante · Cebú comercial (147/244px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)",
+    "Novillo · Novillos de la vega · Brahman (147/274px)",
+    "Novillo · Levante · Brahman (147/196px)",
+    "Vientre parida · Novillos de la vega · Gyr (147/287px)",
+    "Novillo · Levante · Cebú comercial (147/244px)",
+    "Relámpago-003 (147/157px)",
+    "Novillo · Novillos de ceba · Cebú comercial (147/305px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (147/322px)",
+    "Novillo · Novillos de ceba · Brahman (147/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "320",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 320,
+   "vw": 320,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 18,
+     "y": 189,
+     "w": 284,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "375",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 375,
+   "vw": 375,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 165,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 192,
+     "y": 162,
+     "w": 165,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 229,
+     "w": 339,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 403,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 113
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Novillos de ceba · Brahman (202/257px)",
+    "Novillo · Novillos de la vega · Brahman (202/274px)",
+    "Vientre parida · Novillos de la vega · Gyr (202/287px)",
+    "Novillo · Levante · Cebú comercial (202/244px)",
+    "Novillo · Novillos de ceba · Cebú comercial (202/305px)",
+    "Novillo · Novillos de ceba · Brahman (202/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (202/322px)",
+    "Novillo · Novillos de ceba · Brahman (202/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "375",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 375,
+   "vw": 375,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 165,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 192,
+     "y": 162,
+     "w": 165,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 229,
+     "w": 339,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 403,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Canelo-008",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      },
+      {
+       "t": "Vendido",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "202/202",
+     "colAncho": 202,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 113
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Levante · Cebú comercial (202/244px)",
+    "Novillo · Novillos de ceba · Brahman (202/257px)",
+    "Novillo · Novillos de la vega · Brahman (202/274px)",
+    "Vientre parida · Novillos de la vega · Gyr (202/287px)",
+    "Novillo · Levante · Cebú comercial (202/244px)",
+    "Novillo · Novillos de ceba · Cebú comercial (202/305px)",
+    "Novillo · Novillos de ceba · Brahman (202/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (202/322px)",
+    "Novillo · Novillos de ceba · Brahman (202/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "375",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 375,
+   "vw": 375,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 339,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "390",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 390,
+   "vw": 390,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 173,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 200,
+     "y": 162,
+     "w": 173,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 229,
+     "w": 354,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 403,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 113
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Novillos de ceba · Brahman (217/257px)",
+    "Novillo · Novillos de la vega · Brahman (217/274px)",
+    "Vientre parida · Novillos de la vega · Gyr (217/287px)",
+    "Novillo · Levante · Cebú comercial (217/244px)",
+    "Novillo · Novillos de ceba · Cebú comercial (217/305px)",
+    "Novillo · Novillos de ceba · Brahman (217/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (217/322px)",
+    "Novillo · Novillos de ceba · Brahman (217/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "390",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 390,
+   "vw": 390,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 173,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 200,
+     "y": 162,
+     "w": 173,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 18,
+     "y": 229,
+     "w": 354,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 846,
+     "y": 403,
+     "w": 198,
+     "desborda": true
+    }
+   ],
+   "tarjetas": [
+    {
+     "nombre": "Barcino-011",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Bravo-012",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Canelo-008",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      },
+      {
+       "t": "Vendido",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Capitán-002",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Lucero-006",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Moro-010",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Paloma-007",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Pierde peso",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Pinto-009",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": true,
+     "badges": [
+      {
+       "t": "Al partir",
+       "lineas": 1,
+       "fueraCol": false
+      }
+     ],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 145
+    },
+    {
+     "nombre": "Relámpago-003",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tornado-001",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Tostado-005",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 114
+    },
+    {
+     "nombre": "Trueno-004",
+     "nombreCortado": false,
+     "nombreAncho": "217/217",
+     "colAncho": 217,
+     "pesoLineas": 1,
+     "insigniasDebajoPeso": null,
+     "badges": [],
+     "badgeFueraDeColumna": false,
+     "chevronDentro": true,
+     "alto": 113
+    }
+   ],
+   "tabla": null,
+   "recortados": [
+    "Novillo · Levante · Cebú comercial (217/244px)",
+    "Novillo · Novillos de ceba · Brahman (217/257px)",
+    "Novillo · Novillos de la vega · Brahman (217/274px)",
+    "Vientre parida · Novillos de la vega · Gyr (217/287px)",
+    "Novillo · Levante · Cebú comercial (217/244px)",
+    "Novillo · Novillos de ceba · Cebú comercial (217/305px)",
+    "Novillo · Novillos de ceba · Brahman (217/257px)",
+    "Novillo · Novillos de la vega · Cebú comercial (217/322px)",
+    "Novillo · Novillos de ceba · Brahman (217/257px)"
+   ],
+   "pagina": ""
+  },
+  {
+   "vista": "390",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 390,
+   "vw": 390,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 18,
+     "y": 162,
+     "w": 354,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "768",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 858,
+   "vw": 768,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 306,
+     "y": 117,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 472,
+     "y": 117,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 306,
+     "y": 176,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 306,
+     "y": 850,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 11,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "889/424",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "768",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 858,
+   "vw": 768,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 306,
+     "y": 117,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 472,
+     "y": 117,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 306,
+     "y": 176,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 306,
+     "y": 850,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 12,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "889/424",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "768",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 768,
+   "vw": 768,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 306,
+     "y": 117,
+     "w": 198,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1280",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 1280,
+   "vw": 1280,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 748,
+     "y": 54,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 915,
+     "y": 54,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 1069,
+     "y": 54,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 554,
+     "y": 342,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 11,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "941/936",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1280",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 1280,
+   "vw": 1280,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 748,
+     "y": 54,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 915,
+     "y": 54,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 1069,
+     "y": 54,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 554,
+     "y": 342,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 12,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "941/936",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1280",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 1280,
+   "vw": 1280,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 1046,
+     "y": 54,
+     "w": 198,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1440",
+   "pantalla": "animales",
+   "pag": 1,
+   "sw": 1440,
+   "vw": 1440,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 908,
+     "y": 54,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 1075,
+     "y": 54,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 1229,
+     "y": 54,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 306,
+     "y": 364,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 11,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "1096/1096",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1440",
+   "pantalla": "animales-todos",
+   "pag": 1,
+   "sw": 1440,
+   "vw": 1440,
+   "botones": [
+    {
+     "t": "Editar lotes",
+     "lineas": 1,
+     "x": 908,
+     "y": 54,
+     "w": 157,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 1075,
+     "y": 54,
+     "w": 146,
+     "desborda": false
+    },
+    {
+     "t": "Añadir animal",
+     "lineas": 1,
+     "x": 1229,
+     "y": 54,
+     "w": 175,
+     "desborda": false
+    },
+    {
+     "t": "Crear lote",
+     "lineas": 1,
+     "x": 306,
+     "y": 364,
+     "w": 234,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": {
+    "filas": 12,
+    "altos": [
+     91
+    ],
+    "ths": [
+     "ANIMAL",
+     "CHAPETA ICA",
+     "LOTE",
+     "PESO ACTUAL",
+     "PESO INICIAL",
+     "PRECIO X KG"
+    ],
+    "scrollInterno": "1096/1096",
+    "cifrasPartidas": 0,
+    "nombresPartidos": 1
+   },
+   "recortados": [],
+   "pagina": ""
+  },
+  {
+   "vista": "1440",
+   "pantalla": "caballos",
+   "pag": 1,
+   "sw": 1440,
+   "vw": 1440,
+   "botones": [
+    {
+     "t": "Registrar caballo",
+     "lineas": 1,
+     "x": 1206,
+     "y": 54,
+     "w": 198,
+     "desborda": false
+    }
+   ],
+   "tarjetas": null,
+   "tabla": null,
+   "recortados": [],
+   "pagina": ""
+  }
+ ],
+ "asignar": [
+  {
+   "vista": "320",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "288px",
+   "ulAlto": 288,
+   "ulAncho": 275,
+   "ulScroll": "495/288",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "filas": 8,
+   "completasVisibles": 4,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "320/320",
+   "docScrollX": "320/320",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  },
+  {
+   "vista": "375",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "365.4px",
+   "ulAlto": 365,
+   "ulAncho": 330,
+   "ulScroll": "495/365",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "filas": 8,
+   "completasVisibles": 5,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "375/375",
+   "docScrollX": "375/375",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  },
+  {
+   "vista": "390",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "379.8px",
+   "ulAlto": 369,
+   "ulAncho": 345,
+   "ulScroll": "369/369",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    2,
+    2,
+    1,
+    1,
+    1,
+    1
+   ],
+   "filas": 6,
+   "completasVisibles": 8,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "390/390",
+   "docScrollX": "390/390",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  },
+  {
+   "vista": "768",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "288px",
+   "ulAlto": 243,
+   "ulAncho": 531,
+   "ulScroll": "243/243",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    3,
+    2,
+    2,
+    1
+   ],
+   "filas": 4,
+   "completasVisibles": 8,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "576/576",
+   "docScrollX": "768/768",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  },
+  {
+   "vista": "1280",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "288px",
+   "ulAlto": 243,
+   "ulAncho": 531,
+   "ulScroll": "243/243",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    3,
+    2,
+    2,
+    1
+   ],
+   "filas": 4,
+   "completasVisibles": 8,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "576/576",
+   "docScrollX": "1280/1280",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  },
+  {
+   "vista": "1440",
+   "inputMode": null,
+   "placeholder": "Por ejemplo: moro",
+   "type": "text",
+   "ulDisplay": "flex",
+   "ulMaxH": "288px",
+   "ulAlto": 243,
+   "ulAncho": 531,
+   "ulScroll": "243/243",
+   "liAnchos": [
+    158,
+    172,
+    166,
+    170,
+    197,
+    175
+   ],
+   "candidatos": 8,
+   "porFila": [
+    3,
+    2,
+    2,
+    1
+   ],
+   "filas": 4,
+   "completasVisibles": 8,
+   "chapetasPartidas": 0,
+   "liFuera": 0,
+   "dialogoScrollX": "576/576",
+   "docScrollX": "1440/1440",
+   "pieVisible": true,
+   "pieBotones": [
+    "Cancelar:1l",
+    "Asignar:1l"
+   ],
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005",
+    "Trueno-004"
+   ],
+   "textoVacio": null,
+   "ulVisibleAltoCero": null
+  }
+ ],
+ "busquedas": [
+  {
+   "vista": "320",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "320",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "320",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "320",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "320",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "320",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "375",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "375",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "375",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "375",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "375",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "390",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "390",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "390",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "390",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "390",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "768",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "768",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "768",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "768",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "768",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1280",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1280",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1280",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1280",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1280",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "paloma",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "PALOMA",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "PaLoMa",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "  paloma  ",
+   "n": 1,
+   "nombres": [
+    "Paloma-007"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "moro",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1440",
+   "q": "MORO",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1440",
+   "q": "relampago",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1440",
+   "q": "Relámpago",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "RELÁMPAGO",
+   "n": 1,
+   "nombres": [
+    "Relámpago-003"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 1,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "00",
+   "n": 7,
+   "nombres": [
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001",
+    "Tostado-005"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 7,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  },
+  {
+   "vista": "1440",
+   "q": "zzz",
+   "n": 0,
+   "nombres": [],
+   "coincideMinus": true,
+   "esperadoSinTildes": 0,
+   "textoVacio": "Motivo\nFecha",
+   "ulAltoVacio": 0
+  },
+  {
+   "vista": "1440",
+   "q": "",
+   "n": 8,
+   "nombres": [
+    "Bravo-012",
+    "Capitán-002",
+    "Lucero-006",
+    "Paloma-007",
+    "Relámpago-003",
+    "Tornado-001"
+   ],
+   "coincideMinus": true,
+   "esperadoSinTildes": 8,
+   "textoVacio": null,
+   "ulAltoVacio": null
+  }
+ ],
+ "consola": [],
+ "red": [],
+ "bloqueadas": [],
+ "errores": []
+}

@@ -127,10 +127,10 @@ function HatoContenido({ animales, caballos, todosLotes }) {
           <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             {vista === 'ganado' && (
               <>
-                <Button variante="fantasma" icono={Pencil} onClick={() => setModal('editar-lotes')} className="flex-1 sm:flex-none">
+                <Button variante="fantasma" icono={Pencil} onClick={() => setModal('editar-lotes')} className="flex-1 whitespace-nowrap max-sm:px-3 sm:flex-none">
                   Editar lotes
                 </Button>
-                <Button variante="secundario" icono={CirclePlus} onClick={() => setModal('lote')} className="flex-1 sm:flex-none">
+                <Button variante="secundario" icono={CirclePlus} onClick={() => setModal('lote')} className="flex-1 whitespace-nowrap max-sm:px-3 sm:flex-none">
                   Crear lote
                 </Button>
               </>
@@ -441,15 +441,18 @@ function TarjetasAnimal({ items, url, caballos }) {
                   <span className="text-gray-600"> · inicial {formatKg(a.pesoIngreso)}</span>
                 </p>
               )}
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              {pierdePeso(a) && (
-                <Badge tono="peligro" icono={TrendingDown}>
-                  Pierde peso
-                </Badge>
+              {/* Las insignias van debajo (no en una columna a la derecha) para no cortar el nombre a 375 px. */}
+              {(pierdePeso(a) || a.esquema === 'Al partir' || a.estado !== 'Activo') && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {pierdePeso(a) && (
+                    <Badge tono="peligro" icono={TrendingDown}>
+                      Pierde peso
+                    </Badge>
+                  )}
+                  {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
+                  {a.estado !== 'Activo' && <Badge>{a.estado}</Badge>}
+                </div>
               )}
-              {a.esquema === 'Al partir' && <Badge tono="cuero">Al partir</Badge>}
-              {a.estado !== 'Activo' && <Badge>{a.estado}</Badge>}
             </div>
             <ChevronRight size={18} className="shrink-0 text-gray-400" aria-hidden="true" />
           </Link>
