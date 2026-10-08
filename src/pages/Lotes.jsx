@@ -121,7 +121,9 @@ function DetalleContenido({ lote }) {
           <Stat label="Peso promedio" value={r.pesoPromedio != null ? `${formatKg(r.pesoPromedio)}` : '—'} />
           <Stat label="Meta (promedio de los animales)" value={r.meta != null ? `${formatKg(r.meta)}` : '—'} sub={r.avancePct != null ? `${formatPct(r.avancePct)} de avance` : undefined} />
           <Stat label="Ganancia diaria del lote" value={formatoGdp(r.gdp)} />
-          <Stat label="Llega a la meta" value={textoProyeccion(r.proyeccion)} />
+          <div className="col-span-2 md:col-span-1">
+            <Stat label="Llega a la meta" value={textoProyeccion(r.proyeccion)} />
+          </div>
         </div>
       </Card>
 
@@ -138,14 +140,16 @@ function DetalleContenido({ lote }) {
         {activos.length === 0 ? (
           <EmptyState titulo="Este lote no tiene animales activos">Muévelos desde otro lote o regístralos en el hato.</EmptyState>
         ) : (
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(16rem,100%),1fr))] gap-2">
             {activos.map((a) => (
               <li key={a.id}>
                 <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
                   <input type="checkbox" className="size-5 accent-brand-700" checked={seleccion.has(a.id)} onChange={() => alternar(a.id)} aria-label={`Seleccionar ${a.numeroInterno}`} />
-                  <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
-                  <span className="ml-auto truncate text-xs text-gray-500">{[a.fincaNombre, a.potreroNombre].filter(Boolean).join(', ')}</span>
+                  <span className="flex min-w-0 flex-col items-start gap-0.5">
+                    <Chapeta numero={a.numeroInterno} />
+                    <span className="text-xs text-gray-500">{[a.fincaNombre, a.potreroNombre].filter(Boolean).join(', ')}</span>
+                  </span>
+                  <span className="cifra ml-auto whitespace-nowrap font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
                 </label>
               </li>
             ))}

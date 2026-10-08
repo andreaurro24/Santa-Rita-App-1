@@ -221,12 +221,12 @@ function DetalleContrato({ contrato, animales, liquidado, ventas = [] }) {
         {suyos.length === 0 ? (
           <EmptyState titulo="Este contrato no tiene animales">{vigente ? 'Asígnale animales activos del hato.' : 'El contrato terminó.'}</EmptyState>
         ) : (
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(12rem,100%),1fr))] gap-2">
             {suyos.map((a) => (
               <li key={a.id}>
                 <Link to={`/animales/${a.id}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5 hover:bg-earth-50">
                   <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
+                  <span className="cifra ml-auto whitespace-nowrap font-bold text-gray-900">{formatKg(pesoActual(a))}</span>
                 </Link>
               </li>
             ))}
@@ -477,7 +477,7 @@ function AsignarForm({ contrato, animales, onClose }) {
         <Field label="Buscar por nombre">
           <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} inputMode="numeric" />
         </Field>
-        <ul className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
+        <ul className="grid max-h-64 grid-cols-[repeat(auto-fill,minmax(min(11rem,100%),1fr))] gap-2 overflow-y-auto">
           {candidatos.map((a) => (
             <li key={a.id}>
               <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2 has-[:checked]:border-earth-500 has-[:checked]:bg-earth-50">

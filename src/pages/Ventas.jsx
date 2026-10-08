@@ -700,14 +700,14 @@ function DetalleVenta({ venta: v, ventas }) {
           {v.lotes.map((l) => (
             <div key={l.id}>
               {v.lotes.length > 1 && <h3 className="mb-2 text-base font-semibold text-gray-800">{l.nombre}</h3>}
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(12rem,100%),1fr))] gap-2">
                 {v.animales
                   .filter((a) => a.loteId === l.id)
                   .map((a) => (
                     <li key={a.animalId}>
                       <Link to={`/animales/${a.animalId}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5">
                         <Chapeta numero={a.numeroInterno} />
-                        <span className="cifra font-bold text-gray-900">{formatKg(a.pesoKg)}</span>
+                        <span className="cifra ml-auto whitespace-nowrap font-bold text-gray-900">{formatKg(a.pesoKg)}</span>
                       </Link>
                     </li>
                   ))}

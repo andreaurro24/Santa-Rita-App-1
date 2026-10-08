@@ -225,13 +225,13 @@ function JornadaContenido({ jornada, lotes }) {
 
       {jornada.nPesados > 0 && (
         <Card titulo={`Pesados (${jornada.nPesados})`}>
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(12rem,100%),1fr))] gap-2">
             {animales
               .filter((a) => jornada.pesados.has(a.id))
               .map((a) => (
                 <li key={a.id} className="flex items-center gap-2 rounded-lg bg-gray-50 px-2 py-1.5">
                   <Chapeta numero={a.numeroInterno} />
-                  <span className="cifra font-bold text-gray-900">{formatKg(jornada.pesados.get(a.id))}</span>
+                  <span className="cifra ml-auto whitespace-nowrap font-bold text-gray-900">{formatKg(jornada.pesados.get(a.id))}</span>
                 </li>
               ))}
           </ul>
@@ -305,7 +305,7 @@ function CapturaPeso({ jornada, animal, onSaltar, onGuardado }) {
           />
         </Field>
         <FormError>{error}</FormError>
-        <div className="grid grid-cols-2 gap-2 md:flex">
+        <div className="grid grid-cols-1 gap-2 md:flex">
           <Button type="submit" icono={Check} disabled={registrar.isPending}>
             {registrar.isPending ? 'Guardando…' : 'Guardar peso'}
           </Button>

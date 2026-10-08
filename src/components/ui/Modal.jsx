@@ -37,7 +37,7 @@ export default function Modal({ titulo, onClose, pie, children }) {
           {children}
         </div>
         {pie && (
-          <div data-dialogo-pie className="flex justify-end gap-2 border-t border-gray-100 bg-white px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div data-dialogo-pie className="flex flex-wrap justify-end gap-2 border-t [&>button]:flex-auto [&>button]:whitespace-nowrap sm:[&>button]:flex-none border-gray-100 bg-white px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {pie}
           </div>
         )}

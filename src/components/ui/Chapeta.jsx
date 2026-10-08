@@ -1,10 +1,12 @@
 // El número interno como la chapeta amarilla que lleva el animal en la oreja: la perforación
 // arriba a la izquierda y el número en Archivo negrita. Es el único adorno fuerte de la app.
 // El texto accesible es solo el número: el contexto ("Animal", la columna) ya lo nombra.
+// sm y md no se parten en dos líneas ("Capitán-" / "002"); la grande baja a text-3xl en celular
+// para que los nombres largos (Relámpago-003) quepan en una línea a 375 px.
 const TAMANOS = {
-  sm: 'min-w-12 pl-5 pr-2 py-0.5 text-sm',
-  md: 'min-w-16 pl-6 pr-2.5 py-1 text-lg',
-  lg: 'min-w-24 pl-8 pr-4 py-2 text-4xl',
+  sm: 'min-w-12 shrink-0 whitespace-nowrap pl-5 pr-2 py-0.5 text-sm',
+  md: 'min-w-16 shrink-0 whitespace-nowrap pl-6 pr-2.5 py-1 text-lg',
+  lg: 'min-w-24 pl-8 pr-4 py-2 text-3xl sm:text-4xl',
 };
 const AGUJERO = { sm: 'left-1.5 size-2', md: 'left-2 size-2.5', lg: 'left-2.5 size-3.5' };
 

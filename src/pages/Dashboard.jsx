@@ -83,8 +83,10 @@ function DashboardContenido({ animales, caballos, rangos }) {
               <li key={`${a.animal.id}-${a.id}`}>
                 <Link to={`/animales/${a.animal.id}`} className="flex min-h-14 items-center gap-3 py-2 hover:bg-gray-50">
                   <AlertTriangle size={20} aria-hidden="true" className={a.diasRestantes < 0 ? 'shrink-0 text-brasa' : 'shrink-0 text-alerta'} />
-                  <Chapeta numero={a.animal.numeroInterno} />
-                  <span className="line-clamp-2 min-w-0 flex-1 text-base text-gray-800">{a.descripcion}</span>
+                  <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                    <Chapeta numero={a.animal.numeroInterno} />
+                    <span className="line-clamp-2 text-base text-gray-800">{a.descripcion}</span>
+                  </span>
                   <span className={`shrink-0 text-sm font-semibold ${a.diasRestantes < 0 ? 'text-brasa' : 'text-gray-700'}`}>
                     {a.diasRestantes < 0 ? `Vencida hace ${cantidad(Math.abs(a.diasRestantes), 'día', 'días')}` : `En ${cantidad(a.diasRestantes, 'día', 'días')}`}
                   </span>
@@ -95,8 +97,10 @@ function DashboardContenido({ animales, caballos, rangos }) {
               <li key={`peso-${a.id}`}>
                 <Link to={`/animales/${a.id}`} className="flex min-h-14 items-center gap-3 py-2 hover:bg-gray-50">
                   <TrendingDown size={20} aria-hidden="true" className="shrink-0 text-peligro" />
-                  <Chapeta numero={a.numeroInterno} />
-                  <span className="min-w-0 flex-1 text-base text-gray-800">Está perdiendo peso: revísalo en el próximo recorrido.</span>
+                  <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                    <Chapeta numero={a.numeroInterno} />
+                    <span className="text-base text-gray-800">Está perdiendo peso: revísalo en el próximo recorrido.</span>
+                  </span>
                 </Link>
               </li>
             ))}
