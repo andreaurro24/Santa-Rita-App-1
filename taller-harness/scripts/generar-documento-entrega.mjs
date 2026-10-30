@@ -219,7 +219,7 @@ bloques.push(
 );
 
 // 2. Canvas
-bloques.push(titulo(1, 'Canvas del arnés con justificación'), ...markdown(leer('entrega/canvas.md'), { nivelBase: 2, omitir: ['Plataforma elegida'] }));
+bloques.push(titulo(1, 'Canvas del arnés con justificación'), ...markdown(leer('entrega/canvas.md'), { nivelBase: 2, }));
 
 // 3. Versión funcional
 const cap = (f) => `entrega/capturas/${f}`;
@@ -255,13 +255,23 @@ bloques.push(
     '**Un evento para todo un lote** se escribe una vez; el validador saca los animales del censo.',
     '**No revisar reglas:** variación de peso, duplicados y fechas los revisa el validador.',
   ].map((t, k) => new Paragraph({ numbering: { reference: 'numeros', level: 0, instance: 900 }, spacing: { after: 60 }, children: enLinea(t) })),
-  p('Nunca borra ni edita registros, ni habla de ventas, precios o contratos "Al partir".', { par: { spacing: { before: 120 } } }),
+  p('Nunca borra ni edita registros, ni habla de ventas, precios o contratos "Al partir". Texto completo: [contexto/instrucciones.md](https://github.com/andreaurro24/Santa-Rita-App-1/blob/main/taller-harness/contexto/instrucciones.md); documentos de referencia: censo, glosario y reglas en la misma carpeta.', { par: { spacing: { before: 120 } } }),
   titulo(2, 'Skills'),
   ...markdown(`| Skill | Cuándo se usa | Qué hace |
 |---|---|---|
 | \`leer-jornada-pesaje\` | El reporte es una foto de planilla o filas "número – peso" | Encabezado (lote y fecha), una fila por animal con su confianza, ilegibles aparte |
 | \`leer-evento-sanidad\` | El mensaje habla de vacunar, purgar, bañar o tratar | Tipo, producto y fecha de cada evento; un lote completo se escribe una sola vez |
 | \`explicar-dudoso\` | En el revisor, solo para dudosos e ilegibles | Explica en lenguaje simple por qué quedó en duda y qué debe responder el administrador |`, { saltarTitulo: false }),
+  p('**Pasos de la skill `leer-jornada-pesaje`:**', { par: { spacing: { before: 120, after: 60 } } }),
+  ...[
+    '**Encabezado:** lee la fecha y el lote de la planilla; si no hay fecha, usa la del mensaje y lo deja anotado.',
+    '**Fila por fila:** copia el texto original, lleva el número a 4 dígitos y el peso a número; si la planilla usa chapeta, la copia sin traducirla.',
+    '**Cada dígito cuenta:** si un dígito está tachado o borroso, la fila va a ilegibles.',
+    '**Confianza:** alta o media; una fila con confianza baja nunca se registra.',
+    '**Filas repetidas:** las transcribe tal como están; el validador decide.',
+    '**Cuenta al final:** filas de la planilla = registros + ilegibles.',
+  ].map((t) => new Paragraph({ numbering: { reference: 'numeros', level: 0, instance: 901 }, spacing: { after: 60 }, children: enLinea(t) })),
+  p('Las tres skills completas están en [taller-harness/skills](https://github.com/andreaurro24/Santa-Rita-App-1/tree/main/taller-harness/skills).', { par: { spacing: { before: 120 } } }),
   titulo(2, 'Verificaciones'),
   p('Lo que se puede comprobar con una regla fija lo comprueba código, no el modelo: `arnes/validador.mjs`, con 24 pruebas automáticas, el mismo código que corre en n8n.'),
   ...markdown(leer('contexto/reglas.md'), { nivelBase: 3 }).slice(1),
@@ -269,7 +279,7 @@ bloques.push(
 );
 
 // 4. Bitácora y 5. Reflexión
-bloques.push(titulo(1, 'Bitácora de pruebas', { pageBreakBefore: true }), ...markdown(leer('entrega/bitacora-pruebas.md'), { nivelBase: 2, omitir: ['Cómo se corrió cada etapa', 'Otros hallazgos', 'Métricas de la corrida'] }));
+bloques.push(titulo(1, 'Bitácora de pruebas', { pageBreakBefore: true }), ...markdown(leer('entrega/bitacora-pruebas.md'), { nivelBase: 2, omitir: ['Otros hallazgos', 'Métricas de la corrida'] }));
 bloques.push(titulo(1, 'Reflexión', { pageBreakBefore: true }), ...markdown(leer('entrega/reflexion.md'), { nivelBase: 2 }));
 
 // ---------- documento

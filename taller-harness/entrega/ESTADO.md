@@ -32,3 +32,13 @@
 - La base de producción tiene datos simulados: limpiarla antes de cargar datos reales de Miguel.
 - `.env.local` y `TEST_USER_*` en Vercel siguen con valores del proyecto borrado.
 - `tests/e2e/verificador.spec.js` tiene el ref del proyecto viejo.
+
+## Revisión contra la rúbrica (2026-10-30)
+| Criterio | Puntos | Cómo lo cubrimos | Riesgo |
+|---|---|---|---|
+| Tema central | 10 | Trabajo, usuarios, frecuencia, entradas, salida, 5 criterios de "terminado" verificables y peor error con su costo (canvas, Tema central) | Ninguno |
+| Diseño de los siete capítulos | 30 | Tabla de 7 capítulos con tipo, piezas concretas y "por qué así"; prioridad explícita según el riesgo (Contexto, Guardarraíles, Verificación) | Ninguno |
+| Guardarraíles y rol humano | 15 | Distingue guías (texto) de guardias reales (permisos y funciones en Postgres); tabla de dónde participa el humano; probado en vivo | Ninguno |
+| Versión funcional | 15 | Instrucciones + censo, glosario y reglas; skill con nombre, cuándo y pasos; validador antes de entregar; guardarraíles implementados; 9 casos + prueba en vivo | Faltan capturas reales del chat y de la app (recuadro ámbar, 3.3); el bot solo responde a ids autorizados |
+| Ciclo de dirección | 20 | Línea base sin arnés, con arnés y mejorado; tabla con las 4 filas pedidas; 2 errores reales con Observa → Diagnostica → Blinda → Comprueba en sesión nueva | Ninguno |
+| Reflexión y presentación | 10 | Reflexión con datos (3/6 → 6/6 → 9/9) y límites; presentación de 10 diapositivas con tema central, los 3 capítulos de más inversión y aprendizajes | En la exposición, nombrar los 3 capítulos de más inversión |

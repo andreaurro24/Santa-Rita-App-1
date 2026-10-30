@@ -133,9 +133,10 @@ button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
 #ant{right:72px}#sig{right:18px}
 @media (prefers-reduced-motion:reduce){#progreso{transition:none}}
 @media print{
-  body{overflow:visible}#escenario{position:static;display:block}#lienzo{transform:none!important}
-  .dia{display:grid!important;position:relative;page-break-after:always;height:900px}
-  button.nav,#pie{display:none}
+  html,body{overflow:visible;height:auto}#escenario{position:static;display:block}#lienzo{transform:none!important;height:auto}
+  .dia{display:grid!important;position:relative;height:900px;overflow:hidden;break-after:page}
+  .dia:last-of-type{break-after:auto}
+  button.nav,#pie,#progreso{display:none}
   @page{size:1600px 900px;margin:0}
 }
 </style>
