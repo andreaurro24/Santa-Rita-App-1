@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Evidencia en la base — prueba en vivo</title>
+<style>
+body{font:14px/1.45 system-ui,Segoe UI,sans-serif;margin:24px;color:#1d2a1f;background:#f6f4ee;width:1100px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:22px 0 8px}
+p.sub{margin:0 0 10px;color:#5b655c}
+table{border-collapse:collapse;width:100%;background:#fff}
+th,td{border:1px solid #d9d5c7;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#e9e5d6;font-weight:600}
+.ok{color:#1d6b2f;font-weight:600}.no{color:#a3341f;font-weight:600}.muted{color:#6b7280}
+code{font-family:Consolas,monospace;font-size:13px}
+</style></head><body>
+<section id="borradores">
+<h1>Borradores del bot (tabla <code>campo.borradores_campo</code>)</h1>
+<p class="sub">Supabase, proyecto <code>santa-rita</code> · 30 de octubre de 2026 · datos simulados · consulta directa a la base</p>
+<table><tr><th>Borrador</th><th>Hora</th><th>Reporte</th><th>Válidos</th><th>Dudosos</th><th>Envía (id Telegram)</th><th>Confirma</th><th>Estado</th></tr>
+<tr><td><code>11df24f1</code></td><td>13:14</td><td>Caso 1 · pesaje LOTE-2025-B</td><td>10</td><td>0</td><td>Andrés · 980146659</td><td>Confirmador simulado · 900000001</td><td class="ok">cargado</td></tr>
+<tr><td><code>17d68dcc</code></td><td>13:39</td><td>Caso 1 enviado otra vez</td><td>10</td><td>0</td><td>Andrés</td><td class="muted">—</td><td class="no">borrador (duplicado bloqueado)</td></tr>
+<tr><td><code>e0c6e340</code></td><td>13:54</td><td>Caso 2 · pesaje LOTE-2026-A</td><td>7</td><td>1</td><td>Compañero · 1327725717</td><td class="muted">—</td><td>borrador</td></tr>
+<tr><td><code>25b2e134</code></td><td>13:56</td><td>Foto sin datos legibles</td><td>0</td><td>0 (1 ilegible)</td><td>Andrés</td><td class="muted">—</td><td>borrador</td></tr>
+<tr><td><code>cc76f86f</code></td><td>13:56</td><td>Caso 2 en el grupo</td><td>7</td><td>1 (0209)</td><td>Andrés</td><td>Compañero · 1327725717</td><td class="ok">cargado (0209 descartada)</td></tr>
+<tr><td><code>74639737</code></td><td>13:59</td><td>Foto sin datos legibles</td><td>0</td><td>0 (1 ilegible)</td><td>Andrés</td><td class="muted">—</td><td>borrador</td></tr>
+</table>
+</section>
+
+<section id="bitacora">
+<h2>Bitácora de jornadas (tabla <code>campo.bitacora_jornadas</code>, extracto)</h2>
+<table><tr><th>#</th><th>Hora</th><th>Evento</th><th>Quién</th><th>Detalle</th></tr>
+<tr><td>1</td><td>13:12:59</td><td><code>mensaje_ignorado</code></td><td>980146659</td><td>remitente no autorizado</td></tr>
+<tr><td>3</td><td>13:14:44</td><td><code>borrador_creado</code></td><td>980146659</td><td>10 válidos, 0 dudosos</td></tr>
+<tr><td>9</td><td>13:45:19</td><td class="no"><code>boton_c_bloqueado</code></td><td>980146659</td><td>Quien envió el reporte no puede confirmarlo; lo confirma otra persona autorizada</td></tr>
+<tr><td>10–11</td><td>13:46:54</td><td class="ok"><code>borrador_confirmado</code> → <code>borrador_cargado</code></td><td>900000001</td><td>10 registros</td></tr>
+<tr><td>13</td><td>13:50:32</td><td><code>mensaje_ignorado</code></td><td>1327725717</td><td>remitente no autorizado (antes de registrarlo)</td></tr>
+<tr><td>22</td><td>13:56:40</td><td><code>borrador_creado</code></td><td>980146659</td><td>7 válidos, 1 dudoso</td></tr>
+<tr><td>24</td><td>13:57:04</td><td class="no"><code>boton_c_bloqueado</code></td><td>1327725717</td><td>Quedan 1 dudosos sin resolver: corrígelos con un mensaje nuevo o descártalos</td></tr>
+<tr><td>25–26</td><td>13:58:59</td><td class="ok"><code>borrador_confirmado</code> → <code>borrador_cargado</code></td><td>1327725717</td><td>descartados: 0209 · 7 registros</td></tr>
+<tr><td>27</td><td>13:59:00</td><td><code>boton_d</code></td><td>1327725717</td><td>Listo: se cargaron 7 registros en la app.</td></tr>
+</table>
+<p class="sub">Además, al intentar cargar el borrador <code>17d68dcc</code> (caso 1 repetido), la base respondió: <b>“La 0101 ya tiene pesaje el 2026-10-27”</b> y no cargó nada.</p>
+</section>
+
+<section id="pesajes">
+<h2>Pesajes que llegaron a la app (tabla <code>public.pesajes</code>, fecha 2026-10-27)</h2>
+<table><tr><th>Animal</th><th>Lote</th><th>Peso anterior (28-sep)</th><th>Peso nuevo</th><th>Ganancia</th><th>Origen</th></tr>
+<tr><td>0101</td><td>LOTE-2025-B</td><td>339</td><td>361</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0102</td><td>LOTE-2025-B</td><td>351</td><td>370</td><td>+19</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0103</td><td>LOTE-2025-B</td><td>352</td><td>374</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0104</td><td>LOTE-2025-B</td><td>345</td><td>366</td><td>+21</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0105</td><td>LOTE-2025-B</td><td>355</td><td>377</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0106</td><td>LOTE-2025-B</td><td>359</td><td>381</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0107</td><td>LOTE-2025-B</td><td>356</td><td>378</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0108</td><td>LOTE-2025-B</td><td>325</td><td>349</td><td>+24</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0109</td><td>LOTE-2025-B</td><td>353</td><td>372</td><td>+19</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0110</td><td>LOTE-2025-B</td><td>340</td><td>362</td><td>+22</td><td>Telegram, borrador 11df24f1</td></tr>
+<tr><td>0201</td><td>LOTE-2026-A</td><td>241</td><td>262</td><td>+21</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0202</td><td>LOTE-2026-A</td><td>239</td><td>258</td><td>+19</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0203</td><td>LOTE-2026-A</td><td>274</td><td>296</td><td>+22</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0204</td><td>LOTE-2026-A</td><td>270</td><td>291</td><td>+21</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0205</td><td>LOTE-2026-A</td><td>268</td><td>289</td><td>+21</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0206</td><td>LOTE-2026-A</td><td>232</td><td>251</td><td>+19</td><td>Telegram, borrador cc76f86f</td></tr>
+<tr><td>0207</td><td>LOTE-2026-A</td><td>267</td><td>288</td><td>+21</td><td>Telegram, borrador cc76f86f</td></tr>
+</table>
+<p class="sub">17 pesajes, todos con una persona distinta a quien envió el reporte como confirmadora. La 0209 (no existe en el censo) no entró.</p>
+</section>
+</body></html>
