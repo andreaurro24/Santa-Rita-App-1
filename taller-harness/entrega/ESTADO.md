@@ -6,7 +6,7 @@
 | 2 | Versión funcional (capturas o enlace + instrucciones, skills y verificaciones) | 🟡 Casi | Textos en `../contexto/`, `../skills/`, `../arnes/`; flujo en `../n8n/`; evidencia en [capturas/](capturas/) | Capturas de Telegram, n8n y la app (abajo) |
 | 3 | Bitácora de pruebas: 5 casos, tabla comparativa, 2 ciclos | ✅ Listo | [bitacora-pruebas.md](bitacora-pruebas.md) (9 casos, tabla, 2 ciclos y §7 prueba en vivo) | Nada |
 | 4 | Reflexión (3 preguntas) | ✅ Listo | [reflexion.md](reflexion.md) | Opcional: mencionar lo aprendido en la prueba en vivo |
-| 5 | Presentación de 5 minutos | 🟡 Casi | [presentacion.pptx](presentacion.pptx) (7 diapositivas con notas) | Una diapositiva con la prueba en vivo y 1 o 2 capturas |
+| 5 | Presentación de 5 minutos | ✅ Lista | [presentacion/index.html](presentacion/index.html) (8 diapositivas en HTML, con el video de la demo); la versión anterior sigue en `presentacion.pptx` | Ensayarla: unos 35 s por diapositiva |
 
 ## Qué se probó en vivo (Telegram + n8n + Supabase)
 - Remitente no autorizado: el bot no responde y queda en la bitácora.

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Santa Rita: arnés de campo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#ffffff; --tinta:#16261c; --suave:#56655b; --pasto:#2f7a4a; --ambar:#a8690f; --rojo:#b23a2a;
+  --regla:#c9d6e8; --margen:#e7a3a3; --linea:#e3e7e2; --fondo-ok:#eef6f0; --fondo-no:#fbefed; --fondo-duda:#fbf4e6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--papel);color:var(--tinta);font-family:Archivo,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+
+/* Lienzo 16:9 que se escala a la pantalla */
+#escenario{position:fixed;inset:0;display:grid;place-items:center}
+#lienzo{width:1600px;height:900px;position:relative;transform-origin:center center}
+.dia{position:absolute;inset:0;padding:96px 120px 90px 168px;display:none;background:var(--papel)}
+.dia.activa{display:grid}
+/* El margen rojo de la planilla de la báscula, en todas las diapositivas */
+.dia::before{content:"";position:absolute;left:120px;top:0;bottom:0;width:2px;background:var(--margen)}
+
+h1,h2{font-weight:760;font-stretch:86%;letter-spacing:-.012em;line-height:1.04}
+h1{font-size:92px;max-width:15ch}
+h2{font-size:62px;max-width:22ch}
+.regla{border-bottom:2px solid var(--regla);padding-bottom:22px;margin-bottom:34px}
+p,li{font-size:30px;line-height:1.42;color:var(--suave);max-width:46ch}
+strong{color:var(--tinta);font-weight:650}
+ul{list-style:none;display:grid;gap:18px}
+li{padding-left:28px;position:relative}
+li::before{content:"";position:absolute;left:0;top:.62em;width:12px;height:2px;background:var(--pasto)}
+.nota{font-size:20px;color:#7d8a81}
+img{display:block}
+
+/* 1. Portada */
+.portada{grid-template-columns:1fr 470px;gap:80px;align-items:center}
+.portada .equipo{margin-top:40px;font-size:24px;color:var(--suave);line-height:1.5}
+.portada .foto{width:470px;transform:rotate(2.2deg);box-shadow:0 2px 0 var(--linea)}
+
+/* 2. Problema */
+.dos-col{grid-template-columns:1fr 520px;gap:80px;align-items:center}
+.dos-col .foto{width:520px;justify-self:end}
+.marca{position:relative}
+.marca .circulo{position:absolute;left:21%;top:80%;width:140px;height:76px;border:4px solid var(--rojo);border-radius:50%;transform:rotate(-6deg)}
+
+/* 3. La innovación: el recorrido de un pesaje */
+.flujo{grid-template-rows:auto 1fr auto;}
+.lema{font-size:62px}
+.lema span{display:block}
+.pasos{display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-self:center;margin-top:10px}
+.paso{padding:26px 22px 26px 0;border-top:6px solid var(--linea);position:relative}
+.paso b{display:block;font-size:20px;color:var(--suave);font-weight:600;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.paso h3{font-size:31px;font-weight:720;font-stretch:90%;line-height:1.1;margin-bottom:10px}
+.paso p{font-size:21px;line-height:1.35}
+.paso.ia{border-top-color:#9fb5d6}
+.paso.regla-fija{border-top-color:var(--ambar)}
+.paso.persona{border-top-color:var(--pasto)}
+.leyenda{display:flex;gap:34px;font-size:21px;color:var(--suave)}
+.leyenda i{display:inline-block;width:26px;height:6px;margin-right:10px;vertical-align:middle}
+
+/* 4. Resultados */
+table{border-collapse:collapse;font-size:28px;width:100%;max-width:1220px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:16px 22px;border-bottom:2px solid var(--regla)}
+th{font-weight:650;color:var(--suave);font-size:22px}
+td:first-child{color:var(--suave);font-size:24px;width:42%}
+td.fuerte{color:var(--tinta);font-weight:720;font-size:34px}
+.en-vivo{margin-top:34px;font-size:28px;color:var(--tinta)}
+
+/* 5. Demo */
+.demo{grid-template-rows:auto minmax(0,1fr);gap:0}
+.demo video{height:560px;width:auto;max-width:100%;justify-self:start;border:2px solid var(--linea);border-radius:6px;background:#fff}
+
+/* 6. Guardarraíles */
+.guardas{grid-template-columns:1fr 600px;gap:64px;align-items:start}
+.bloqueos{display:grid;gap:16px;margin-top:6px}
+.bloqueo{border-left:6px solid var(--rojo);background:var(--fondo-no);padding:16px 22px;font-size:23px;line-height:1.35}
+.bloqueo small{display:block;font-size:18px;color:var(--suave);margin-bottom:4px}
+.bloqueo.ok{border-left-color:var(--pasto);background:var(--fondo-ok)}
+.recorte{width:600px;height:640px;overflow:hidden;border:2px solid var(--linea);border-radius:6px;margin-top:8px}
+.recorte img{width:980px;margin:-370px 0 0 -14px}
+.recorte + .nota{margin-top:10px}
+
+/* 7. Aprendizajes */
+.aprendi{grid-template-rows:auto 1fr}
+.lecciones{display:grid;grid-template-columns:1fr 1fr;gap:34px 70px;align-content:start}
+.lecciones h3{font-size:32px;font-weight:720;font-stretch:90%;line-height:1.12;margin-bottom:10px}
+.lecciones p{font-size:23px;line-height:1.4}
+
+/* 8. Cierre */
+.cierre{align-content:center}
+.cierre h1{max-width:18ch}
+.cierre p{margin-top:34px}
+
+/* Barra inferior */
+#pie{position:absolute;left:168px;right:120px;bottom:34px;display:flex;justify-content:space-between;font-size:18px;color:#8a978e;pointer-events:none}
+#progreso{position:absolute;left:0;bottom:0;height:4px;background:var(--pasto);transition:width .25s}
+button.nav{position:fixed;bottom:14px;width:44px;height:44px;border:1px solid var(--linea);background:#fff;border-radius:50%;font-size:20px;color:var(--suave);cursor:pointer;opacity:.0;transition:opacity .2s}
+body:hover button.nav,button.nav:focus-visible{opacity:1}
+button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
+#ant{right:72px}#sig{right:18px}
+@media (prefers-reduced-motion:reduce){#progreso{transition:none}}
+@media print{
+  body{overflow:visible}#escenario{position:static;display:block}#lienzo{transform:none!important}
+  .dia{display:grid!important;position:relative;page-break-after:always;height:900px}
+  button.nav,#pie{display:none}
+  @page{size:1600px 900px;margin:0}
+}
+</style>
+</head>
+<body>
+<div id="escenario"><div id="lienzo">
+
+<!-- 1 -->
+<section class="dia portada" data-titulo="Portada">
+  <div>
+    <h1>Una foto de la báscula se vuelve un pesaje confirmado</h1>
+    <p class="equipo">Arnés de IA para los reportes de campo de Finca Santa Rita<br>
+    Andrea Urdaneta, Juan Andrés Lacouture y Andrés Sánchez<br>
+    Taller Harness Engineering, Gerencia de TI, Universidad de La Sabana</p>
+  </div>
+  <img class="foto" src="img/planilla-caso1.jpg" alt="Planilla de pesaje escrita a mano del lote 2025-B">
+</section>
+
+<!-- 2 -->
+<section class="dia dos-col" data-titulo="El problema">
+  <div>
+    <h2 class="regla">Cada mes se pesan unas 140 reses en papel</h2>
+    <ul>
+      <li>La planilla se digita a mano en la app, días después.</li>
+      <li>Un peso en la res equivocada daña la ganancia diaria y, con ella, <strong>la recomendación de venta</strong>.</li>
+      <li>En la última venta la finca perdió cerca del 10 % del valor.</li>
+    </ul>
+    <p class="nota" style="margin-top:30px">¿Ve el error? La 209 no existe: el lote va de la 201 a la 208.</p>
+  </div>
+  <div class="marca">
+    <img class="foto" src="img/planilla-caso2.jpg" alt="Planilla del lote 2026-A con la fila 209, que no existe en el censo">
+    <span class="circulo" aria-hidden="true"></span>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="dia flujo" data-titulo="La innovación">
+  <h2 class="lema regla"><span>La IA propone.</span><span>Las reglas verifican.</span><span>Una persona decide.</span></h2>
+  <div class="pasos">
+    <div class="paso"><b>1</b><h3>Foto o mensaje por Telegram</h3><p>Desde el corral, sin abrir la app.</p></div>
+    <div class="paso ia"><b>2</b><h3>Claude lee la planilla</h3><p>Solo puede leer. Lo que no entiende queda ilegible.</p></div>
+    <div class="paso regla-fija"><b>3</b><h3>Reglas fijas la revisan</h3><p>Censo, cambio de peso de más del 15 %, fechas y duplicados.</p></div>
+    <div class="paso ia"><b>4</b><h3>Otro agente pregunta</h3><p>"¿La 0209 es nueva o está mal escrita?"</p></div>
+    <div class="paso persona"><b>5</b><h3>Otra persona confirma</h3><p>Solo entonces la base carga los pesajes.</p></div>
+  </div>
+  <div class="leyenda">
+    <span><i style="background:#9fb5d6"></i>Inteligencia artificial</span>
+    <span><i style="background:var(--ambar)"></i>Código con reglas fijas</span>
+    <span><i style="background:var(--pasto)"></i>Persona</span>
+    <span>Telegram + n8n + Supabase</span>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="dia" data-titulo="Resultados">
+  <div>
+    <h2 class="regla">El arnés no hizo más lista a la IA: le dio lo que no sabía</h2>
+    <table>
+      <tr><th></th><th>IA sola</th><th>Con arnés</th><th>Arnés mejorado</th></tr>
+      <tr><td>Casos base correctos</td><td>3 de 6</td><td>6 de 6</td><td class="fuerte">6 de 6</td></tr>
+      <tr><td>Todos los casos</td><td>4 de 7</td><td>7 de 9</td><td class="fuerte">9 de 9</td></tr>
+      <tr><td>Correcciones a mano</td><td>3</td><td>2</td><td class="fuerte">0</td></tr>
+      <tr><td>Pesos inventados o en la res equivocada</td><td>0</td><td>0</td><td class="fuerte">0</td></tr>
+    </table>
+    <p class="en-vivo">En vivo, por Telegram: <strong>17 pesajes cargados, 0 datos malos</strong>.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="dia demo" data-titulo="Demo">
+  <h2 class="regla">La prueba en vivo, en 30 segundos</h2>
+  <video id="video-demo" src="video/demo.mp4" poster="video/demo-portada.jpg" controls muted playsinline preload="metadata"
+    aria-label="Recorrido de la prueba en vivo: foto, respuesta del bot, bloqueos y carga"></video>
+</section>
+
+<!-- 6 -->
+<section class="dia guardas" data-titulo="Guardarraíles">
+  <div>
+    <h2 class="regla">Lo que la base de datos no dejó pasar</h2>
+    <div class="bloqueos">
+      <div class="bloqueo"><small>Alguien sin permiso le escribe al bot</small>No responde y queda en la bitácora.</div>
+      <div class="bloqueo"><small>Quien envió intenta confirmar</small>"Quien envió el reporte no puede confirmarlo."</div>
+      <div class="bloqueo"><small>El mismo reporte, dos veces</small>"La 0101 ya tiene pesaje el 2026-10-27."</div>
+      <div class="bloqueo"><small>Queda una duda sin resolver</small>"Quedan 1 dudosos sin resolver."</div>
+      <div class="bloqueo ok"><small>Otra persona confirma sin la 0209</small>"Listo: se cargaron 7 registros en la app."</div>
+    </div>
+  </div>
+  <div>
+    <div class="recorte"><img src="img/evidencia-base.png" alt="Bitácora en Supabase con los bloqueos y las cargas de la prueba en vivo"></div>
+    <p class="nota">Bitácora en Supabase, 30 de octubre de 2026</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="dia aprendi" data-titulo="Lo que aprendimos">
+  <h2 class="regla">Lo que aprendimos en la clase</h2>
+  <div class="lecciones">
+    <div><h3>El contexto pesa más que el modelo</h3><p>La IA leía bien. Fallaba por lo que no podía saber: qué reses existen y cuánto pesaron el mes pasado.</p></div>
+    <div><h3>Guías orientan, sensores comprueban</h3><p>Las instrucciones y las skills guían. Lo crítico lo verifican el validador y la base, no el prompt.</p></div>
+    <div><h3>Los errores reales enseñan más</h3><p>Las mejores mejoras salieron de fallas que no imaginamos: un tratamiento duplicado y, en vivo, los botones que no respondían.</p></div>
+    <div><h3>La persona está en el ciclo por diseño</h3><p>La IA nunca escribe en la app. Un borrador solo se carga cuando otra persona lo confirma.</p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="dia cierre" data-titulo="Cierre">
+  <h1>Ningún dato llega a la app sin que una persona lo confirme</h1>
+  <p>Siguiente paso: probarlo con una jornada real de la finca y medir cuánto tiempo ahorra por pesaje.</p>
+</section>
+
+<div id="pie"><span id="titulo-dia"></span><span id="contador"></span></div>
+<div id="progreso"></div>
+</div></div>
+<button class="nav" id="ant" aria-label="Diapositiva anterior">‹</button>
+<button class="nav" id="sig" aria-label="Diapositiva siguiente">›</button>
+
+<script>
+(() => {
+  const dias = [...document.querySelectorAll('.dia')];
+  const lienzo = document.getElementById('lienzo');
+  const video = document.getElementById('video-demo');
+  let i = Math.max(0, Math.min(dias.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+
+  function escalar() {
+    const s = Math.min(innerWidth / 1600, innerHeight / 900);
+    lienzo.style.transform = `scale(${s})`;
+  }
+  function mostrar(n) {
+    i = Math.max(0, Math.min(dias.length - 1, n));
+    dias.forEach((d, k) => d.classList.toggle('activa', k === i));
+    document.getElementById('contador').textContent = `${i + 1} / ${dias.length}`;
+    document.getElementById('titulo-dia').textContent = dias[i].dataset.titulo;
+    document.getElementById('progreso').style.width = `${((i + 1) / dias.length) * 100}%`;
+    history.replaceState(null, '', `#${i + 1}`);
+    if (dias[i].contains(video)) { video.currentTime = 0; video.play().catch(() => {}); } else { video.pause(); }
+  }
+  addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); mostrar(i + 1); }
+    if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); mostrar(i - 1); }
+    if (e.key === 'Home') mostrar(0);
+    if (e.key === 'End') mostrar(dias.length - 1);
+    if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  });
+  document.getElementById('ant').onclick = () => mostrar(i - 1);
+  document.getElementById('sig').onclick = () => mostrar(i + 1);
+  addEventListener('resize', escalar);
+  escalar(); mostrar(i);
+})();
+</script>
+</body>
+</html>
