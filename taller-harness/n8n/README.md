@@ -38,7 +38,9 @@ necesita `npm i @electric-sql/pglite` en una carpeta aparte, no en el repo. El r
    - **Anthropic**: tipo Header Auth, con nombre `x-api-key` y valor = la llave de la API de Claude.
    - **Supabase arnes_campo**: tipo Postgres. Host del pooler de Supabase (Settings → Database),
      usuario `arnes_campo.<ref del proyecto>`, la clave del paso 1.2, SSL activado.
-2. Importar `procesar-reporte.json` y `confirmar-borrador.json` (Workflows → Import from file).
+2. Importar `procesar-reporte.json` (Workflows → Import from file). Es un solo flujo a propósito: Telegram
+   admite un solo webhook por bot, y con dos disparadores el último que se activa deja al otro sin eventos
+   (así fallaron los botones en la primera prueba en vivo, 2026-10-30).
 3. En cada nodo con credencial, elegir la que corresponde (al importar quedan como "CAMBIAR").
 4. Activar los dos flujos.
 
@@ -58,8 +60,8 @@ Pruebas de guardarraíl que vale la pena capturar:
   extractor (Claude, hasta 3 intentos con los errores del validador) → validador (el mismo código de
   `arnes/validador.mjs`) → revisor (Claude, solo si hay dudas) → guarda el borrador → resumen con
   botones.
-- **confirmar-borrador:** botón → `campo.confirmar_y_cargar` o `campo.rechazar_borrador` en
-  Supabase → respuesta en Telegram → bitácora.
+- **Rama de botones (mismo flujo):** el nodo "¿Es un botón?" manda los toques de Confirmar o Rechazar
+  a `campo.confirmar_y_cargar` o `campo.rechazar_borrador` en Supabase → respuesta en Telegram → bitácora.
 
 Si cambian las instrucciones, las skills o el validador, regeneren los flujos con
 `node taller-harness/scripts/generar-n8n.mjs` y vuelvan a importarlos.

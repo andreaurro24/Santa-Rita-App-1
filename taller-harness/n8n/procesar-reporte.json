@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "n1",
-      "name": "Telegram: mensaje",
+      "name": "Telegram: mensaje o botón",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -12,7 +12,8 @@
       ],
       "parameters": {
         "updates": [
-          "message"
+          "message",
+          "callback_query"
         ],
         "additionalFields": {
           "download": true
@@ -28,11 +29,44 @@
     },
     {
       "id": "n2",
+      "name": "¿Es un botón?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ !!$json.callback_query }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n3",
       "name": "Preparar reporte",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
+        480,
         0
       ],
       "parameters": {
@@ -41,12 +75,12 @@
       }
     },
     {
-      "id": "n3",
+      "id": "n4",
       "name": "Supabase: ¿puede enviar?",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        480,
+        720,
         0
       ],
       "parameters": {
@@ -64,12 +98,12 @@
       }
     },
     {
-      "id": "n4",
+      "id": "n5",
       "name": "¿Remitente autorizado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        720,
+        960,
         0
       ],
       "parameters": {
@@ -81,7 +115,7 @@
           },
           "conditions": [
             {
-              "id": "c3",
+              "id": "c4",
               "leftValue": "={{ $json.autorizado }}",
               "rightValue": "",
               "operator": {
@@ -97,12 +131,12 @@
       }
     },
     {
-      "id": "n5",
+      "id": "n6",
       "name": "Bitácora: mensaje ignorado",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        960,
+        1200,
         0
       ],
       "parameters": {
@@ -120,12 +154,12 @@
       }
     },
     {
-      "id": "n6",
+      "id": "n7",
       "name": "Supabase: censo",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        1200,
+        1440,
         0
       ],
       "parameters": {
@@ -141,12 +175,12 @@
       }
     },
     {
-      "id": "n7",
+      "id": "n8",
       "name": "Petición extractor 1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
+        1680,
         0
       ],
       "parameters": {
@@ -155,12 +189,12 @@
       }
     },
     {
-      "id": "n8",
+      "id": "n9",
       "name": "Claude: extractor 1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1680,
+        1920,
         0
       ],
       "parameters": {
@@ -196,13 +230,13 @@
       }
     },
     {
-      "id": "n9",
+      "id": "n10",
       "name": "Validar 1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1920,
-        0
+        0,
+        220
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
@@ -210,12 +244,12 @@
       }
     },
     {
-      "id": "n10",
+      "id": "n11",
       "name": "¿Formato válido? 1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        0,
+        240,
         220
       ],
       "parameters": {
@@ -227,7 +261,7 @@
           },
           "conditions": [
             {
-              "id": "c9",
+              "id": "c10",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -243,12 +277,12 @@
       }
     },
     {
-      "id": "n11",
+      "id": "n12",
       "name": "Petición extractor 2",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
+        480,
         220
       ],
       "parameters": {
@@ -257,12 +291,12 @@
       }
     },
     {
-      "id": "n12",
+      "id": "n13",
       "name": "Claude: extractor 2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
+        720,
         220
       ],
       "parameters": {
@@ -298,12 +332,12 @@
       }
     },
     {
-      "id": "n13",
+      "id": "n14",
       "name": "Validar 2",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
+        960,
         220
       ],
       "parameters": {
@@ -312,12 +346,12 @@
       }
     },
     {
-      "id": "n14",
+      "id": "n15",
       "name": "¿Formato válido? 2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        960,
+        1200,
         220
       ],
       "parameters": {
@@ -329,7 +363,7 @@
           },
           "conditions": [
             {
-              "id": "c13",
+              "id": "c14",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -345,12 +379,12 @@
       }
     },
     {
-      "id": "n15",
+      "id": "n16",
       "name": "Petición extractor 3",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1200,
+        1440,
         220
       ],
       "parameters": {
@@ -359,12 +393,12 @@
       }
     },
     {
-      "id": "n16",
+      "id": "n17",
       "name": "Claude: extractor 3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1440,
+        1680,
         220
       ],
       "parameters": {
@@ -400,12 +434,12 @@
       }
     },
     {
-      "id": "n17",
+      "id": "n18",
       "name": "Validar 3",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1680,
+        1920,
         220
       ],
       "parameters": {
@@ -414,13 +448,13 @@
       }
     },
     {
-      "id": "n18",
+      "id": "n19",
       "name": "¿Formato válido? 3",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        1920,
-        220
+        0,
+        440
       ],
       "parameters": {
         "conditions": {
@@ -431,7 +465,7 @@
           },
           "conditions": [
             {
-              "id": "c17",
+              "id": "c18",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -447,12 +481,12 @@
       }
     },
     {
-      "id": "n19",
+      "id": "n20",
       "name": "Bitácora: a revisión humana",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        0,
+        240,
         440
       ],
       "parameters": {
@@ -470,12 +504,12 @@
       }
     },
     {
-      "id": "n20",
+      "id": "n21",
       "name": "Telegram: no pude leerlo",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        240,
+        480,
         440
       ],
       "parameters": {
@@ -493,12 +527,12 @@
       }
     },
     {
-      "id": "n21",
+      "id": "n22",
       "name": "Borrador validado",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
+        720,
         440
       ],
       "parameters": {
@@ -507,12 +541,12 @@
       }
     },
     {
-      "id": "n22",
+      "id": "n23",
       "name": "¿Hay dudosos o ilegibles?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        720,
+        960,
         440
       ],
       "parameters": {
@@ -524,7 +558,7 @@
           },
           "conditions": [
             {
-              "id": "c21",
+              "id": "c22",
               "leftValue": "={{ $json.necesita_revisor }}",
               "rightValue": "",
               "operator": {
@@ -540,12 +574,12 @@
       }
     },
     {
-      "id": "n23",
+      "id": "n24",
       "name": "Petición revisor",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        960,
+        1200,
         440
       ],
       "parameters": {
@@ -554,12 +588,12 @@
       }
     },
     {
-      "id": "n24",
+      "id": "n25",
       "name": "Claude: revisor",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
+        1440,
         440
       ],
       "parameters": {
@@ -595,22 +629,8 @@
       }
     },
     {
-      "id": "n25",
-      "name": "Leer revisión",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1440,
-        440
-      ],
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "const resp = $input.first().json;\nconst texto = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\nlet revision = null;\ntry { revision = JSON.parse(texto.replace(/^```(json)?|```$/g, '')); } catch { revision = { preguntas: [], alertas: [], mensaje_telegram: 'Hay registros en duda. Revisa el borrador.' }; }\nreturn [{ json: { ...$('Borrador validado').first().json, revision } }];"
-      }
-    },
-    {
       "id": "n26",
-      "name": "Sin revisión",
+      "name": "Leer revisión",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -619,17 +639,31 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "return [{ json: { ...$input.first().json, revision: null } }];"
+        "jsCode": "const resp = $input.first().json;\nconst texto = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\nlet revision = null;\ntry { revision = JSON.parse(texto.replace(/^```(json)?|```$/g, '')); } catch { revision = { preguntas: [], alertas: [], mensaje_telegram: 'Hay registros en duda. Revisa el borrador.' }; }\nreturn [{ json: { ...$('Borrador validado').first().json, revision } }];"
       }
     },
     {
       "id": "n27",
+      "name": "Sin revisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: { ...$input.first().json, revision: null } }];"
+      }
+    },
+    {
+      "id": "n28",
       "name": "Supabase: guardar borrador",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        1920,
-        440
+        0,
+        660
       ],
       "parameters": {
         "operation": "executeQuery",
@@ -646,12 +680,12 @@
       }
     },
     {
-      "id": "n28",
+      "id": "n29",
       "name": "Bitácora: borrador creado",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        0,
+        240,
         660
       ],
       "parameters": {
@@ -669,12 +703,12 @@
       }
     },
     {
-      "id": "n29",
+      "id": "n30",
       "name": "Armar resumen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
+        480,
         660
       ],
       "parameters": {
@@ -683,12 +717,12 @@
       }
     },
     {
-      "id": "n30",
+      "id": "n31",
       "name": "Telegram: borrador con botones",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        480,
+        720,
         660
       ],
       "parameters": {
@@ -747,12 +781,12 @@
       }
     },
     {
-      "id": "n31",
+      "id": "n32",
       "name": "Bitácora: preguntas enviadas",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        720,
+        960,
         660
       ],
       "parameters": {
@@ -768,11 +802,150 @@
           "name": "Supabase arnes_campo"
         }
       }
+    },
+    {
+      "id": "n33",
+      "name": "Leer botón",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        660
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const q = $input.first().json.callback_query;\nconst [accion, id] = String(q.data || '').split(':');\nconst sql = accion === 'r'\n  ? \"select campo.rechazar_borrador($1::uuid, $2::bigint, 'rechazado desde Telegram') as resultado\"\n  : 'select campo.confirmar_y_cargar($1::uuid, $2::bigint, ' + (accion === 'd' ? 'true' : 'false') + ') as resultado';\nreturn [{ json: { accion, id, user_id: q.from.id, chat_id: q.message.chat.id, query_id: q.id, sql } }];"
+      }
+    },
+    {
+      "id": "n34",
+      "name": "Supabase: confirmar o rechazar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1440,
+        660
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {
+          "queryReplacement": "={{ [$json.id, $json.user_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "n35",
+      "name": "Armar respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        660
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const b = $('Leer botón').first().json;\nconst r = $input.first().json;\nlet texto;\nif (r.error) texto = 'No se cargó nada: ' + String(r.error.message || r.error).replace(/^.*?: /, '');\nelse if (b.accion === 'r') texto = 'Borrador rechazado. No se cargó nada.';\nelse texto = 'Listo: se cargaron ' + r.resultado + ' registros en la app.';\nreturn [{ json: { ...b, texto, ok: !r.error } }];"
+      }
+    },
+    {
+      "id": "n36",
+      "name": "Telegram: responder botón",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        660
+      ],
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $json.query_id }}",
+        "additionalFields": {
+          "text": "={{ $json.texto.slice(0, 190) }}"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CAMBIAR",
+          "name": "Telegram Santa Rita"
+        }
+      }
+    },
+    {
+      "id": "n37",
+      "name": "Telegram: resultado",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        880
+      ],
+      "parameters": {
+        "chatId": "={{ $('Armar respuesta').first().json.chat_id }}",
+        "text": "={{ $('Armar respuesta').first().json.texto }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CAMBIAR",
+          "name": "Telegram Santa Rita"
+        }
+      }
+    },
+    {
+      "id": "n38",
+      "name": "Bitácora: botón",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        240,
+        880
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.bitacora_jornadas (tipo, borrador_id, telegram_user_id, detalle) values ('boton_' || $1, $2::uuid, $3, $4::jsonb)",
+        "options": {
+          "queryReplacement": "={{ (() => { const r = $('Armar respuesta').first().json; return [r.ok ? r.accion : r.accion + '_bloqueado', r.id, r.user_id, JSON.stringify({ texto: r.texto })]; })() }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
     }
   ],
   "connections": {
-    "Telegram: mensaje": {
+    "Telegram: mensaje o botón": {
       "main": [
+        [
+          {
+            "node": "¿Es un botón?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es un botón?": {
+      "main": [
+        [
+          {
+            "node": "Leer botón",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Preparar reporte",
@@ -1108,6 +1281,61 @@
         [
           {
             "node": "Bitácora: preguntas enviadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer botón": {
+      "main": [
+        [
+          {
+            "node": "Supabase: confirmar o rechazar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: confirmar o rechazar": {
+      "main": [
+        [
+          {
+            "node": "Armar respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar respuesta": {
+      "main": [
+        [
+          {
+            "node": "Telegram: responder botón",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: responder botón": {
+      "main": [
+        [
+          {
+            "node": "Telegram: resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: resultado": {
+      "main": [
+        [
+          {
+            "node": "Bitácora: botón",
             "type": "main",
             "index": 0
           }

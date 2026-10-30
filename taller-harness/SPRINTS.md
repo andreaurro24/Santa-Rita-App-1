@@ -54,7 +54,8 @@ Los sprints van ordenados por dependencia y por esfuerzo. La talla es relativa:
 
 ## T5: Canal Telegram + n8n + Supabase (L)
 - [x] SQL de las tablas `borradores_campo` y `bitacora_jornadas`, rol sin escritura y funciones de confirmación y carga → `supabase/` (probado en PGlite: 9 de 9 bloqueos)
-- [x] Flujos de n8n importables (`procesar-reporte`, `confirmar-borrador`) y guía de conexión → `n8n/` (sin probar en vivo)
+- [x] Flujo de n8n importable (`procesar-reporte`, con la rama de botones) y guía de conexión → `n8n/`
+- [x] n8n conectado (2026-10-30): credenciales, flujo activo e id de Telegram registrado. En vivo se vio que dos disparadores de Telegram se pisan el webhook, así que se unieron en un solo flujo
 - [x] Bot creado en @BotFather: @santarita_campo_prueba_bot
 - [ ] **Equipo:** crear la cuenta de n8n y pegar el token del bot y la llave del modelo en sus credenciales
 - [x] SQL aplicado el 2026-10-30 en el proyecto nuevo `fixnszbgrsglwftqjkky` (org Andresitow), junto con las 20 migraciones de la app; la org GuardIA se borró

@@ -77,7 +77,11 @@ const claude = (name) => nodo(name, 'n8n-nodes-base.httpRequest', 4.2, {
 const telegram = (name, parameters) => nodo(name, 'n8n-nodes-base.telegram', 1.2, parameters, { credentials: CRED_TELEGRAM });
 
 // ---------------------------------------------------------------- procesar-reporte
-const tg = nodo('Telegram: mensaje', 'n8n-nodes-base.telegramTrigger', 1.1, { updates: ['message'], additionalFields: { download: true } }, { credentials: CRED_TELEGRAM, webhookId: 'santa-rita-reportes' });
+// Telegram admite UN solo webhook por bot: si dos flujos tienen su propio disparador, el último que se
+// activa le quita los eventos al otro. Por eso un único disparador recibe mensajes y botones y los reparte.
+const tg = nodo('Telegram: mensaje o botón', 'n8n-nodes-base.telegramTrigger', 1.1, { updates: ['message', 'callback_query'], additionalFields: { download: true } }, { credentials: CRED_TELEGRAM, webhookId: 'santa-rita-reportes' });
+const esBoton = si('¿Es un botón?', '={{ !!$json.callback_query }}');
+unir(tg, esBoton);
 
 const preparar = code('Preparar reporte', `// Datos del mensaje y foto en base64 (la más grande que manda Telegram).
 const m = $input.first().json.message ?? {};
@@ -86,7 +90,7 @@ if ($input.first().binary?.data) imagen_b64 = (await this.helpers.getBinaryDataB
 const fecha = new Date((m.date ?? Date.now() / 1000) * 1000).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
 return [{ json: { chat_id: m.chat?.id, user_id: m.from?.id, message_id: m.message_id, fecha_mensaje: fecha,
   texto: m.text ?? m.caption ?? '', imagen_b64, media_type: 'image/jpeg' } }];`);
-unir(tg, preparar);
+unir(esBoton, preparar, 1);
 
 const autorizado = pg('Supabase: ¿puede enviar?', 'select exists (select 1 from campo.telegram_autorizados where telegram_user_id = $1 and puede_enviar) as autorizado', '={{ [$json.user_id] }}');
 unir(preparar, autorizado);
@@ -211,19 +215,14 @@ unir(resumen, enviar);
 const preguntaEnviada = pg('Bitácora: preguntas enviadas', `insert into campo.bitacora_jornadas (tipo, borrador_id, detalle) values ('borrador_enviado_a_telegram', $1::uuid, '{}')`, "={{ [$('Armar resumen').first().json.id] }}");
 unir(enviar, preguntaEnviada);
 
-const flujo = (name, nodes, connections) => ({ name, nodes, connections, settings: { executionOrder: 'v1' }, pinData: {}, active: false, meta: { templateCredsSetupCompleted: false }, tags: [] });
-writeFileSync(join(raiz, 'n8n', 'procesar-reporte.json'), JSON.stringify(flujo('Santa Rita · procesar-reporte', nodos.splice(0), { ...conexiones }), null, 2) + '\n');
-for (const k of Object.keys(conexiones)) delete conexiones[k];
-
-// ---------------------------------------------------------------- confirmar-borrador
-const tgBoton = nodo('Telegram: botón', 'n8n-nodes-base.telegramTrigger', 1.1, { updates: ['callback_query'], additionalFields: {} }, { credentials: CRED_TELEGRAM, webhookId: 'santa-rita-botones' });
+// ---------------------------------------------------------------- rama de botones (confirmar o rechazar)
 const leerBoton = code('Leer botón', `const q = $input.first().json.callback_query;
 const [accion, id] = String(q.data || '').split(':');
 const sql = accion === 'r'
   ? "select campo.rechazar_borrador($1::uuid, $2::bigint, 'rechazado desde Telegram') as resultado"
   : 'select campo.confirmar_y_cargar($1::uuid, $2::bigint, ' + (accion === 'd' ? 'true' : 'false') + ') as resultado';
 return [{ json: { accion, id, user_id: q.from.id, chat_id: q.message.chat.id, query_id: q.id, sql } }];`);
-unir(tgBoton, leerBoton);
+unir(esBoton, leerBoton, 0);
 // Las reglas viven en la base de datos: quién puede confirmar, dudosos pendientes, autoconfirmación, doble carga.
 const ejecutar = pg('Supabase: confirmar o rechazar', '={{ $json.sql }}', '={{ [$json.id, $json.user_id] }}', { onError: 'continueRegularOutput' });
 unir(leerBoton, ejecutar);
@@ -242,5 +241,6 @@ unir(contestar, mensaje);
 const bitBoton = pg('Bitácora: botón', `insert into campo.bitacora_jornadas (tipo, borrador_id, telegram_user_id, detalle) values ('boton_' || $1, $2::uuid, $3, $4::jsonb)`,
   "={{ (() => { const r = $('Armar respuesta').first().json; return [r.ok ? r.accion : r.accion + '_bloqueado', r.id, r.user_id, JSON.stringify({ texto: r.texto })]; })() }}");
 unir(mensaje, bitBoton);
-writeFileSync(join(raiz, 'n8n', 'confirmar-borrador.json'), JSON.stringify(flujo('Santa Rita · confirmar-borrador', nodos.splice(0), { ...conexiones }), null, 2) + '\n');
-console.log('Flujos generados en taller-harness/n8n/');
+const flujo = (name, nodes, connections) => ({ name, nodes, connections, settings: { executionOrder: 'v1' }, pinData: {}, active: false, meta: { templateCredsSetupCompleted: false }, tags: [] });
+writeFileSync(join(raiz, 'n8n', 'procesar-reporte.json'), JSON.stringify(flujo('Santa Rita · procesar-reporte', nodos, conexiones), null, 2) + '\n');
+console.log('Flujo generado: taller-harness/n8n/procesar-reporte.json');

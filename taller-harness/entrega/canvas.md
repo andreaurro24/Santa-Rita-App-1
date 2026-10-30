@@ -48,10 +48,10 @@ Dos versiones del mismo arnés, con el mismo validador y las mismas instruccione
 
 1. **Claude Code (funcional y probada):** subagentes `extractor-campo` y `revisor-campo` de solo
    lectura, validador y cargador en Node, y memoria en archivos. Con ella se corrieron los 9 casos.
-2. **Telegram + n8n + Supabase (lista para conectar):** el canal que usaría la finca. Los flujos
-   `n8n/procesar-reporte.json` y `confirmar-borrador.json` se generan desde las mismas piezas, y el
-   SQL con roles, RLS y funciones se probó en un Postgres embebido. Falta que el equipo cree el bot,
-   la cuenta de n8n y pegue las llaves (ver `n8n/README.md`).
+2. **Telegram + n8n + Supabase (conectada el 2026-10-30):** el canal que usaría la finca. El flujo
+   `n8n/procesar-reporte.json` (reporte y botones en un solo flujo) se genera desde las mismas piezas, y el
+   SQL con roles, RLS y funciones se probó en un Postgres embebido y luego se aplicó en Supabase. El bot
+   @santarita_campo_prueba_bot está activo en n8n con datos simulados (ver `n8n/README.md`).
 
 **Por qué así:** el enunciado acepta Claude Code ("agentes de programación"), y nos dejó probar
 todo sin depender de cuentas externas. Telegram es lo que el administrador ya usa en la finca.
