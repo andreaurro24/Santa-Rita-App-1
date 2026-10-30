@@ -102,3 +102,26 @@ no una corrección.
 | Ilegibles | 1 (fila borrosa del caso 4) |
 | Errores graves que pasaron a la app | 0 |
 | Guardarraíles probados que bloquearon | 9 de 9 en SQL (`supabase/prueba-pglite.txt`) y 10 de 10 en el CLI |
+
+## 7. Prueba en vivo: Telegram + n8n + Supabase (2026-10-30)
+
+Con el bot @santarita_campo_prueba_bot, n8n Cloud y la base de Supabase con datos simulados. Dos
+cuentas de Telegram de prueba: quien envía (Andrés) y quien confirma (un compañero), en un grupo.
+
+| Prueba | Qué pasó | Guardarraíl |
+|---|---|---|
+| Mensaje de una cuenta no autorizada | El bot no respondió; quedó `mensaje_ignorado` con el id | Remitentes autorizados |
+| Caso 1 (foto) | 10 pesajes válidos, resumen con botones en segundos | Extractor + validador |
+| Quien envió pulsa Confirmar | "Quien envió el reporte no puede confirmarlo" | Autoconfirmación (BD) |
+| Caso 1 confirmado por otra persona | Se cargaron 10 pesajes | Carga solo con confirmación |
+| Caso 1 enviado dos veces | El segundo se bloqueó: "La 0101 ya tiene pesaje el 2026-10-27" | Doble carga (BD) |
+| Caso 2 en el grupo, Confirmar | "Quedan 1 dudosos sin resolver" (la 0209 no está en el censo) | Dudosos pendientes (BD) |
+| Caso 2, Confirmar sin los dudosos | Se descartó la 0209 y se cargaron 7 pesajes | Descarte explícito, queda en la bitácora |
+
+**Hallazgos de la prueba en vivo (mejora continua):**
+1. Telegram admite un solo webhook por bot: con dos flujos, el segundo dejó al de los botones sin
+   eventos y los botones no respondían. Se unieron en un solo flujo con el nodo "¿Es un botón?".
+2. n8n entrega el error de Postgres como objeto, y el bot mostraba "object Object". Ahora se lee el
+   mensaje real.
+3. El resumen llega al chat donde se envió la foto, así que para que otra persona confirme hace falta
+   un grupo (y desactivar la privacidad del bot en @BotFather).
