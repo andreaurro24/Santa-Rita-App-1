@@ -2,7 +2,7 @@
 
 | # | Entregable | Estado | Dónde | Falta |
 |---|---|---|---|---|
-| 0 | **Documento único de entrega (Word)** | ✅ Listo | [Entrega-Taller-Harness-Santa-Rita.docx](Entrega-Taller-Harness-Santa-Rita.docx) (21 páginas; se regenera con `scripts/generar-documento-entrega.mjs`) | Pegar las 4 capturas pendientes (marcadas en ámbar) |
+| 0 | **Documento único de entrega (Word)** | ✅ Listo | [Entrega-Taller-Harness-Santa-Rita.docx](Entrega-Taller-Harness-Santa-Rita.docx) (23 páginas, formato del proyecto de Gerencia de TI; se regenera con `scripts/generar-documento-entrega.mjs`) | Pegar las 4 capturas pendientes (marcadas en ámbar) |
 | 1 | Canvas completo con justificación | ✅ Listo | [canvas.md](canvas.md) | Nada |
 | 2 | Versión funcional (capturas o enlace + instrucciones, skills y verificaciones) | 🟡 Casi | Textos en `../contexto/`, `../skills/`, `../arnes/`; flujo en `../n8n/`; evidencia en [capturas/](capturas/) | Capturas de Telegram, n8n y la app (abajo) |
 | 3 | Bitácora de pruebas: 5 casos, tabla comparativa, 2 ciclos | ✅ Listo | [bitacora-pruebas.md](bitacora-pruebas.md) (9 casos, tabla, 2 ciclos y §7 prueba en vivo) | Nada |
