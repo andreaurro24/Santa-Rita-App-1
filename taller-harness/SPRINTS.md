@@ -58,7 +58,8 @@ Los sprints van ordenados por dependencia y por esfuerzo. La talla es relativa:
 - [x] Bot creado en @BotFather: @santarita_campo_prueba_bot
 - [ ] **Equipo:** crear la cuenta de n8n y pegar el token del bot y la llave del modelo en sus credenciales
 - [x] SQL aplicado el 2026-10-30 en el proyecto nuevo `fixnszbgrsglwftqjkky` (org Andresitow), junto con las 20 migraciones de la app; la org GuardIA se borró
-- [ ] **Equipo:** ponerle clave al rol `arnes_campo` y registrar los ids de Telegram autorizados
+- [x] Datos simulados (censo demo: 24 novillos, 160 pesajes), usuarios de prueba y clave de `arnes_campo` (2026-10-30; claves en `credenciales-prueba.local`, ignorado por git)
+- [ ] **Equipo:** registrar los ids de Telegram autorizados
 - [ ] Probar los casos por Telegram y tomar las capturas
 
 ## T6: Entregables (S)
