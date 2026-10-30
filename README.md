@@ -38,7 +38,7 @@ Supabase (Auth, Postgres con RLS y funciones SQL) · Vitest · Playwright.
 1. `npm install`.
 2. Copia `.env.example` a `.env.local` con la URL y la llave **publicable** del proyecto
    Supabase de **pruebas**. Crea también `.env.test` con el usuario de prueba y
-   `PROYECTO_PRUEBAS=<ref>`. Producción (`eiszvbwwpqcqognkcfew`) no se usa para desarrollar: ver
+   `PROYECTO_PRUEBAS=<ref>`. Producción (`fixnszbgrsglwftqjkky`) no se usa para desarrollar: ver
    [DEPLOY.md](DEPLOY.md).
 3. Aplica las migraciones de `supabase/migrations/` en orden (SQL Editor o Supabase CLI) y crea
    un perfil para cada usuario:

@@ -41,6 +41,6 @@ con Telegram está en [n8n/README.md](n8n/README.md).
 ## Lo que falta y solo puede hacer el equipo
 1. Crear el bot en @BotFather y la cuenta de n8n, y pegar el token y la llave de Claude en las
    credenciales de n8n.
-2. Aplicar `supabase/001_arnes_campo.sql` en el proyecto de desarrollo de Supabase. El conector
-   de Claude de esta sesión no tiene acceso a ese proyecto.
+2. El SQL ya está aplicado (2026-10-30) en el proyecto `fixnszbgrsglwftqjkky`. Falta ponerle clave
+   al rol `arnes_campo` y registrar los ids de Telegram (pasos 1.2 y 1.3 de `n8n/README.md`).
 3. Probar los casos por Telegram y tomar las capturas para la entrega.

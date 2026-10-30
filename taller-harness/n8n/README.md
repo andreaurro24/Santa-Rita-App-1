@@ -5,7 +5,9 @@ cuentas y tres llaves que solo puede poner una persona del equipo. Claude no cre
 escribe llaves.
 
 ## 1. Supabase (proyecto de desarrollo, nunca producción)
-1. SQL Editor → pegar y correr `taller-harness/supabase/001_arnes_campo.sql`.
+1. Hecho el 2026-10-30: el SQL está aplicado en el proyecto `fixnszbgrsglwftqjkky` (org Andresitow),
+   que reemplaza al proyecto de la org GuardIA, borrada. Para otro proyecto: SQL Editor → pegar y
+   correr `taller-harness/supabase/001_arnes_campo.sql`.
 2. En el mismo editor, ponerle clave al rol del flujo (guárdenla en el gestor de claves del equipo):
    `alter role arnes_campo with password '<clave larga>';`
 3. Registrar quién puede usar el bot (ids de Telegram: se ven escribiéndole a @userinfobot):

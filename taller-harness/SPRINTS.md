@@ -57,7 +57,8 @@ Los sprints van ordenados por dependencia y por esfuerzo. La talla es relativa:
 - [x] Flujos de n8n importables (`procesar-reporte`, `confirmar-borrador`) y guía de conexión → `n8n/` (sin probar en vivo)
 - [x] Bot creado en @BotFather: @santarita_campo_prueba_bot
 - [ ] **Equipo:** crear la cuenta de n8n y pegar el token del bot y la llave del modelo en sus credenciales
-- [ ] **Equipo:** aplicar el SQL en el proyecto de desarrollo de Supabase (el conector de Claude no ve el proyecto)
+- [x] SQL aplicado el 2026-10-30 en el proyecto nuevo `fixnszbgrsglwftqjkky` (org Andresitow), junto con las 20 migraciones de la app; la org GuardIA se borró
+- [ ] **Equipo:** ponerle clave al rol `arnes_campo` y registrar los ids de Telegram autorizados
 - [ ] Probar los casos por Telegram y tomar las capturas
 
 ## T6: Entregables (S)

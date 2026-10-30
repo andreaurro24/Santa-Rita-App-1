@@ -39,7 +39,9 @@ La app usa rutas con `#` (HashRouter), así que no necesita reglas de reescritur
 
 ## 3. Supabase: producción y pruebas
 
-**Producción** es el proyecto `eiszvbwwpqcqognkcfew` (el que usa Vercel). Desde el Sprint 05
+**Producción** es el proyecto `fixnszbgrsglwftqjkky` (`santa-rita`, organización Andresitow, us-east-1, plan
+gratis). Reemplaza al proyecto `eiszvbwwpqcqognkcfew` de la organización GuardIA, que se borró el
+2026-10-30; se recreó con las 20 migraciones y el SQL del arnés del taller. Desde el Sprint 05
 (spec 014) tiene solo datos reales: no se cargan datos de ejemplo ni se corren pruebas ahí.
 
 1. En **Authentication → Sign In / Providers**, desactiva el registro público (*Allow new users

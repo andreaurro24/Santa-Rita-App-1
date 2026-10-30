@@ -1,10 +1,10 @@
 // Spec 014 · R2: proyectos de Supabase y guarda contra escribir datos de prueba en producción.
 //
 // Producción (la app publicada en Vercel y los datos reales de Miguel) es el proyecto
-// `eiszvbwwpqcqognkcfew`. El script de datos de ejemplo y la suite E2E borran y crean datos, así
+// `fixnszbgrsglwftqjkky`. El script de datos de ejemplo y la suite E2E borran y crean datos, así
 // que solo pueden correr contra un proyecto de PRUEBAS, que se configura en .env.local/.env.test
 // y se declara en PROYECTO_PRUEBAS (ver DEPLOY.md).
-export const PROYECTO_PRODUCCION = 'eiszvbwwpqcqognkcfew';
+export const PROYECTO_PRODUCCION = 'fixnszbgrsglwftqjkky';
 
 export function refDe(url) {
   return new URL(url).hostname.split('.')[0];
