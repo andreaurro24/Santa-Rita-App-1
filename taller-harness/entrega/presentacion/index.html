@@ -71,8 +71,14 @@ td.fuerte{color:var(--tinta);font-weight:720;font-size:34px}
 .en-vivo{margin-top:34px;font-size:28px;color:var(--tinta)}
 
 /* 5. Demo */
-.demo{grid-template-rows:auto minmax(0,1fr);gap:0}
-.demo video{height:560px;width:auto;max-width:100%;justify-self:start;border:2px solid var(--linea);border-radius:6px;background:#fff}
+.demo{grid-template-rows:auto auto auto;align-content:start}
+.demo .regla{margin-bottom:28px}
+.demo .nota{margin-top:22px}
+.galeria{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;align-items:start}
+.galeria figure{margin:0}
+.galeria img{width:100%;aspect-ratio:460/520;object-fit:cover;object-position:top;border:2px solid var(--linea);border-radius:6px}
+.galeria figcaption{font-size:22px;line-height:1.3;color:var(--tinta);margin-top:14px;font-weight:600}
+.galeria figcaption b{display:block;font-size:18px;color:var(--pasto);font-variant-numeric:tabular-nums;margin-bottom:2px}
 
 /* 6. Guardarraíles */
 .guardas{grid-template-columns:1fr 600px;gap:64px;align-items:start}
@@ -177,9 +183,14 @@ button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
 
 <!-- 5 -->
 <section class="dia demo" data-titulo="Demo">
-  <h2 class="regla">La prueba en vivo, en 30 segundos</h2>
-  <video id="video-demo" src="video/demo.mp4" poster="video/demo-portada.jpg" controls muted playsinline preload="metadata"
-    aria-label="Recorrido de la prueba en vivo: foto, respuesta del bot, bloqueos y carga"></video>
+  <h2 class="regla">La prueba en vivo por Telegram</h2>
+  <div class="galeria">
+    <figure><img src="img/planilla-caso2.jpg" alt="Foto de la planilla del lote 2026-A enviada al grupo"><figcaption><b>1</b>Se envía la foto al grupo</figcaption></figure>
+    <figure><img src="img/demo-respuesta.png" alt="El bot resume 7 pesajes buenos, pregunta por la 0209 y muestra los botones"><figcaption><b>2</b>El bot resume y pregunta por la 0209</figcaption></figure>
+    <figure><img src="img/demo-bloqueos.png" alt="El bot bloquea la autoconfirmación y la confirmación con un dudoso pendiente"><figcaption><b>3</b>Dos intentos bloqueados</figcaption></figure>
+    <figure><img src="img/demo-cargado.png" alt="Otra persona confirma sin los dudosos y se cargan 7 registros"><figcaption><b>4</b>Otra persona confirma: 7 pesajes cargados</figcaption></figure>
+  </div>
+  <p class="nota">30 de octubre de 2026, con datos simulados. El chat se recreó con los mensajes exactos que respondió el bot.</p>
 </section>
 
 <!-- 6 -->
@@ -227,7 +238,6 @@ button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
 (() => {
   const dias = [...document.querySelectorAll('.dia')];
   const lienzo = document.getElementById('lienzo');
-  const video = document.getElementById('video-demo');
   let i = Math.max(0, Math.min(dias.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
 
   function escalar() {
@@ -241,7 +251,6 @@ button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
     document.getElementById('titulo-dia').textContent = dias[i].dataset.titulo;
     document.getElementById('progreso').style.width = `${((i + 1) / dias.length) * 100}%`;
     history.replaceState(null, '', `#${i + 1}`);
-    if (dias[i].contains(video)) { video.currentTime = 0; video.play().catch(() => {}); } else { video.pause(); }
   }
   addEventListener('keydown', (e) => {
     if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); mostrar(i + 1); }
