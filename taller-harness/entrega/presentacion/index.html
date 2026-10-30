@@ -56,11 +56,34 @@ img{display:block}
 .paso b{display:block;font-size:20px;color:var(--suave);font-weight:600;margin-bottom:10px;font-variant-numeric:tabular-nums}
 .paso h3{font-size:31px;font-weight:720;font-stretch:90%;line-height:1.1;margin-bottom:10px}
 .paso p{font-size:21px;line-height:1.35}
+.paso em{display:block;margin-top:14px;font-style:normal;font-size:18px;font-weight:650;color:var(--tinta)}
 .paso.ia{border-top-color:#9fb5d6}
 .paso.regla-fija{border-top-color:var(--ambar)}
 .paso.persona{border-top-color:var(--pasto)}
 .leyenda{display:flex;gap:34px;font-size:21px;color:var(--suave)}
 .leyenda i{display:inline-block;width:26px;height:6px;margin-right:10px;vertical-align:middle}
+
+/* El arnés: concepto */
+.concepto{grid-template-rows:auto auto 1fr;align-content:start}
+.concepto .bajada{font-size:30px;max-width:52ch;margin:-6px 0 40px}
+.tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:44px}
+.tipo{border-top:6px solid var(--linea);padding-top:22px}
+.tipo h3{font-size:36px;font-weight:740;font-stretch:88%;margin-bottom:6px}
+.tipo .cuando{font-size:20px;color:var(--suave);font-weight:600;margin-bottom:16px}
+.tipo p{font-size:23px;line-height:1.4;max-width:none}
+.tipo .caps{margin-top:18px;font-size:20px;color:var(--tinta);font-weight:600;line-height:1.5}
+.tipo.guia{border-top-color:#9fb5d6}.tipo.sensor{border-top-color:var(--ambar)}.tipo.limite{border-top-color:var(--rojo)}
+
+/* Los siete capítulos */
+.capitulos{grid-template-rows:auto 1fr;align-content:start}
+.capitulos .regla{margin-bottom:14px;max-width:none}
+.filas{display:grid;grid-template-columns:330px 130px 1fr;column-gap:30px}
+.filas > div{padding:10px 0;border-bottom:2px solid var(--regla);font-size:21px;line-height:1.3;color:var(--suave)}
+.filas .cap{font-size:25px;font-weight:700;font-stretch:92%;color:var(--tinta)}
+.filas .cap small{display:block;font-size:16px;font-weight:600;color:var(--pasto);font-stretch:100%;margin-top:2px}
+.filas .t{font-weight:600}
+.filas .t.guia{color:#4f6f9e}.filas .t.sensor{color:var(--ambar)}.filas .t.limite{color:var(--rojo)}.filas .t.memoria{color:var(--tinta)}
+.filas b{color:var(--tinta);font-weight:650}
 
 /* 4. Resultados */
 table{border-collapse:collapse;font-size:28px;width:100%;max-width:1220px;font-variant-numeric:tabular-nums}
@@ -148,15 +171,53 @@ button.nav:focus-visible{outline:3px solid var(--pasto);outline-offset:2px}
   </div>
 </section>
 
+<!-- El arnés: concepto de la clase -->
+<section class="dia concepto" data-titulo="Qué es un arnés">
+  <h2 class="regla">Un agente es el modelo más su arnés</h2>
+  <p class="bajada">El modelo pone la inteligencia. El arnés pone lo que lo vuelve confiable en un trabajo real: qué sabe, qué puede tocar, cómo se comprueba y cómo mejora.</p>
+  <div class="tipos">
+    <div class="tipo guia"><h3>Guías</h3><div class="cuando">Antes de actuar</div>
+      <p>Orientan al modelo: le dan contexto, recetas y un orden de trabajo. Ayudan, pero el modelo podría ignorarlas.</p>
+      <div class="caps">Contexto · Skills · Orquestación</div></div>
+    <div class="tipo sensor"><h3>Sensores</h3><div class="cuando">Después de actuar</div>
+      <p>Comprueban el resultado. Unos son reglas fijas en código; otros son una segunda IA que juzga lo ambiguo.</p>
+      <div class="caps">Verificación · Mejora continua</div></div>
+    <div class="tipo limite"><h3>Límites y memoria</h3><div class="cuando">Siempre</div>
+      <p>Lo que el modelo no puede saltarse, porque vive fuera de él, y el registro que permite retomar el trabajo.</p>
+      <div class="caps">Guardarraíles · Memoria</div></div>
+  </div>
+</section>
+
+<!-- Los siete capítulos aplicados -->
+<section class="dia capitulos" data-titulo="Los 7 capítulos">
+  <h2 class="regla" style="font-size:54px">Los siete capítulos, aplicados a la finca</h2>
+  <div class="filas">
+    <div class="cap">1. Contexto<small>Más inversión</small></div><div class="t guia">Guía</div>
+    <div>Instrucciones de una página, glosario de la finca, <b>censo con el último peso</b> y 10 reglas. Sin esto la IA no sabía que la 0209 no existe.</div>
+    <div class="cap">2. Herramientas y skills</div><div class="t guia">Guía</div>
+    <div>Tres skills: leer un pesaje, leer un evento de sanidad y explicar un dudoso. Cada pieza tiene <b>solo la herramienta que necesita</b>.</div>
+    <div class="cap">3. Memoria</div><div class="t memoria">Memoria</div>
+    <div>Borradores con estado y una bitácora de cada evento. Un agente nuevo <b>retomó los 9 reportes</b> sin que nadie le explicara.</div>
+    <div class="cap">4. Orquestación</div><div class="t guia">Guía</div>
+    <div>Extractor, validador, revisor, persona y cargador, en ese orden. <b>Quien extrae no se califica a sí mismo.</b></div>
+    <div class="cap">5. Guardarraíles<small>Más inversión</small></div><div class="t limite">Límite</div>
+    <div>Permisos y funciones en Postgres: <b>la IA no puede escribir pesajes</b>. Autoconfirmación, dudosos y duplicados, bloqueados por la base.</div>
+    <div class="cap">6. Verificación<small>Más inversión</small></div><div class="t sensor">Sensor</div>
+    <div>Validador con 10 reglas y 24 pruebas automáticas, más <b>9 casos con la respuesta conocida</b>. La IA revisora solo juzga lo ambiguo.</div>
+    <div class="cap">7. Mejora continua</div><div class="t sensor">Sensor</div>
+    <div>Observa, diagnostica, blinda y comprueba: <b>dos ciclos en pruebas y tres arreglos</b> que solo aparecieron en vivo.</div>
+  </div>
+</section>
+
 <!-- 3 -->
 <section class="dia flujo" data-titulo="La innovación">
   <h2 class="lema regla"><span>La IA propone.</span><span>Las reglas verifican.</span><span>Una persona decide.</span></h2>
   <div class="pasos">
-    <div class="paso"><b>1</b><h3>Foto o mensaje por Telegram</h3><p>Desde el corral, sin abrir la app.</p></div>
-    <div class="paso ia"><b>2</b><h3>Claude lee la planilla</h3><p>Solo puede leer. Lo que no entiende queda ilegible.</p></div>
-    <div class="paso regla-fija"><b>3</b><h3>Reglas fijas la revisan</h3><p>Censo, cambio de peso de más del 15 %, fechas y duplicados.</p></div>
-    <div class="paso ia"><b>4</b><h3>Otro agente pregunta</h3><p>"¿La 0209 es nueva o está mal escrita?"</p></div>
-    <div class="paso persona"><b>5</b><h3>Otra persona confirma</h3><p>Solo entonces la base carga los pesajes.</p></div>
+    <div class="paso"><b>1</b><h3>Foto o mensaje por Telegram</h3><p>Desde el corral, sin abrir la app.</p><em>Remitentes autorizados</em></div>
+    <div class="paso ia"><b>2</b><h3>Claude lee la planilla</h3><p>Solo puede leer. Lo que no entiende queda ilegible.</p><em>Contexto y skills</em></div>
+    <div class="paso regla-fija"><b>3</b><h3>Reglas fijas la revisan</h3><p>Censo, cambio de peso de más del 15 %, fechas y duplicados.</p><em>Verificación</em></div>
+    <div class="paso ia"><b>4</b><h3>Otro agente pregunta</h3><p>"¿La 0209 es nueva o está mal escrita?"</p><em>Verificación con IA</em></div>
+    <div class="paso persona"><b>5</b><h3>Otra persona confirma</h3><p>Solo entonces la base carga los pesajes.</p><em>Guardarraíles y memoria</em></div>
   </div>
   <div class="leyenda">
     <span><i style="background:#9fb5d6"></i>Inteligencia artificial</span>
