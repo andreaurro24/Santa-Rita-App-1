@@ -20,9 +20,12 @@ Antes de aplicarlo, el SQL se probó con `probar-pglite.mjs` sobre un Postgres e
 necesita `npm i @electric-sql/pglite` en una carpeta aparte, no en el repo. El resultado está en
 `../supabase/prueba-pglite.txt`.
 
-## 2. Bot de Telegram
-1. En Telegram, abrir @BotFather → `/newbot` → nombre `Santa Rita Campo (prueba)`.
-2. Copiar el token **directo a n8n** (paso 3). No pegarlo en documentos ni en el chat.
+## 2. Bot de Telegram (hecho el 2026-10-30)
+- Bot creado: **@santarita_campo_prueba_bot** ("Santa Rita Campo (prueba)"), con descripción.
+- El token está en el chat con @BotFather de la cuenta de Telegram de Andrés. Se copia **directo a
+  la credencial de n8n** (paso 3); no se pega en documentos ni en el chat.
+- El id de Telegram de cada usuario autorizado se ve en la primera ejecución del flujo
+  (`message.from.id` en el nodo "Telegram: mensaje") o escribiéndole a @userinfobot.
 
 ## 3. n8n (n8n Cloud de prueba o `npx n8n` local)
 1. Crear tres credenciales con estos nombres exactos:

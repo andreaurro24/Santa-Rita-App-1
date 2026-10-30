@@ -55,7 +55,8 @@ Los sprints van ordenados por dependencia y por esfuerzo. La talla es relativa:
 ## T5: Canal Telegram + n8n + Supabase (L)
 - [x] SQL de las tablas `borradores_campo` y `bitacora_jornadas`, rol sin escritura y funciones de confirmación y carga → `supabase/` (probado en PGlite: 9 de 9 bloqueos)
 - [x] Flujos de n8n importables (`procesar-reporte`, `confirmar-borrador`) y guía de conexión → `n8n/` (sin probar en vivo)
-- [ ] **Equipo:** crear el bot en @BotFather y la cuenta de n8n; pegar el token y la llave del modelo en n8n
+- [x] Bot creado en @BotFather: @santarita_campo_prueba_bot
+- [ ] **Equipo:** crear la cuenta de n8n y pegar el token del bot y la llave del modelo en sus credenciales
 - [ ] **Equipo:** aplicar el SQL en el proyecto de desarrollo de Supabase (el conector de Claude no ve el proyecto)
 - [ ] Probar los casos por Telegram y tomar las capturas
 
