@@ -1,0 +1,32 @@
+{
+  "id": "caso-6-mvv39u3b",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 5,
+    "dudosos": 2,
+    "ilegibles": 0
+  },
+  "dudosos": [
+    {
+      "numero": "0302",
+      "peso": 218,
+      "motivos": [
+        "V6: la 0302 aparece 2 veces en el reporte"
+      ]
+    },
+    {
+      "numero": "0302",
+      "peso": 221,
+      "motivos": [
+        "V6: la 0302 aparece 2 veces en el reporte"
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

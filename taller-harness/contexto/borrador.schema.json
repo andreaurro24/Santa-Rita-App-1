@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Borrador de reporte de campo (salida del extractor)",
+  "type": "object",
+  "required": ["tipo_reporte", "fecha_reporte", "registros", "ilegibles"],
+  "additionalProperties": false,
+  "properties": {
+    "tipo_reporte": { "enum": ["pesaje", "sanidad", "otro"] },
+    "fecha_reporte": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Fecha del pesaje o del evento (no la del mensaje)" },
+    "lote": { "type": ["string", "null"], "description": "Código del lote si el reporte lo dice" },
+    "registros": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["confianza", "texto_original"],
+        "additionalProperties": false,
+        "properties": {
+          "numero_interno": { "type": ["string", "null"], "pattern": "^\\d{4}$" },
+          "chapeta": { "type": ["string", "null"] },
+          "alcance_lote": { "type": ["string", "null"], "description": "Solo sanidad: el evento aplica a todo este lote" },
+          "peso_kg": { "type": ["number", "null"] },
+          "evento_sanitario": {
+            "type": ["object", "null"],
+            "required": ["tipo", "descripcion"],
+            "properties": {
+              "tipo": { "enum": ["vacuna", "tratamiento", "desparasitacion"] },
+              "descripcion": { "type": "string", "minLength": 1 }
+            }
+          },
+          "confianza": { "enum": ["alta", "media", "baja"] },
+          "texto_original": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "ilegibles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["texto_original", "motivo"],
+        "properties": {
+          "texto_original": { "type": "string" },
+          "motivo": { "type": "string" }
+        }
+      }
+    }
+  }
+}

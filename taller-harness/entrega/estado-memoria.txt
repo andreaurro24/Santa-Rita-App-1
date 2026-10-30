@@ -1,0 +1,9 @@
+caso-1-mvv3jxr7        cargado     válidos 10, dudosos 0, ilegibles 0
+caso-2-mvv3jxxp        borrador    válidos 7, dudosos 1, ilegibles 0
+caso-3-mvv3jy3v        cargado     válidos 6, dudosos 0, ilegibles 0
+caso-4-mvv3jya9        borrador    válidos 7, dudosos 0, ilegibles 1
+caso-5-mvv3jygg        cargado     válidos 6, dudosos 0, ilegibles 0
+caso-6-mvv3jymt        borrador    válidos 5, dudosos 2, ilegibles 0
+caso-7-mvv3jyth        rechazado   válidos 0, dudosos 3, ilegibles 0
+caso-8-mvv3jz01        cargado     válidos 9, dudosos 0, ilegibles 0
+caso-9-mvv3jz6k        rechazado   válidos 5, dudosos 0, ilegibles 0

@@ -1,0 +1,363 @@
+{
+  "generado": "scripts/generar-censo.mjs (datos ficticios de demostración)",
+  "fecha_corte": "2026-09-30",
+  "finca": "Santa Rita (Badillo, Cesar)",
+  "lotes": [
+    {
+      "codigo": "LOTE-2025-B",
+      "nombre": "Lote 2025-B (ceba, próximo a venta)",
+      "fecha_inicio": "2026-01-19",
+      "potrero": "La Ceiba"
+    },
+    {
+      "codigo": "LOTE-2026-A",
+      "nombre": "Lote 2026-A (ceba, mitad de ciclo)",
+      "fecha_inicio": "2026-05-19",
+      "potrero": "El Mango"
+    },
+    {
+      "codigo": "LOTE-2026-B",
+      "nombre": "Lote 2026-B (ceba, recién ingresado)",
+      "fecha_inicio": "2026-08-12",
+      "potrero": "Los Cocos"
+    }
+  ],
+  "animales": [
+    {
+      "numero_interno": "0101",
+      "chapeta_ica": "COL-CES-215576",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 339
+      }
+    },
+    {
+      "numero_interno": "0102",
+      "chapeta_ica": "COL-CES-222078",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 351
+      }
+    },
+    {
+      "numero_interno": "0103",
+      "chapeta_ica": "COL-CES-211646",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 352
+      }
+    },
+    {
+      "numero_interno": "0104",
+      "chapeta_ica": "COL-CES-222949",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 345
+      }
+    },
+    {
+      "numero_interno": "0105",
+      "chapeta_ica": "COL-CES-265741",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 355
+      }
+    },
+    {
+      "numero_interno": "0106",
+      "chapeta_ica": "COL-CES-284626",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 359
+      }
+    },
+    {
+      "numero_interno": "0107",
+      "chapeta_ica": "COL-CES-207654",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 356
+      }
+    },
+    {
+      "numero_interno": "0108",
+      "chapeta_ica": "COL-CES-248463",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 325
+      }
+    },
+    {
+      "numero_interno": "0109",
+      "chapeta_ica": "COL-CES-239671",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 353
+      }
+    },
+    {
+      "numero_interno": "0110",
+      "chapeta_ica": "COL-CES-296186",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2025-B",
+      "potrero": "La Ceiba",
+      "fecha_ingreso": "2026-01-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 340
+      }
+    },
+    {
+      "numero_interno": "0201",
+      "chapeta_ica": "COL-CES-297501",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 241
+      }
+    },
+    {
+      "numero_interno": "0202",
+      "chapeta_ica": "COL-CES-288250",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 239
+      }
+    },
+    {
+      "numero_interno": "0203",
+      "chapeta_ica": "COL-CES-293907",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 274
+      }
+    },
+    {
+      "numero_interno": "0204",
+      "chapeta_ica": "COL-CES-212229",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 270
+      }
+    },
+    {
+      "numero_interno": "0205",
+      "chapeta_ica": "COL-CES-204514",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 268
+      }
+    },
+    {
+      "numero_interno": "0206",
+      "chapeta_ica": "COL-CES-227937",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 232
+      }
+    },
+    {
+      "numero_interno": "0207",
+      "chapeta_ica": "COL-CES-218183",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 267
+      }
+    },
+    {
+      "numero_interno": "0208",
+      "chapeta_ica": "COL-CES-224200",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-A",
+      "potrero": "El Mango",
+      "fecha_ingreso": "2026-05-19",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 247
+      }
+    },
+    {
+      "numero_interno": "0301",
+      "chapeta_ica": "COL-CES-279559",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 191
+      }
+    },
+    {
+      "numero_interno": "0302",
+      "chapeta_ica": "COL-CES-283520",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 199
+      }
+    },
+    {
+      "numero_interno": "0303",
+      "chapeta_ica": "COL-CES-299990",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 187
+      }
+    },
+    {
+      "numero_interno": "0304",
+      "chapeta_ica": "COL-CES-290859",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 194
+      }
+    },
+    {
+      "numero_interno": "0305",
+      "chapeta_ica": "COL-CES-292039",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 203
+      }
+    },
+    {
+      "numero_interno": "0306",
+      "chapeta_ica": "COL-CES-211907",
+      "sexo": "Macho",
+      "categoria": "novillo",
+      "lote": "LOTE-2026-B",
+      "potrero": "Los Cocos",
+      "fecha_ingreso": "2026-08-12",
+      "estado": "activo",
+      "ultimo_pesaje": {
+        "fecha": "2026-09-28",
+        "peso_kg": 185
+      }
+    }
+  ]
+}

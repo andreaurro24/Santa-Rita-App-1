@@ -1,0 +1,22 @@
+{
+  "id": "caso-4-mvv39tq8",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 7,
+    "dudosos": 0,
+    "ilegibles": 1
+  },
+  "dudosos": [],
+  "ilegibles": [
+    {
+      "texto_original": "10? 3??",
+      "motivo": "fila borrosa y tapada (franja gris entre 105 y 107): no se leen con seguridad el número ni el peso"
+    }
+  ],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "nota": "Usuarios de prueba. En Telegram se reemplazan por los chat_id autorizados (credenciales de n8n, nunca en el repo).",
+  "pueden_enviar": ["administrador", "miguel"],
+  "pueden_confirmar": ["miguel", "administrador"],
+  "max_reintentos_extractor": 2
+}

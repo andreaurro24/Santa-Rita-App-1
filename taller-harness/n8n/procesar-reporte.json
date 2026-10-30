@@ -1,0 +1,1127 @@
+{
+  "name": "Santa Rita · procesar-reporte",
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Telegram: mensaje",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CAMBIAR",
+          "name": "Telegram Santa Rita"
+        }
+      },
+      "webhookId": "santa-rita-reportes"
+    },
+    {
+      "id": "n2",
+      "name": "Preparar reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Datos del mensaje y foto en base64 (la más grande que manda Telegram).\nconst m = $input.first().json.message ?? {};\nlet imagen_b64 = null;\nif ($input.first().binary?.data) imagen_b64 = (await this.helpers.getBinaryDataBuffer(0, 'data')).toString('base64');\nconst fecha = new Date((m.date ?? Date.now() / 1000) * 1000).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });\nreturn [{ json: { chat_id: m.chat?.id, user_id: m.from?.id, message_id: m.message_id, fecha_mensaje: fecha,\n  texto: m.text ?? m.caption ?? '', imagen_b64, media_type: 'image/jpeg' } }];"
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Supabase: ¿puede enviar?",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select exists (select 1 from campo.telegram_autorizados where telegram_user_id = $1 and puede_enviar) as autorizado",
+        "options": {
+          "queryReplacement": "={{ [$json.user_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n4",
+      "name": "¿Remitente autorizado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.autorizado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n5",
+      "name": "Bitácora: mensaje ignorado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.bitacora_jornadas (tipo, telegram_user_id, detalle) values ('mensaje_ignorado', $1, '{\"motivo\":\"remitente no autorizado\"}')",
+        "options": {
+          "queryReplacement": "={{ [$('Preparar reporte').first().json.user_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n6",
+      "name": "Supabase: censo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select json_build_object(\n  'lotes', coalesce((select json_agg(row_to_json(l)) from campo.lotes_arnes l), '[]'::json),\n  'animales', coalesce((select json_agg(json_build_object('numero_interno', c.numero_interno, 'chapeta_ica', c.chapeta_ica,\n     'lote', c.lote, 'fecha_ingreso', c.fecha_ingreso, 'estado', c.estado,\n     'ultimo_pesaje', case when c.ultimo_peso_kg is null then null else json_build_object('fecha', c.fecha_ultimo_peso, 'peso_kg', c.ultimo_peso_kg) end))\n   from campo.censo_arnes c), '[]'::json)) as censo",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n7",
+      "name": "Petición extractor 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Intento 1: instrucciones + glosario + skills + ejemplos en el system; censo y reporte en el mensaje.\nconst SYSTEM = \"# Instrucciones principales del extractor\\n\\n**Quién eres.** Eres el transcriptor de reportes de campo de Finca Santa Rita. El\\nadministrador te manda una foto de la planilla de la báscula o un mensaje sobre algo que\\npasó en campo. Tú lo conviertes en un **borrador** de registros. No guardas nada: una persona\\nrevisa y confirma después.\\n\\n**Lo que recibes.**\\n1. El reporte: una imagen o un texto, y la **fecha del mensaje**.\\n2. El censo de demostración (`censo-demo.json`) y el glosario (`glosario.md`).\\n3. La skill que toque: `leer-jornada-pesaje` (planillas y pesos) o `leer-evento-sanidad`\\n   (vacunas, purgas, tratamientos).\\n\\n**Lo que entregas.** Solo un objeto JSON que cumpla `borrador.schema.json`. Sin texto antes\\nni después, sin comentarios, sin bloques de código.\\n\\n**Reglas de oro.**\\n1. **No inventes nada.** Si un número o un peso no se lee con seguridad, la fila va a\\n   `ilegibles` con su motivo. Nunca completes dígitos por intuición ni por parecido con el\\n   censo.\\n2. **Copia lo que ves.** Cada registro lleva en `texto_original` el texto tal como aparece en\\n   la planilla o el mensaje.\\n3. **El número interno va con 4 dígitos** (\\\"105\\\" → \\\"0105\\\"), pero no lo cambies por otro del\\n   censo aunque se parezca. Si la planilla identifica a los animales **por chapeta**, copia la\\n   chapeta en `chapeta` y deja `numero_interno` en `null`: el validador busca el animal en el\\n   censo. No lo busques tú.\\n4. **La fecha es la del pesaje o la del evento**, no la del mensaje. Usa la fecha escrita en la\\n   planilla. Si el mensaje dice \\\"ayer\\\", calcúlala desde la fecha del mensaje.\\n5. **Marca tu confianza** en cada fila: `alta` (se lee perfecto), `media` (se lee pero con\\n   algún trazo dudoso), `baja` (casi ilegible; mejor mándalo a `ilegibles`).\\n6. **Un evento para todo un lote** se escribe una vez con `alcance_lote`. No listes los\\n   animales del lote: el validador los saca del censo.\\n7. **No revises reglas** (variación de peso, duplicados, fechas). Eso lo hace el validador.\\n   Tu trabajo es transcribir fiel.\\n\\n**Lo que nunca haces.** Borrar o editar registros existentes, dar de baja animales, hablar de\\nventas, precios o contratos \\\"Al partir\\\", o responder a pedidos que no sean transcribir un\\nreporte de campo. Si el mensaje no es un reporte, devuelve `tipo_reporte: \\\"otro\\\"` sin\\nregistros.\\n\\n**Ejemplos resueltos:** `ejemplos/`.\\n\\n\\n---\\n\\n# Glosario de Finca Santa Rita\\n\\nTérminos que aparecen en las planillas y en los mensajes del administrador.\\n\\n| Término | Qué significa | Cómo aparece en un reporte |\\n|---|---|---|\\n| **Número interno** | Identificador del animal en la finca. Cuatro dígitos: los dos primeros son el lote (01, 02, 03) y los dos últimos el animal. | \\\"0105\\\", \\\"105\\\", \\\"#105\\\", \\\"la 105\\\". Siempre se guarda con 4 dígitos. |\\n| **Chapeta (ICA)** | Arete oficial del ICA con el código del animal. | \\\"COL-CES-215576\\\", a veces solo los últimos dígitos (\\\"…5576\\\"). |\\n| **Lote** | Grupo de animales que se ceban y se venden juntos. | \\\"LOTE-2026-B\\\", \\\"lote 2026 B\\\", \\\"el lote nuevo\\\" (= el de ingreso más reciente). |\\n| **Potrero** | Terreno donde pasta un lote (La Ceiba, El Mango, Los Cocos). | \\\"los de La Ceiba\\\" = el lote que está en ese potrero. |\\n| **Jornada de pesaje** | Día en que se pesa un lote completo en la báscula. Una vez al mes. | Planilla con fecha, lote y filas \\\"número – peso\\\". |\\n| **Pesaje** | Peso en kilos de un animal en una fecha. | \\\"372\\\", \\\"372 kg\\\", \\\"372,5\\\". |\\n| **Ceba** | Engorde del animal hasta su peso de venta. | |\\n| **GDP** | Ganancia diaria de peso, en kg/día. Se calcula con los pesajes; el agente no la calcula. | |\\n| **Destare** | Descuento de kilos que hace el comprador. No aplica a los pesajes. | |\\n| **Vacuna** | Evento sanitario de tipo `vacuna` (aftosa, brucelosis, carbón, rabia). | \\\"vacunamos contra aftosa\\\". |\\n| **Desparasitación** | Evento sanitario de tipo `desparasitacion` (ivermectina, purga, \\\"baño\\\"). | \\\"purgamos\\\", \\\"bañamos\\\". |\\n| **Tratamiento** | Evento sanitario de tipo `tratamiento` (antibiótico, curación, vitaminas). | \\\"le pusimos antibiótico a la 0204\\\". |\\n| **Al partir** | Contrato con un tenedor que cuida animales de la finca. **El agente no lo toca.** | |\\n| **Vientre** | Hembra de cría. No se ceba ni se vende. | |\\n| **Ayer / hoy / el lunes** | Fechas relativas: se calculan desde la **fecha de la planilla** si la tiene, o desde la fecha del mensaje si no. | |\\n\\n\\n---\\n\\n# Skill: leer-jornada-pesaje\\n# Leer una jornada de pesaje\\n\\n## Cuándo se usa\\n- El administrador manda la foto de una planilla de la báscula o un texto con varias filas\\n  \\\"número – peso\\\".\\n- **No** se usa para vacunas ni tratamientos (eso es `leer-evento-sanidad`).\\n\\n## Pasos\\n1. **Encabezado.** Busca la fecha escrita en la planilla y el lote. Escribe la fecha en\\n   formato `AAAA-MM-DD`. Si la planilla no tiene fecha, usa la fecha del mensaje y agrega una\\n   fila en `ilegibles` con el motivo \\\"la planilla no tiene fecha; se usó la del mensaje\\\".\\n2. **Fila por fila, de arriba abajo.** Para cada fila:\\n   - Copia el texto tal cual en `texto_original` (por ejemplo `\\\"107 356\\\"`).\\n   - Número interno a 4 dígitos (`107` → `\\\"0107\\\"`).\\n   - Peso en kilos como número. Coma decimal → punto (`372,5` → `372.5`).\\n   - Si la fila trae chapeta, cópiala en `chapeta`.\\n   - Si la columna de identificación es la **chapeta** (no el número interno), deja\\n     `numero_interno: null` y copia la chapeta completa como aparece. El validador encuentra el\\n     animal en el censo; tú no traduces chapetas a números.\\n3. **Cada dígito cuenta.** Si un dígito del número o del peso está tachado, borroso o tapado,\\n   la fila entera va a `ilegibles` con el motivo. No completes el dígito.\\n4. **Confianza:** `alta` si todo se lee perfecto; `media` si hay un trazo raro pero el valor es\\n   claro; nunca registres una fila con confianza `baja` (mándala a `ilegibles`).\\n5. **Filas repetidas:** transcríbelas las dos veces, tal como están. El validador decide.\\n6. **Cuenta al final:** número de filas de la planilla = registros + ilegibles. Si no\\n   cuadra, revisa qué fila te saltaste.\\n\\n## Ejemplo\\nVer el ejemplo A en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Skill: leer-evento-sanidad\\n# Leer un evento de sanidad\\n\\n## Cuándo se usa\\n- Mensajes como \\\"ayer vacunamos el lote 2026-B contra aftosa\\\" o \\\"le puse antibiótico a la 204\\\".\\n- **No** se usa para pesos (eso es `leer-jornada-pesaje`).\\n\\n## Pasos\\n1. **Tipo** (glosario):\\n   - vacunar → `vacuna`\\n   - purgar, bañar, desparasitar, ivermectina → `desparasitacion`\\n   - antibiótico, curación, vitaminas, tratamiento → `tratamiento`\\n2. **Descripción:** el producto o la enfermedad, en pocas palabras (\\\"Aftosa\\\", \\\"Ivermectina\\\").\\n3. **Fecha:** la del evento, no la del mensaje.\\n   - \\\"hoy\\\" = fecha del mensaje · \\\"ayer\\\" = fecha del mensaje menos 1 día · \\\"antier\\\" = menos 2.\\n   - Un día de la semana (\\\"el lunes\\\") = el último lunes antes de la fecha del mensaje.\\n4. **A quién:**\\n   - Si nombra animales sueltos, un registro por animal con su número interno a 4 dígitos.\\n   - Si dice \\\"todo el lote X\\\", un solo registro con `alcance_lote: \\\"LOTE-…\\\"`. **No** listes\\n     los animales: el validador los saca del censo.\\n   - Si el lote se nombra por el potrero (\\\"los de La Ceiba\\\"), usa el lote de ese potrero\\n     según el censo.\\n5. Si falta el tipo, la fecha o a quién se aplicó, manda el mensaje a `ilegibles` con lo que\\n   falta.\\n\\n## Ejemplo\\nVer el ejemplo B en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Tres reportes ya resueltos\\n\\nSirven de referencia al extractor. Usan animales del censo de demostración.\\n\\n## Ejemplo A: planilla de pesaje con una fila borrosa\\n\\n**Mensaje del 2026-09-29** (foto de planilla). Lo que se ve en la foto:\\n\\n```\\nJORNADA DE PESAJE — LOTE-2026-A — Fecha: 28/09/2026\\nN°     Peso (kg)\\n201    241\\n202    239\\n2?3    27?        ← tachón de lapicero\\n204    270\\n```\\n\\n**Salida correcta:**\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"pesaje\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-28\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-A\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": \\\"0201\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 241, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"201 241\\\" },\\n    { \\\"numero_interno\\\": \\\"0202\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 239, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"202 239\\\" },\\n    { \\\"numero_interno\\\": \\\"0204\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 270, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"204 270\\\" }\\n  ],\\n  \\\"ilegibles\\\": [\\n    { \\\"texto_original\\\": \\\"2?3 27?\\\", \\\"motivo\\\": \\\"tachón: no se lee el segundo dígito del número ni el último del peso\\\" }\\n  ]\\n}\\n```\\n\\nPor qué: la fecha es la de la planilla (28/09), no la del mensaje (29/09). La fila del tachón\\nno se completa con \\\"0203\\\" aunque sea el único número del censo que encaja.\\n\\n## Ejemplo B: evento sanitario para todo un lote\\n\\n**Mensaje del 2026-09-15:** \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\".\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"sanidad\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-15\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-B\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": null, \\\"chapeta\\\": null, \\\"alcance_lote\\\": \\\"LOTE-2026-B\\\", \\\"peso_kg\\\": null,\\n      \\\"evento_sanitario\\\": { \\\"tipo\\\": \\\"desparasitacion\\\", \\\"descripcion\\\": \\\"Ivermectina\\\" },\\n      \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\" }\\n  ],\\n  \\\"ilegibles\\\": []\\n}\\n```\\n\\nPor qué: \\\"purgar\\\" es desparasitación (glosario). Un solo registro con `alcance_lote`; el\\nvalidador lo expande a los 6 animales del lote.\\n\\n## Ejemplo C: mensaje que no es un reporte\\n\\n**Mensaje del 2026-09-20:** \\\"¿a cómo está el kilo en Valledupar? ¿vendemos el lote B?\\\"\\n\\n```json\\n{ \\\"tipo_reporte\\\": \\\"otro\\\", \\\"fecha_reporte\\\": \\\"2026-09-20\\\", \\\"lote\\\": null, \\\"registros\\\": [], \\\"ilegibles\\\": [] }\\n```\\n\\nPor qué: precios y ventas están fuera del trabajo del agente. El arnés le responde al\\nadministrador que use la app para eso.\\n\\n\\n---\\n\\n# Formato de salida (JSON Schema)\\n{\\n  \\\"$schema\\\": \\\"https://json-schema.org/draft/2020-12/schema\\\",\\n  \\\"title\\\": \\\"Borrador de reporte de campo (salida del extractor)\\\",\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"required\\\": [\\\"tipo_reporte\\\", \\\"fecha_reporte\\\", \\\"registros\\\", \\\"ilegibles\\\"],\\n  \\\"additionalProperties\\\": false,\\n  \\\"properties\\\": {\\n    \\\"tipo_reporte\\\": { \\\"enum\\\": [\\\"pesaje\\\", \\\"sanidad\\\", \\\"otro\\\"] },\\n    \\\"fecha_reporte\\\": { \\\"type\\\": \\\"string\\\", \\\"pattern\\\": \\\"^\\\\\\\\d{4}-\\\\\\\\d{2}-\\\\\\\\d{2}$\\\", \\\"description\\\": \\\"Fecha del pesaje o del evento (no la del mensaje)\\\" },\\n    \\\"lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Código del lote si el reporte lo dice\\\" },\\n    \\\"registros\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"confianza\\\", \\\"texto_original\\\"],\\n        \\\"additionalProperties\\\": false,\\n        \\\"properties\\\": {\\n          \\\"numero_interno\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"pattern\\\": \\\"^\\\\\\\\d{4}$\\\" },\\n          \\\"chapeta\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"] },\\n          \\\"alcance_lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Solo sanidad: el evento aplica a todo este lote\\\" },\\n          \\\"peso_kg\\\": { \\\"type\\\": [\\\"number\\\", \\\"null\\\"] },\\n          \\\"evento_sanitario\\\": {\\n            \\\"type\\\": [\\\"object\\\", \\\"null\\\"],\\n            \\\"required\\\": [\\\"tipo\\\", \\\"descripcion\\\"],\\n            \\\"properties\\\": {\\n              \\\"tipo\\\": { \\\"enum\\\": [\\\"vacuna\\\", \\\"tratamiento\\\", \\\"desparasitacion\\\"] },\\n              \\\"descripcion\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n            }\\n          },\\n          \\\"confianza\\\": { \\\"enum\\\": [\\\"alta\\\", \\\"media\\\", \\\"baja\\\"] },\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n        }\\n      }\\n    },\\n    \\\"ilegibles\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"texto_original\\\", \\\"motivo\\\"],\\n        \\\"properties\\\": {\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\" },\\n          \\\"motivo\\\": { \\\"type\\\": \\\"string\\\" }\\n        }\\n      }\\n    }\\n  }\\n}\\n\";\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nconst contenido = [];\nif (r.imagen_b64) contenido.push({ type: 'image', source: { type: 'base64', media_type: r.media_type, data: r.imagen_b64 } });\ncontenido.push({ type: 'text', text: 'Fecha del mensaje: ' + r.fecha_mensaje + '\\nTexto del mensaje: ' + (r.texto || '(sin texto)') + '\\n\\nCenso (censo-demo.json):\\n' + JSON.stringify(censo) });\nconst messages = [{ role: 'user', content: contenido }];\n\nreturn [{ json: { peticion: { model: 'claude-opus-5-5', max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'medium' }, system: SYSTEM, messages } } }];"
+      }
+    },
+    {
+      "id": "n8",
+      "name": "Claude: extractor 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2026-10-21"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.peticion) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CAMBIAR",
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "id": "n9",
+      "name": "Validar 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Validador con reglas fijas (copiado de taller-harness/arnes/validador.mjs).\n// Validador del arnés: reglas fijas, sin IA. Mismo resultado siempre.\n// Las reglas V1..V10 están en contexto/reglas.md.\n// Este archivo no importa nada a propósito: scripts/generar-n8n.mjs lo copia tal cual dentro\n// del nodo Code de n8n, así la versión de Claude Code y la de Telegram usan el mismo código.\n\nconst UMBRAL_VARIACION = 0.15; // RN-01, igual que variacionSospechosa en src/domain/gdp.js\nconst PESO_MIN_KG = 80; // V7\nconst PESO_MAX_KG = 800; // V7\nconst TIPOS_SANIDAD = ['vacuna', 'tratamiento', 'desparasitacion']; // V9\n\nconst FECHA_ISO = /^\\d{4}-\\d{2}-\\d{2}$/;\n\n// Revisa la forma del JSON del extractor. Si hay errores, el orquestador reintenta (máximo 2).\nfunction revisarFormato(borrador) {\n  const errores = [];\n  if (!borrador || typeof borrador !== 'object' || Array.isArray(borrador)) return ['la salida no es un objeto JSON'];\n  if (!['pesaje', 'sanidad', 'otro'].includes(borrador.tipo_reporte)) errores.push('tipo_reporte inválido');\n  if (!FECHA_ISO.test(String(borrador.fecha_reporte ?? ''))) errores.push('fecha_reporte no tiene formato AAAA-MM-DD');\n  if (!Array.isArray(borrador.registros)) errores.push('falta la lista registros');\n  if (!Array.isArray(borrador.ilegibles)) errores.push('falta la lista ilegibles');\n  for (const [i, r] of (Array.isArray(borrador.registros) ? borrador.registros : []).entries()) {\n    if (!r || typeof r !== 'object') { errores.push(`registro ${i + 1} no es un objeto`); continue; }\n    if (!r.texto_original) errores.push(`registro ${i + 1} sin texto_original`);\n    if (!['alta', 'media', 'baja'].includes(r.confianza)) errores.push(`registro ${i + 1} sin confianza válida`);\n    if (r.numero_interno != null && !/^\\d{4}$/.test(String(r.numero_interno))) errores.push(`registro ${i + 1}: numero_interno debe tener 4 dígitos`);\n    // Ciclo 2: una fila puede identificar al animal solo por chapeta; el validador lo busca en el censo.\n    if (!r.numero_interno && !r.alcance_lote && !soloDigitos(r.chapeta)) errores.push(`registro ${i + 1} sin numero_interno, chapeta ni alcance_lote`);\n  }\n  return errores;\n}\n\nconst soloDigitos = (s) => String(s ?? '').replace(/\\D/g, '');\nconst normal = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');\n\n// V8: el valor tiene que estar escrito en el texto que leyó el extractor.\nfunction apareceEnTexto(valor, texto) {\n  if (valor == null) return true;\n  const t = String(texto ?? '');\n  const sinCeros = soloDigitos(valor).replace(/^0+/, '') || '0';\n  const variantes = [String(valor), String(valor).replace('.', ','), sinCeros];\n  const numerosDelTexto = t.match(/\\d+(?:[.,]\\d+)?/g) ?? [];\n  return numerosDelTexto.some((n) => variantes.includes(n) || variantes.includes(n.replace(/^0+/, '')));\n}\n\nfunction loteMencionado(codigoLote, potrero, texto) {\n  const t = normal(texto);\n  const corto = normal(String(codigoLote).replace(/^lote-?/i, ''));\n  return t.includes(corto) || (potrero && t.includes(normal(potrero)));\n}\n\nfunction validarBorrador(borrador, censo, { fechaMensaje }) {\n  const porNumero = new Map(censo.animales.map((a) => [a.numero_interno, a]));\n  const resultado = {\n    tipo_reporte: borrador.tipo_reporte,\n    fecha_reporte: borrador.fecha_reporte,\n    lote: borrador.lote ?? null,\n    validos: [],\n    dudosos: [],\n    ilegibles: [...(borrador.ilegibles ?? [])],\n  };\n  if (borrador.tipo_reporte === 'otro') return conResumen(resultado);\n\n  // V10: un evento para todo el lote se expande con el censo, nunca con lo que diga el modelo.\n  const filas = [];\n  for (const r of borrador.registros) {\n    if (r.alcance_lote) {\n      const lote = censo.lotes.find((l) => l.codigo === r.alcance_lote);\n      const animalesLote = censo.animales.filter((a) => a.lote === r.alcance_lote && a.estado === 'activo');\n      if (!lote || animalesLote.length === 0) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V1', texto: `el lote ${r.alcance_lote} no está en el censo` }] });\n        continue;\n      }\n      if (!loteMencionado(lote.codigo, lote.potrero, r.texto_original)) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V8', texto: 'el lote no aparece en el texto leído' }] });\n        continue;\n      }\n      for (const a of animalesLote) filas.push({ ...r, numero_interno: a.numero_interno, alcance_lote: r.alcance_lote, expandido: true });\n    } else if (!r.numero_interno) {\n      // Ciclo 2 (V1/V2): planilla anotada por chapeta. El número interno lo pone el censo, no el modelo.\n      const digitos = soloDigitos(r.chapeta);\n      const candidatos = digitos.length >= 4 ? censo.animales.filter((a) => soloDigitos(a.chapeta_ica).endsWith(digitos)) : [];\n      if (candidatos.length === 1) {\n        filas.push({ ...r, numero_interno: candidatos[0].numero_interno, porChapeta: true });\n      } else {\n        const texto = candidatos.length ? `la chapeta ${r.chapeta} coincide con ${candidatos.length} animales del censo` : `la chapeta ${r.chapeta} no está en el censo`;\n        resultado.dudosos.push({ ...r, motivos: [{ regla: candidatos.length ? 'V2' : 'V1', texto }] });\n      }\n    } else {\n      filas.push({ ...r });\n    }\n  }\n\n  // V6: cuántas veces aparece cada animal en este reporte. Ciclo 1: en sanidad, un mismo animal\n  // puede tener eventos distintos el mismo día (purga y tratamiento); solo se repite si es el mismo evento.\n  const claveDuplicado = (f) => borrador.tipo_reporte === 'sanidad'\n    ? `${f.numero_interno}|${f.evento_sanitario?.tipo}|${normal(f.evento_sanitario?.descripcion)}`\n    : f.numero_interno;\n  const veces = new Map();\n  for (const f of filas) veces.set(claveDuplicado(f), (veces.get(claveDuplicado(f)) ?? 0) + 1);\n\n  for (const f of filas) {\n    const motivos = [];\n    const animal = porNumero.get(f.numero_interno);\n    const fecha = borrador.fecha_reporte;\n\n    if (!animal || animal.estado !== 'activo') motivos.push({ regla: 'V1', texto: `la ${f.numero_interno} no está en el censo de animales activos` });\n    if (animal && f.chapeta && soloDigitos(f.chapeta) && !soloDigitos(animal.chapeta_ica).endsWith(soloDigitos(f.chapeta))) {\n      motivos.push({ regla: 'V2', texto: `la chapeta ${f.chapeta} no coincide con la del censo (${animal.chapeta_ica})` });\n    }\n    if (fechaMensaje && fecha > fechaMensaje) motivos.push({ regla: 'V3', texto: `la fecha ${fecha} es posterior al mensaje (${fechaMensaje})` });\n    if (animal && fecha < animal.fecha_ingreso) motivos.push({ regla: 'V4', texto: `la fecha ${fecha} es anterior al ingreso del animal (${animal.fecha_ingreso})` });\n    if (veces.get(claveDuplicado(f)) > 1) motivos.push({ regla: 'V6', texto: `la ${f.numero_interno} aparece ${veces.get(claveDuplicado(f))} veces en el reporte` });\n    const idLeido = f.porChapeta ? soloDigitos(f.chapeta) : f.numero_interno;\n    if (!f.expandido && !apareceEnTexto(idLeido, f.texto_original)) motivos.push({ regla: 'V8', texto: `el ${f.porChapeta ? 'número de chapeta' : 'número interno'} no aparece en el texto leído` });\n\n    if (borrador.tipo_reporte === 'pesaje') {\n      const peso = Number(f.peso_kg);\n      if (!Number.isFinite(peso) || peso < PESO_MIN_KG || peso > PESO_MAX_KG) {\n        motivos.push({ regla: 'V7', texto: `peso fuera de rango (${f.peso_kg} kg)` });\n      } else {\n        const anterior = animal?.ultimo_pesaje?.peso_kg;\n        if (anterior && Math.abs(peso - anterior) / anterior > UMBRAL_VARIACION) {\n          const cambio = Math.round(((peso - anterior) / anterior) * 100);\n          motivos.push({ regla: 'V5', texto: `cambió ${cambio > 0 ? '+' : ''}${cambio} % frente al último pesaje (${anterior} kg el ${animal.ultimo_pesaje.fecha})` });\n        }\n        if (!apareceEnTexto(f.peso_kg, f.texto_original)) motivos.push({ regla: 'V8', texto: 'el peso no aparece en el texto leído' });\n      }\n      if (f.confianza === 'baja') motivos.push({ regla: 'V8', texto: 'el extractor no está seguro de la lectura (confianza baja)' });\n    } else if (borrador.tipo_reporte === 'sanidad') {\n      const ev = f.evento_sanitario;\n      if (!ev || !TIPOS_SANIDAD.includes(ev.tipo) || !String(ev.descripcion ?? '').trim()) motivos.push({ regla: 'V9', texto: 'evento sanitario incompleto (tipo o descripción)' });\n    }\n\n    const registro = {\n      numero_interno: f.numero_interno,\n      chapeta: animal?.chapeta_ica ?? f.chapeta ?? null,\n      fecha,\n      peso_kg: borrador.tipo_reporte === 'pesaje' ? Number(f.peso_kg) : null,\n      evento_sanitario: borrador.tipo_reporte === 'sanidad' ? f.evento_sanitario : null,\n      texto_original: f.texto_original,\n      confianza: f.confianza,\n    };\n    if (motivos.length) resultado.dudosos.push({ ...registro, motivos });\n    else resultado.validos.push(registro);\n  }\n  return conResumen(resultado);\n}\n\nfunction conResumen(r) {\n  r.resumen = { validos: r.validos.length, dudosos: r.dudosos.length, ilegibles: r.ilegibles.length };\n  r.estado = r.dudosos.length || r.ilegibles.length ? 'requiere_revision' : 'listo_para_confirmar';\n  return r;\n}\n\nconst resp = $input.first().json;\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nlet texto_modelo = '';\nlet extraccion = null;\nlet errores = [];\nif (resp.stop_reason === 'refusal') errores = ['el modelo rechazó la petición'];\nelse {\n  texto_modelo = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\n  try { extraccion = JSON.parse(texto_modelo.replace(/^```(json)?|```$/g, '')); } catch { errores = ['la salida no es JSON válido']; }\n  if (!errores.length) errores = revisarFormato(extraccion);\n}\nconst ok = errores.length === 0;\nconst resultado = ok ? validarBorrador(extraccion, censo, { fechaMensaje: r.fecha_mensaje }) : null;\nreturn [{ json: { ok, intento: 1, errores, texto_modelo, extraccion, resultado } }];"
+      }
+    },
+    {
+      "id": "n10",
+      "name": "¿Formato válido? 1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c9",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n11",
+      "name": "Petición extractor 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        220
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Intento 2: instrucciones + glosario + skills + ejemplos en el system; censo y reporte en el mensaje.\nconst SYSTEM = \"# Instrucciones principales del extractor\\n\\n**Quién eres.** Eres el transcriptor de reportes de campo de Finca Santa Rita. El\\nadministrador te manda una foto de la planilla de la báscula o un mensaje sobre algo que\\npasó en campo. Tú lo conviertes en un **borrador** de registros. No guardas nada: una persona\\nrevisa y confirma después.\\n\\n**Lo que recibes.**\\n1. El reporte: una imagen o un texto, y la **fecha del mensaje**.\\n2. El censo de demostración (`censo-demo.json`) y el glosario (`glosario.md`).\\n3. La skill que toque: `leer-jornada-pesaje` (planillas y pesos) o `leer-evento-sanidad`\\n   (vacunas, purgas, tratamientos).\\n\\n**Lo que entregas.** Solo un objeto JSON que cumpla `borrador.schema.json`. Sin texto antes\\nni después, sin comentarios, sin bloques de código.\\n\\n**Reglas de oro.**\\n1. **No inventes nada.** Si un número o un peso no se lee con seguridad, la fila va a\\n   `ilegibles` con su motivo. Nunca completes dígitos por intuición ni por parecido con el\\n   censo.\\n2. **Copia lo que ves.** Cada registro lleva en `texto_original` el texto tal como aparece en\\n   la planilla o el mensaje.\\n3. **El número interno va con 4 dígitos** (\\\"105\\\" → \\\"0105\\\"), pero no lo cambies por otro del\\n   censo aunque se parezca. Si la planilla identifica a los animales **por chapeta**, copia la\\n   chapeta en `chapeta` y deja `numero_interno` en `null`: el validador busca el animal en el\\n   censo. No lo busques tú.\\n4. **La fecha es la del pesaje o la del evento**, no la del mensaje. Usa la fecha escrita en la\\n   planilla. Si el mensaje dice \\\"ayer\\\", calcúlala desde la fecha del mensaje.\\n5. **Marca tu confianza** en cada fila: `alta` (se lee perfecto), `media` (se lee pero con\\n   algún trazo dudoso), `baja` (casi ilegible; mejor mándalo a `ilegibles`).\\n6. **Un evento para todo un lote** se escribe una vez con `alcance_lote`. No listes los\\n   animales del lote: el validador los saca del censo.\\n7. **No revises reglas** (variación de peso, duplicados, fechas). Eso lo hace el validador.\\n   Tu trabajo es transcribir fiel.\\n\\n**Lo que nunca haces.** Borrar o editar registros existentes, dar de baja animales, hablar de\\nventas, precios o contratos \\\"Al partir\\\", o responder a pedidos que no sean transcribir un\\nreporte de campo. Si el mensaje no es un reporte, devuelve `tipo_reporte: \\\"otro\\\"` sin\\nregistros.\\n\\n**Ejemplos resueltos:** `ejemplos/`.\\n\\n\\n---\\n\\n# Glosario de Finca Santa Rita\\n\\nTérminos que aparecen en las planillas y en los mensajes del administrador.\\n\\n| Término | Qué significa | Cómo aparece en un reporte |\\n|---|---|---|\\n| **Número interno** | Identificador del animal en la finca. Cuatro dígitos: los dos primeros son el lote (01, 02, 03) y los dos últimos el animal. | \\\"0105\\\", \\\"105\\\", \\\"#105\\\", \\\"la 105\\\". Siempre se guarda con 4 dígitos. |\\n| **Chapeta (ICA)** | Arete oficial del ICA con el código del animal. | \\\"COL-CES-215576\\\", a veces solo los últimos dígitos (\\\"…5576\\\"). |\\n| **Lote** | Grupo de animales que se ceban y se venden juntos. | \\\"LOTE-2026-B\\\", \\\"lote 2026 B\\\", \\\"el lote nuevo\\\" (= el de ingreso más reciente). |\\n| **Potrero** | Terreno donde pasta un lote (La Ceiba, El Mango, Los Cocos). | \\\"los de La Ceiba\\\" = el lote que está en ese potrero. |\\n| **Jornada de pesaje** | Día en que se pesa un lote completo en la báscula. Una vez al mes. | Planilla con fecha, lote y filas \\\"número – peso\\\". |\\n| **Pesaje** | Peso en kilos de un animal en una fecha. | \\\"372\\\", \\\"372 kg\\\", \\\"372,5\\\". |\\n| **Ceba** | Engorde del animal hasta su peso de venta. | |\\n| **GDP** | Ganancia diaria de peso, en kg/día. Se calcula con los pesajes; el agente no la calcula. | |\\n| **Destare** | Descuento de kilos que hace el comprador. No aplica a los pesajes. | |\\n| **Vacuna** | Evento sanitario de tipo `vacuna` (aftosa, brucelosis, carbón, rabia). | \\\"vacunamos contra aftosa\\\". |\\n| **Desparasitación** | Evento sanitario de tipo `desparasitacion` (ivermectina, purga, \\\"baño\\\"). | \\\"purgamos\\\", \\\"bañamos\\\". |\\n| **Tratamiento** | Evento sanitario de tipo `tratamiento` (antibiótico, curación, vitaminas). | \\\"le pusimos antibiótico a la 0204\\\". |\\n| **Al partir** | Contrato con un tenedor que cuida animales de la finca. **El agente no lo toca.** | |\\n| **Vientre** | Hembra de cría. No se ceba ni se vende. | |\\n| **Ayer / hoy / el lunes** | Fechas relativas: se calculan desde la **fecha de la planilla** si la tiene, o desde la fecha del mensaje si no. | |\\n\\n\\n---\\n\\n# Skill: leer-jornada-pesaje\\n# Leer una jornada de pesaje\\n\\n## Cuándo se usa\\n- El administrador manda la foto de una planilla de la báscula o un texto con varias filas\\n  \\\"número – peso\\\".\\n- **No** se usa para vacunas ni tratamientos (eso es `leer-evento-sanidad`).\\n\\n## Pasos\\n1. **Encabezado.** Busca la fecha escrita en la planilla y el lote. Escribe la fecha en\\n   formato `AAAA-MM-DD`. Si la planilla no tiene fecha, usa la fecha del mensaje y agrega una\\n   fila en `ilegibles` con el motivo \\\"la planilla no tiene fecha; se usó la del mensaje\\\".\\n2. **Fila por fila, de arriba abajo.** Para cada fila:\\n   - Copia el texto tal cual en `texto_original` (por ejemplo `\\\"107 356\\\"`).\\n   - Número interno a 4 dígitos (`107` → `\\\"0107\\\"`).\\n   - Peso en kilos como número. Coma decimal → punto (`372,5` → `372.5`).\\n   - Si la fila trae chapeta, cópiala en `chapeta`.\\n   - Si la columna de identificación es la **chapeta** (no el número interno), deja\\n     `numero_interno: null` y copia la chapeta completa como aparece. El validador encuentra el\\n     animal en el censo; tú no traduces chapetas a números.\\n3. **Cada dígito cuenta.** Si un dígito del número o del peso está tachado, borroso o tapado,\\n   la fila entera va a `ilegibles` con el motivo. No completes el dígito.\\n4. **Confianza:** `alta` si todo se lee perfecto; `media` si hay un trazo raro pero el valor es\\n   claro; nunca registres una fila con confianza `baja` (mándala a `ilegibles`).\\n5. **Filas repetidas:** transcríbelas las dos veces, tal como están. El validador decide.\\n6. **Cuenta al final:** número de filas de la planilla = registros + ilegibles. Si no\\n   cuadra, revisa qué fila te saltaste.\\n\\n## Ejemplo\\nVer el ejemplo A en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Skill: leer-evento-sanidad\\n# Leer un evento de sanidad\\n\\n## Cuándo se usa\\n- Mensajes como \\\"ayer vacunamos el lote 2026-B contra aftosa\\\" o \\\"le puse antibiótico a la 204\\\".\\n- **No** se usa para pesos (eso es `leer-jornada-pesaje`).\\n\\n## Pasos\\n1. **Tipo** (glosario):\\n   - vacunar → `vacuna`\\n   - purgar, bañar, desparasitar, ivermectina → `desparasitacion`\\n   - antibiótico, curación, vitaminas, tratamiento → `tratamiento`\\n2. **Descripción:** el producto o la enfermedad, en pocas palabras (\\\"Aftosa\\\", \\\"Ivermectina\\\").\\n3. **Fecha:** la del evento, no la del mensaje.\\n   - \\\"hoy\\\" = fecha del mensaje · \\\"ayer\\\" = fecha del mensaje menos 1 día · \\\"antier\\\" = menos 2.\\n   - Un día de la semana (\\\"el lunes\\\") = el último lunes antes de la fecha del mensaje.\\n4. **A quién:**\\n   - Si nombra animales sueltos, un registro por animal con su número interno a 4 dígitos.\\n   - Si dice \\\"todo el lote X\\\", un solo registro con `alcance_lote: \\\"LOTE-…\\\"`. **No** listes\\n     los animales: el validador los saca del censo.\\n   - Si el lote se nombra por el potrero (\\\"los de La Ceiba\\\"), usa el lote de ese potrero\\n     según el censo.\\n5. Si falta el tipo, la fecha o a quién se aplicó, manda el mensaje a `ilegibles` con lo que\\n   falta.\\n\\n## Ejemplo\\nVer el ejemplo B en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Tres reportes ya resueltos\\n\\nSirven de referencia al extractor. Usan animales del censo de demostración.\\n\\n## Ejemplo A: planilla de pesaje con una fila borrosa\\n\\n**Mensaje del 2026-09-29** (foto de planilla). Lo que se ve en la foto:\\n\\n```\\nJORNADA DE PESAJE — LOTE-2026-A — Fecha: 28/09/2026\\nN°     Peso (kg)\\n201    241\\n202    239\\n2?3    27?        ← tachón de lapicero\\n204    270\\n```\\n\\n**Salida correcta:**\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"pesaje\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-28\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-A\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": \\\"0201\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 241, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"201 241\\\" },\\n    { \\\"numero_interno\\\": \\\"0202\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 239, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"202 239\\\" },\\n    { \\\"numero_interno\\\": \\\"0204\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 270, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"204 270\\\" }\\n  ],\\n  \\\"ilegibles\\\": [\\n    { \\\"texto_original\\\": \\\"2?3 27?\\\", \\\"motivo\\\": \\\"tachón: no se lee el segundo dígito del número ni el último del peso\\\" }\\n  ]\\n}\\n```\\n\\nPor qué: la fecha es la de la planilla (28/09), no la del mensaje (29/09). La fila del tachón\\nno se completa con \\\"0203\\\" aunque sea el único número del censo que encaja.\\n\\n## Ejemplo B: evento sanitario para todo un lote\\n\\n**Mensaje del 2026-09-15:** \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\".\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"sanidad\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-15\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-B\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": null, \\\"chapeta\\\": null, \\\"alcance_lote\\\": \\\"LOTE-2026-B\\\", \\\"peso_kg\\\": null,\\n      \\\"evento_sanitario\\\": { \\\"tipo\\\": \\\"desparasitacion\\\", \\\"descripcion\\\": \\\"Ivermectina\\\" },\\n      \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\" }\\n  ],\\n  \\\"ilegibles\\\": []\\n}\\n```\\n\\nPor qué: \\\"purgar\\\" es desparasitación (glosario). Un solo registro con `alcance_lote`; el\\nvalidador lo expande a los 6 animales del lote.\\n\\n## Ejemplo C: mensaje que no es un reporte\\n\\n**Mensaje del 2026-09-20:** \\\"¿a cómo está el kilo en Valledupar? ¿vendemos el lote B?\\\"\\n\\n```json\\n{ \\\"tipo_reporte\\\": \\\"otro\\\", \\\"fecha_reporte\\\": \\\"2026-09-20\\\", \\\"lote\\\": null, \\\"registros\\\": [], \\\"ilegibles\\\": [] }\\n```\\n\\nPor qué: precios y ventas están fuera del trabajo del agente. El arnés le responde al\\nadministrador que use la app para eso.\\n\\n\\n---\\n\\n# Formato de salida (JSON Schema)\\n{\\n  \\\"$schema\\\": \\\"https://json-schema.org/draft/2020-12/schema\\\",\\n  \\\"title\\\": \\\"Borrador de reporte de campo (salida del extractor)\\\",\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"required\\\": [\\\"tipo_reporte\\\", \\\"fecha_reporte\\\", \\\"registros\\\", \\\"ilegibles\\\"],\\n  \\\"additionalProperties\\\": false,\\n  \\\"properties\\\": {\\n    \\\"tipo_reporte\\\": { \\\"enum\\\": [\\\"pesaje\\\", \\\"sanidad\\\", \\\"otro\\\"] },\\n    \\\"fecha_reporte\\\": { \\\"type\\\": \\\"string\\\", \\\"pattern\\\": \\\"^\\\\\\\\d{4}-\\\\\\\\d{2}-\\\\\\\\d{2}$\\\", \\\"description\\\": \\\"Fecha del pesaje o del evento (no la del mensaje)\\\" },\\n    \\\"lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Código del lote si el reporte lo dice\\\" },\\n    \\\"registros\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"confianza\\\", \\\"texto_original\\\"],\\n        \\\"additionalProperties\\\": false,\\n        \\\"properties\\\": {\\n          \\\"numero_interno\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"pattern\\\": \\\"^\\\\\\\\d{4}$\\\" },\\n          \\\"chapeta\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"] },\\n          \\\"alcance_lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Solo sanidad: el evento aplica a todo este lote\\\" },\\n          \\\"peso_kg\\\": { \\\"type\\\": [\\\"number\\\", \\\"null\\\"] },\\n          \\\"evento_sanitario\\\": {\\n            \\\"type\\\": [\\\"object\\\", \\\"null\\\"],\\n            \\\"required\\\": [\\\"tipo\\\", \\\"descripcion\\\"],\\n            \\\"properties\\\": {\\n              \\\"tipo\\\": { \\\"enum\\\": [\\\"vacuna\\\", \\\"tratamiento\\\", \\\"desparasitacion\\\"] },\\n              \\\"descripcion\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n            }\\n          },\\n          \\\"confianza\\\": { \\\"enum\\\": [\\\"alta\\\", \\\"media\\\", \\\"baja\\\"] },\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n        }\\n      }\\n    },\\n    \\\"ilegibles\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"texto_original\\\", \\\"motivo\\\"],\\n        \\\"properties\\\": {\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\" },\\n          \\\"motivo\\\": { \\\"type\\\": \\\"string\\\" }\\n        }\\n      }\\n    }\\n  }\\n}\\n\";\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nconst contenido = [];\nif (r.imagen_b64) contenido.push({ type: 'image', source: { type: 'base64', media_type: r.media_type, data: r.imagen_b64 } });\ncontenido.push({ type: 'text', text: 'Fecha del mensaje: ' + r.fecha_mensaje + '\\nTexto del mensaje: ' + (r.texto || '(sin texto)') + '\\n\\nCenso (censo-demo.json):\\n' + JSON.stringify(censo) });\nconst messages = [{ role: 'user', content: contenido }];\nconst previo = $('Validar 1').first().json;\nmessages.push({ role: 'assistant', content: previo.texto_modelo || '{}' });\nmessages.push({ role: 'user', content: 'El validador rechazó tu salida (intento 1 de 3). Errores:\\n- ' + previo.errores.join('\\n- ') + '\\nDevuelve de nuevo solo el JSON del borrador.' });\nreturn [{ json: { peticion: { model: 'claude-opus-5-5', max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'medium' }, system: SYSTEM, messages } } }];"
+      }
+    },
+    {
+      "id": "n12",
+      "name": "Claude: extractor 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2026-10-21"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.peticion) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CAMBIAR",
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "id": "n13",
+      "name": "Validar 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        220
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Validador con reglas fijas (copiado de taller-harness/arnes/validador.mjs).\n// Validador del arnés: reglas fijas, sin IA. Mismo resultado siempre.\n// Las reglas V1..V10 están en contexto/reglas.md.\n// Este archivo no importa nada a propósito: scripts/generar-n8n.mjs lo copia tal cual dentro\n// del nodo Code de n8n, así la versión de Claude Code y la de Telegram usan el mismo código.\n\nconst UMBRAL_VARIACION = 0.15; // RN-01, igual que variacionSospechosa en src/domain/gdp.js\nconst PESO_MIN_KG = 80; // V7\nconst PESO_MAX_KG = 800; // V7\nconst TIPOS_SANIDAD = ['vacuna', 'tratamiento', 'desparasitacion']; // V9\n\nconst FECHA_ISO = /^\\d{4}-\\d{2}-\\d{2}$/;\n\n// Revisa la forma del JSON del extractor. Si hay errores, el orquestador reintenta (máximo 2).\nfunction revisarFormato(borrador) {\n  const errores = [];\n  if (!borrador || typeof borrador !== 'object' || Array.isArray(borrador)) return ['la salida no es un objeto JSON'];\n  if (!['pesaje', 'sanidad', 'otro'].includes(borrador.tipo_reporte)) errores.push('tipo_reporte inválido');\n  if (!FECHA_ISO.test(String(borrador.fecha_reporte ?? ''))) errores.push('fecha_reporte no tiene formato AAAA-MM-DD');\n  if (!Array.isArray(borrador.registros)) errores.push('falta la lista registros');\n  if (!Array.isArray(borrador.ilegibles)) errores.push('falta la lista ilegibles');\n  for (const [i, r] of (Array.isArray(borrador.registros) ? borrador.registros : []).entries()) {\n    if (!r || typeof r !== 'object') { errores.push(`registro ${i + 1} no es un objeto`); continue; }\n    if (!r.texto_original) errores.push(`registro ${i + 1} sin texto_original`);\n    if (!['alta', 'media', 'baja'].includes(r.confianza)) errores.push(`registro ${i + 1} sin confianza válida`);\n    if (r.numero_interno != null && !/^\\d{4}$/.test(String(r.numero_interno))) errores.push(`registro ${i + 1}: numero_interno debe tener 4 dígitos`);\n    // Ciclo 2: una fila puede identificar al animal solo por chapeta; el validador lo busca en el censo.\n    if (!r.numero_interno && !r.alcance_lote && !soloDigitos(r.chapeta)) errores.push(`registro ${i + 1} sin numero_interno, chapeta ni alcance_lote`);\n  }\n  return errores;\n}\n\nconst soloDigitos = (s) => String(s ?? '').replace(/\\D/g, '');\nconst normal = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');\n\n// V8: el valor tiene que estar escrito en el texto que leyó el extractor.\nfunction apareceEnTexto(valor, texto) {\n  if (valor == null) return true;\n  const t = String(texto ?? '');\n  const sinCeros = soloDigitos(valor).replace(/^0+/, '') || '0';\n  const variantes = [String(valor), String(valor).replace('.', ','), sinCeros];\n  const numerosDelTexto = t.match(/\\d+(?:[.,]\\d+)?/g) ?? [];\n  return numerosDelTexto.some((n) => variantes.includes(n) || variantes.includes(n.replace(/^0+/, '')));\n}\n\nfunction loteMencionado(codigoLote, potrero, texto) {\n  const t = normal(texto);\n  const corto = normal(String(codigoLote).replace(/^lote-?/i, ''));\n  return t.includes(corto) || (potrero && t.includes(normal(potrero)));\n}\n\nfunction validarBorrador(borrador, censo, { fechaMensaje }) {\n  const porNumero = new Map(censo.animales.map((a) => [a.numero_interno, a]));\n  const resultado = {\n    tipo_reporte: borrador.tipo_reporte,\n    fecha_reporte: borrador.fecha_reporte,\n    lote: borrador.lote ?? null,\n    validos: [],\n    dudosos: [],\n    ilegibles: [...(borrador.ilegibles ?? [])],\n  };\n  if (borrador.tipo_reporte === 'otro') return conResumen(resultado);\n\n  // V10: un evento para todo el lote se expande con el censo, nunca con lo que diga el modelo.\n  const filas = [];\n  for (const r of borrador.registros) {\n    if (r.alcance_lote) {\n      const lote = censo.lotes.find((l) => l.codigo === r.alcance_lote);\n      const animalesLote = censo.animales.filter((a) => a.lote === r.alcance_lote && a.estado === 'activo');\n      if (!lote || animalesLote.length === 0) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V1', texto: `el lote ${r.alcance_lote} no está en el censo` }] });\n        continue;\n      }\n      if (!loteMencionado(lote.codigo, lote.potrero, r.texto_original)) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V8', texto: 'el lote no aparece en el texto leído' }] });\n        continue;\n      }\n      for (const a of animalesLote) filas.push({ ...r, numero_interno: a.numero_interno, alcance_lote: r.alcance_lote, expandido: true });\n    } else if (!r.numero_interno) {\n      // Ciclo 2 (V1/V2): planilla anotada por chapeta. El número interno lo pone el censo, no el modelo.\n      const digitos = soloDigitos(r.chapeta);\n      const candidatos = digitos.length >= 4 ? censo.animales.filter((a) => soloDigitos(a.chapeta_ica).endsWith(digitos)) : [];\n      if (candidatos.length === 1) {\n        filas.push({ ...r, numero_interno: candidatos[0].numero_interno, porChapeta: true });\n      } else {\n        const texto = candidatos.length ? `la chapeta ${r.chapeta} coincide con ${candidatos.length} animales del censo` : `la chapeta ${r.chapeta} no está en el censo`;\n        resultado.dudosos.push({ ...r, motivos: [{ regla: candidatos.length ? 'V2' : 'V1', texto }] });\n      }\n    } else {\n      filas.push({ ...r });\n    }\n  }\n\n  // V6: cuántas veces aparece cada animal en este reporte. Ciclo 1: en sanidad, un mismo animal\n  // puede tener eventos distintos el mismo día (purga y tratamiento); solo se repite si es el mismo evento.\n  const claveDuplicado = (f) => borrador.tipo_reporte === 'sanidad'\n    ? `${f.numero_interno}|${f.evento_sanitario?.tipo}|${normal(f.evento_sanitario?.descripcion)}`\n    : f.numero_interno;\n  const veces = new Map();\n  for (const f of filas) veces.set(claveDuplicado(f), (veces.get(claveDuplicado(f)) ?? 0) + 1);\n\n  for (const f of filas) {\n    const motivos = [];\n    const animal = porNumero.get(f.numero_interno);\n    const fecha = borrador.fecha_reporte;\n\n    if (!animal || animal.estado !== 'activo') motivos.push({ regla: 'V1', texto: `la ${f.numero_interno} no está en el censo de animales activos` });\n    if (animal && f.chapeta && soloDigitos(f.chapeta) && !soloDigitos(animal.chapeta_ica).endsWith(soloDigitos(f.chapeta))) {\n      motivos.push({ regla: 'V2', texto: `la chapeta ${f.chapeta} no coincide con la del censo (${animal.chapeta_ica})` });\n    }\n    if (fechaMensaje && fecha > fechaMensaje) motivos.push({ regla: 'V3', texto: `la fecha ${fecha} es posterior al mensaje (${fechaMensaje})` });\n    if (animal && fecha < animal.fecha_ingreso) motivos.push({ regla: 'V4', texto: `la fecha ${fecha} es anterior al ingreso del animal (${animal.fecha_ingreso})` });\n    if (veces.get(claveDuplicado(f)) > 1) motivos.push({ regla: 'V6', texto: `la ${f.numero_interno} aparece ${veces.get(claveDuplicado(f))} veces en el reporte` });\n    const idLeido = f.porChapeta ? soloDigitos(f.chapeta) : f.numero_interno;\n    if (!f.expandido && !apareceEnTexto(idLeido, f.texto_original)) motivos.push({ regla: 'V8', texto: `el ${f.porChapeta ? 'número de chapeta' : 'número interno'} no aparece en el texto leído` });\n\n    if (borrador.tipo_reporte === 'pesaje') {\n      const peso = Number(f.peso_kg);\n      if (!Number.isFinite(peso) || peso < PESO_MIN_KG || peso > PESO_MAX_KG) {\n        motivos.push({ regla: 'V7', texto: `peso fuera de rango (${f.peso_kg} kg)` });\n      } else {\n        const anterior = animal?.ultimo_pesaje?.peso_kg;\n        if (anterior && Math.abs(peso - anterior) / anterior > UMBRAL_VARIACION) {\n          const cambio = Math.round(((peso - anterior) / anterior) * 100);\n          motivos.push({ regla: 'V5', texto: `cambió ${cambio > 0 ? '+' : ''}${cambio} % frente al último pesaje (${anterior} kg el ${animal.ultimo_pesaje.fecha})` });\n        }\n        if (!apareceEnTexto(f.peso_kg, f.texto_original)) motivos.push({ regla: 'V8', texto: 'el peso no aparece en el texto leído' });\n      }\n      if (f.confianza === 'baja') motivos.push({ regla: 'V8', texto: 'el extractor no está seguro de la lectura (confianza baja)' });\n    } else if (borrador.tipo_reporte === 'sanidad') {\n      const ev = f.evento_sanitario;\n      if (!ev || !TIPOS_SANIDAD.includes(ev.tipo) || !String(ev.descripcion ?? '').trim()) motivos.push({ regla: 'V9', texto: 'evento sanitario incompleto (tipo o descripción)' });\n    }\n\n    const registro = {\n      numero_interno: f.numero_interno,\n      chapeta: animal?.chapeta_ica ?? f.chapeta ?? null,\n      fecha,\n      peso_kg: borrador.tipo_reporte === 'pesaje' ? Number(f.peso_kg) : null,\n      evento_sanitario: borrador.tipo_reporte === 'sanidad' ? f.evento_sanitario : null,\n      texto_original: f.texto_original,\n      confianza: f.confianza,\n    };\n    if (motivos.length) resultado.dudosos.push({ ...registro, motivos });\n    else resultado.validos.push(registro);\n  }\n  return conResumen(resultado);\n}\n\nfunction conResumen(r) {\n  r.resumen = { validos: r.validos.length, dudosos: r.dudosos.length, ilegibles: r.ilegibles.length };\n  r.estado = r.dudosos.length || r.ilegibles.length ? 'requiere_revision' : 'listo_para_confirmar';\n  return r;\n}\n\nconst resp = $input.first().json;\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nlet texto_modelo = '';\nlet extraccion = null;\nlet errores = [];\nif (resp.stop_reason === 'refusal') errores = ['el modelo rechazó la petición'];\nelse {\n  texto_modelo = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\n  try { extraccion = JSON.parse(texto_modelo.replace(/^```(json)?|```$/g, '')); } catch { errores = ['la salida no es JSON válido']; }\n  if (!errores.length) errores = revisarFormato(extraccion);\n}\nconst ok = errores.length === 0;\nconst resultado = ok ? validarBorrador(extraccion, censo, { fechaMensaje: r.fecha_mensaje }) : null;\nreturn [{ json: { ok, intento: 2, errores, texto_modelo, extraccion, resultado } }];"
+      }
+    },
+    {
+      "id": "n14",
+      "name": "¿Formato válido? 2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        960,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c13",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n15",
+      "name": "Petición extractor 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        220
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Intento 3: instrucciones + glosario + skills + ejemplos en el system; censo y reporte en el mensaje.\nconst SYSTEM = \"# Instrucciones principales del extractor\\n\\n**Quién eres.** Eres el transcriptor de reportes de campo de Finca Santa Rita. El\\nadministrador te manda una foto de la planilla de la báscula o un mensaje sobre algo que\\npasó en campo. Tú lo conviertes en un **borrador** de registros. No guardas nada: una persona\\nrevisa y confirma después.\\n\\n**Lo que recibes.**\\n1. El reporte: una imagen o un texto, y la **fecha del mensaje**.\\n2. El censo de demostración (`censo-demo.json`) y el glosario (`glosario.md`).\\n3. La skill que toque: `leer-jornada-pesaje` (planillas y pesos) o `leer-evento-sanidad`\\n   (vacunas, purgas, tratamientos).\\n\\n**Lo que entregas.** Solo un objeto JSON que cumpla `borrador.schema.json`. Sin texto antes\\nni después, sin comentarios, sin bloques de código.\\n\\n**Reglas de oro.**\\n1. **No inventes nada.** Si un número o un peso no se lee con seguridad, la fila va a\\n   `ilegibles` con su motivo. Nunca completes dígitos por intuición ni por parecido con el\\n   censo.\\n2. **Copia lo que ves.** Cada registro lleva en `texto_original` el texto tal como aparece en\\n   la planilla o el mensaje.\\n3. **El número interno va con 4 dígitos** (\\\"105\\\" → \\\"0105\\\"), pero no lo cambies por otro del\\n   censo aunque se parezca. Si la planilla identifica a los animales **por chapeta**, copia la\\n   chapeta en `chapeta` y deja `numero_interno` en `null`: el validador busca el animal en el\\n   censo. No lo busques tú.\\n4. **La fecha es la del pesaje o la del evento**, no la del mensaje. Usa la fecha escrita en la\\n   planilla. Si el mensaje dice \\\"ayer\\\", calcúlala desde la fecha del mensaje.\\n5. **Marca tu confianza** en cada fila: `alta` (se lee perfecto), `media` (se lee pero con\\n   algún trazo dudoso), `baja` (casi ilegible; mejor mándalo a `ilegibles`).\\n6. **Un evento para todo un lote** se escribe una vez con `alcance_lote`. No listes los\\n   animales del lote: el validador los saca del censo.\\n7. **No revises reglas** (variación de peso, duplicados, fechas). Eso lo hace el validador.\\n   Tu trabajo es transcribir fiel.\\n\\n**Lo que nunca haces.** Borrar o editar registros existentes, dar de baja animales, hablar de\\nventas, precios o contratos \\\"Al partir\\\", o responder a pedidos que no sean transcribir un\\nreporte de campo. Si el mensaje no es un reporte, devuelve `tipo_reporte: \\\"otro\\\"` sin\\nregistros.\\n\\n**Ejemplos resueltos:** `ejemplos/`.\\n\\n\\n---\\n\\n# Glosario de Finca Santa Rita\\n\\nTérminos que aparecen en las planillas y en los mensajes del administrador.\\n\\n| Término | Qué significa | Cómo aparece en un reporte |\\n|---|---|---|\\n| **Número interno** | Identificador del animal en la finca. Cuatro dígitos: los dos primeros son el lote (01, 02, 03) y los dos últimos el animal. | \\\"0105\\\", \\\"105\\\", \\\"#105\\\", \\\"la 105\\\". Siempre se guarda con 4 dígitos. |\\n| **Chapeta (ICA)** | Arete oficial del ICA con el código del animal. | \\\"COL-CES-215576\\\", a veces solo los últimos dígitos (\\\"…5576\\\"). |\\n| **Lote** | Grupo de animales que se ceban y se venden juntos. | \\\"LOTE-2026-B\\\", \\\"lote 2026 B\\\", \\\"el lote nuevo\\\" (= el de ingreso más reciente). |\\n| **Potrero** | Terreno donde pasta un lote (La Ceiba, El Mango, Los Cocos). | \\\"los de La Ceiba\\\" = el lote que está en ese potrero. |\\n| **Jornada de pesaje** | Día en que se pesa un lote completo en la báscula. Una vez al mes. | Planilla con fecha, lote y filas \\\"número – peso\\\". |\\n| **Pesaje** | Peso en kilos de un animal en una fecha. | \\\"372\\\", \\\"372 kg\\\", \\\"372,5\\\". |\\n| **Ceba** | Engorde del animal hasta su peso de venta. | |\\n| **GDP** | Ganancia diaria de peso, en kg/día. Se calcula con los pesajes; el agente no la calcula. | |\\n| **Destare** | Descuento de kilos que hace el comprador. No aplica a los pesajes. | |\\n| **Vacuna** | Evento sanitario de tipo `vacuna` (aftosa, brucelosis, carbón, rabia). | \\\"vacunamos contra aftosa\\\". |\\n| **Desparasitación** | Evento sanitario de tipo `desparasitacion` (ivermectina, purga, \\\"baño\\\"). | \\\"purgamos\\\", \\\"bañamos\\\". |\\n| **Tratamiento** | Evento sanitario de tipo `tratamiento` (antibiótico, curación, vitaminas). | \\\"le pusimos antibiótico a la 0204\\\". |\\n| **Al partir** | Contrato con un tenedor que cuida animales de la finca. **El agente no lo toca.** | |\\n| **Vientre** | Hembra de cría. No se ceba ni se vende. | |\\n| **Ayer / hoy / el lunes** | Fechas relativas: se calculan desde la **fecha de la planilla** si la tiene, o desde la fecha del mensaje si no. | |\\n\\n\\n---\\n\\n# Skill: leer-jornada-pesaje\\n# Leer una jornada de pesaje\\n\\n## Cuándo se usa\\n- El administrador manda la foto de una planilla de la báscula o un texto con varias filas\\n  \\\"número – peso\\\".\\n- **No** se usa para vacunas ni tratamientos (eso es `leer-evento-sanidad`).\\n\\n## Pasos\\n1. **Encabezado.** Busca la fecha escrita en la planilla y el lote. Escribe la fecha en\\n   formato `AAAA-MM-DD`. Si la planilla no tiene fecha, usa la fecha del mensaje y agrega una\\n   fila en `ilegibles` con el motivo \\\"la planilla no tiene fecha; se usó la del mensaje\\\".\\n2. **Fila por fila, de arriba abajo.** Para cada fila:\\n   - Copia el texto tal cual en `texto_original` (por ejemplo `\\\"107 356\\\"`).\\n   - Número interno a 4 dígitos (`107` → `\\\"0107\\\"`).\\n   - Peso en kilos como número. Coma decimal → punto (`372,5` → `372.5`).\\n   - Si la fila trae chapeta, cópiala en `chapeta`.\\n   - Si la columna de identificación es la **chapeta** (no el número interno), deja\\n     `numero_interno: null` y copia la chapeta completa como aparece. El validador encuentra el\\n     animal en el censo; tú no traduces chapetas a números.\\n3. **Cada dígito cuenta.** Si un dígito del número o del peso está tachado, borroso o tapado,\\n   la fila entera va a `ilegibles` con el motivo. No completes el dígito.\\n4. **Confianza:** `alta` si todo se lee perfecto; `media` si hay un trazo raro pero el valor es\\n   claro; nunca registres una fila con confianza `baja` (mándala a `ilegibles`).\\n5. **Filas repetidas:** transcríbelas las dos veces, tal como están. El validador decide.\\n6. **Cuenta al final:** número de filas de la planilla = registros + ilegibles. Si no\\n   cuadra, revisa qué fila te saltaste.\\n\\n## Ejemplo\\nVer el ejemplo A en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Skill: leer-evento-sanidad\\n# Leer un evento de sanidad\\n\\n## Cuándo se usa\\n- Mensajes como \\\"ayer vacunamos el lote 2026-B contra aftosa\\\" o \\\"le puse antibiótico a la 204\\\".\\n- **No** se usa para pesos (eso es `leer-jornada-pesaje`).\\n\\n## Pasos\\n1. **Tipo** (glosario):\\n   - vacunar → `vacuna`\\n   - purgar, bañar, desparasitar, ivermectina → `desparasitacion`\\n   - antibiótico, curación, vitaminas, tratamiento → `tratamiento`\\n2. **Descripción:** el producto o la enfermedad, en pocas palabras (\\\"Aftosa\\\", \\\"Ivermectina\\\").\\n3. **Fecha:** la del evento, no la del mensaje.\\n   - \\\"hoy\\\" = fecha del mensaje · \\\"ayer\\\" = fecha del mensaje menos 1 día · \\\"antier\\\" = menos 2.\\n   - Un día de la semana (\\\"el lunes\\\") = el último lunes antes de la fecha del mensaje.\\n4. **A quién:**\\n   - Si nombra animales sueltos, un registro por animal con su número interno a 4 dígitos.\\n   - Si dice \\\"todo el lote X\\\", un solo registro con `alcance_lote: \\\"LOTE-…\\\"`. **No** listes\\n     los animales: el validador los saca del censo.\\n   - Si el lote se nombra por el potrero (\\\"los de La Ceiba\\\"), usa el lote de ese potrero\\n     según el censo.\\n5. Si falta el tipo, la fecha o a quién se aplicó, manda el mensaje a `ilegibles` con lo que\\n   falta.\\n\\n## Ejemplo\\nVer el ejemplo B en `contexto/ejemplos/ejemplos.md`.\\n\\n\\n---\\n\\n# Tres reportes ya resueltos\\n\\nSirven de referencia al extractor. Usan animales del censo de demostración.\\n\\n## Ejemplo A: planilla de pesaje con una fila borrosa\\n\\n**Mensaje del 2026-09-29** (foto de planilla). Lo que se ve en la foto:\\n\\n```\\nJORNADA DE PESAJE — LOTE-2026-A — Fecha: 28/09/2026\\nN°     Peso (kg)\\n201    241\\n202    239\\n2?3    27?        ← tachón de lapicero\\n204    270\\n```\\n\\n**Salida correcta:**\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"pesaje\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-28\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-A\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": \\\"0201\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 241, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"201 241\\\" },\\n    { \\\"numero_interno\\\": \\\"0202\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 239, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"202 239\\\" },\\n    { \\\"numero_interno\\\": \\\"0204\\\", \\\"chapeta\\\": null, \\\"alcance_lote\\\": null, \\\"peso_kg\\\": 270, \\\"evento_sanitario\\\": null, \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"204 270\\\" }\\n  ],\\n  \\\"ilegibles\\\": [\\n    { \\\"texto_original\\\": \\\"2?3 27?\\\", \\\"motivo\\\": \\\"tachón: no se lee el segundo dígito del número ni el último del peso\\\" }\\n  ]\\n}\\n```\\n\\nPor qué: la fecha es la de la planilla (28/09), no la del mensaje (29/09). La fila del tachón\\nno se completa con \\\"0203\\\" aunque sea el único número del censo que encaja.\\n\\n## Ejemplo B: evento sanitario para todo un lote\\n\\n**Mensaje del 2026-09-15:** \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\".\\n\\n```json\\n{\\n  \\\"tipo_reporte\\\": \\\"sanidad\\\",\\n  \\\"fecha_reporte\\\": \\\"2026-09-15\\\",\\n  \\\"lote\\\": \\\"LOTE-2026-B\\\",\\n  \\\"registros\\\": [\\n    { \\\"numero_interno\\\": null, \\\"chapeta\\\": null, \\\"alcance_lote\\\": \\\"LOTE-2026-B\\\", \\\"peso_kg\\\": null,\\n      \\\"evento_sanitario\\\": { \\\"tipo\\\": \\\"desparasitacion\\\", \\\"descripcion\\\": \\\"Ivermectina\\\" },\\n      \\\"confianza\\\": \\\"alta\\\", \\\"texto_original\\\": \\\"hoy purgamos con ivermectina a todo el lote 2026-B\\\" }\\n  ],\\n  \\\"ilegibles\\\": []\\n}\\n```\\n\\nPor qué: \\\"purgar\\\" es desparasitación (glosario). Un solo registro con `alcance_lote`; el\\nvalidador lo expande a los 6 animales del lote.\\n\\n## Ejemplo C: mensaje que no es un reporte\\n\\n**Mensaje del 2026-09-20:** \\\"¿a cómo está el kilo en Valledupar? ¿vendemos el lote B?\\\"\\n\\n```json\\n{ \\\"tipo_reporte\\\": \\\"otro\\\", \\\"fecha_reporte\\\": \\\"2026-09-20\\\", \\\"lote\\\": null, \\\"registros\\\": [], \\\"ilegibles\\\": [] }\\n```\\n\\nPor qué: precios y ventas están fuera del trabajo del agente. El arnés le responde al\\nadministrador que use la app para eso.\\n\\n\\n---\\n\\n# Formato de salida (JSON Schema)\\n{\\n  \\\"$schema\\\": \\\"https://json-schema.org/draft/2020-12/schema\\\",\\n  \\\"title\\\": \\\"Borrador de reporte de campo (salida del extractor)\\\",\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"required\\\": [\\\"tipo_reporte\\\", \\\"fecha_reporte\\\", \\\"registros\\\", \\\"ilegibles\\\"],\\n  \\\"additionalProperties\\\": false,\\n  \\\"properties\\\": {\\n    \\\"tipo_reporte\\\": { \\\"enum\\\": [\\\"pesaje\\\", \\\"sanidad\\\", \\\"otro\\\"] },\\n    \\\"fecha_reporte\\\": { \\\"type\\\": \\\"string\\\", \\\"pattern\\\": \\\"^\\\\\\\\d{4}-\\\\\\\\d{2}-\\\\\\\\d{2}$\\\", \\\"description\\\": \\\"Fecha del pesaje o del evento (no la del mensaje)\\\" },\\n    \\\"lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Código del lote si el reporte lo dice\\\" },\\n    \\\"registros\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"confianza\\\", \\\"texto_original\\\"],\\n        \\\"additionalProperties\\\": false,\\n        \\\"properties\\\": {\\n          \\\"numero_interno\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"pattern\\\": \\\"^\\\\\\\\d{4}$\\\" },\\n          \\\"chapeta\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"] },\\n          \\\"alcance_lote\\\": { \\\"type\\\": [\\\"string\\\", \\\"null\\\"], \\\"description\\\": \\\"Solo sanidad: el evento aplica a todo este lote\\\" },\\n          \\\"peso_kg\\\": { \\\"type\\\": [\\\"number\\\", \\\"null\\\"] },\\n          \\\"evento_sanitario\\\": {\\n            \\\"type\\\": [\\\"object\\\", \\\"null\\\"],\\n            \\\"required\\\": [\\\"tipo\\\", \\\"descripcion\\\"],\\n            \\\"properties\\\": {\\n              \\\"tipo\\\": { \\\"enum\\\": [\\\"vacuna\\\", \\\"tratamiento\\\", \\\"desparasitacion\\\"] },\\n              \\\"descripcion\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n            }\\n          },\\n          \\\"confianza\\\": { \\\"enum\\\": [\\\"alta\\\", \\\"media\\\", \\\"baja\\\"] },\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\", \\\"minLength\\\": 1 }\\n        }\\n      }\\n    },\\n    \\\"ilegibles\\\": {\\n      \\\"type\\\": \\\"array\\\",\\n      \\\"items\\\": {\\n        \\\"type\\\": \\\"object\\\",\\n        \\\"required\\\": [\\\"texto_original\\\", \\\"motivo\\\"],\\n        \\\"properties\\\": {\\n          \\\"texto_original\\\": { \\\"type\\\": \\\"string\\\" },\\n          \\\"motivo\\\": { \\\"type\\\": \\\"string\\\" }\\n        }\\n      }\\n    }\\n  }\\n}\\n\";\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nconst contenido = [];\nif (r.imagen_b64) contenido.push({ type: 'image', source: { type: 'base64', media_type: r.media_type, data: r.imagen_b64 } });\ncontenido.push({ type: 'text', text: 'Fecha del mensaje: ' + r.fecha_mensaje + '\\nTexto del mensaje: ' + (r.texto || '(sin texto)') + '\\n\\nCenso (censo-demo.json):\\n' + JSON.stringify(censo) });\nconst messages = [{ role: 'user', content: contenido }];\nconst previo = $('Validar 2').first().json;\nmessages.push({ role: 'assistant', content: previo.texto_modelo || '{}' });\nmessages.push({ role: 'user', content: 'El validador rechazó tu salida (intento 2 de 3). Errores:\\n- ' + previo.errores.join('\\n- ') + '\\nDevuelve de nuevo solo el JSON del borrador.' });\nreturn [{ json: { peticion: { model: 'claude-opus-5-5', max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'medium' }, system: SYSTEM, messages } } }];"
+      }
+    },
+    {
+      "id": "n16",
+      "name": "Claude: extractor 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2026-10-21"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.peticion) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CAMBIAR",
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "id": "n17",
+      "name": "Validar 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        220
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Validador con reglas fijas (copiado de taller-harness/arnes/validador.mjs).\n// Validador del arnés: reglas fijas, sin IA. Mismo resultado siempre.\n// Las reglas V1..V10 están en contexto/reglas.md.\n// Este archivo no importa nada a propósito: scripts/generar-n8n.mjs lo copia tal cual dentro\n// del nodo Code de n8n, así la versión de Claude Code y la de Telegram usan el mismo código.\n\nconst UMBRAL_VARIACION = 0.15; // RN-01, igual que variacionSospechosa en src/domain/gdp.js\nconst PESO_MIN_KG = 80; // V7\nconst PESO_MAX_KG = 800; // V7\nconst TIPOS_SANIDAD = ['vacuna', 'tratamiento', 'desparasitacion']; // V9\n\nconst FECHA_ISO = /^\\d{4}-\\d{2}-\\d{2}$/;\n\n// Revisa la forma del JSON del extractor. Si hay errores, el orquestador reintenta (máximo 2).\nfunction revisarFormato(borrador) {\n  const errores = [];\n  if (!borrador || typeof borrador !== 'object' || Array.isArray(borrador)) return ['la salida no es un objeto JSON'];\n  if (!['pesaje', 'sanidad', 'otro'].includes(borrador.tipo_reporte)) errores.push('tipo_reporte inválido');\n  if (!FECHA_ISO.test(String(borrador.fecha_reporte ?? ''))) errores.push('fecha_reporte no tiene formato AAAA-MM-DD');\n  if (!Array.isArray(borrador.registros)) errores.push('falta la lista registros');\n  if (!Array.isArray(borrador.ilegibles)) errores.push('falta la lista ilegibles');\n  for (const [i, r] of (Array.isArray(borrador.registros) ? borrador.registros : []).entries()) {\n    if (!r || typeof r !== 'object') { errores.push(`registro ${i + 1} no es un objeto`); continue; }\n    if (!r.texto_original) errores.push(`registro ${i + 1} sin texto_original`);\n    if (!['alta', 'media', 'baja'].includes(r.confianza)) errores.push(`registro ${i + 1} sin confianza válida`);\n    if (r.numero_interno != null && !/^\\d{4}$/.test(String(r.numero_interno))) errores.push(`registro ${i + 1}: numero_interno debe tener 4 dígitos`);\n    // Ciclo 2: una fila puede identificar al animal solo por chapeta; el validador lo busca en el censo.\n    if (!r.numero_interno && !r.alcance_lote && !soloDigitos(r.chapeta)) errores.push(`registro ${i + 1} sin numero_interno, chapeta ni alcance_lote`);\n  }\n  return errores;\n}\n\nconst soloDigitos = (s) => String(s ?? '').replace(/\\D/g, '');\nconst normal = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');\n\n// V8: el valor tiene que estar escrito en el texto que leyó el extractor.\nfunction apareceEnTexto(valor, texto) {\n  if (valor == null) return true;\n  const t = String(texto ?? '');\n  const sinCeros = soloDigitos(valor).replace(/^0+/, '') || '0';\n  const variantes = [String(valor), String(valor).replace('.', ','), sinCeros];\n  const numerosDelTexto = t.match(/\\d+(?:[.,]\\d+)?/g) ?? [];\n  return numerosDelTexto.some((n) => variantes.includes(n) || variantes.includes(n.replace(/^0+/, '')));\n}\n\nfunction loteMencionado(codigoLote, potrero, texto) {\n  const t = normal(texto);\n  const corto = normal(String(codigoLote).replace(/^lote-?/i, ''));\n  return t.includes(corto) || (potrero && t.includes(normal(potrero)));\n}\n\nfunction validarBorrador(borrador, censo, { fechaMensaje }) {\n  const porNumero = new Map(censo.animales.map((a) => [a.numero_interno, a]));\n  const resultado = {\n    tipo_reporte: borrador.tipo_reporte,\n    fecha_reporte: borrador.fecha_reporte,\n    lote: borrador.lote ?? null,\n    validos: [],\n    dudosos: [],\n    ilegibles: [...(borrador.ilegibles ?? [])],\n  };\n  if (borrador.tipo_reporte === 'otro') return conResumen(resultado);\n\n  // V10: un evento para todo el lote se expande con el censo, nunca con lo que diga el modelo.\n  const filas = [];\n  for (const r of borrador.registros) {\n    if (r.alcance_lote) {\n      const lote = censo.lotes.find((l) => l.codigo === r.alcance_lote);\n      const animalesLote = censo.animales.filter((a) => a.lote === r.alcance_lote && a.estado === 'activo');\n      if (!lote || animalesLote.length === 0) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V1', texto: `el lote ${r.alcance_lote} no está en el censo` }] });\n        continue;\n      }\n      if (!loteMencionado(lote.codigo, lote.potrero, r.texto_original)) {\n        resultado.dudosos.push({ ...r, motivos: [{ regla: 'V8', texto: 'el lote no aparece en el texto leído' }] });\n        continue;\n      }\n      for (const a of animalesLote) filas.push({ ...r, numero_interno: a.numero_interno, alcance_lote: r.alcance_lote, expandido: true });\n    } else if (!r.numero_interno) {\n      // Ciclo 2 (V1/V2): planilla anotada por chapeta. El número interno lo pone el censo, no el modelo.\n      const digitos = soloDigitos(r.chapeta);\n      const candidatos = digitos.length >= 4 ? censo.animales.filter((a) => soloDigitos(a.chapeta_ica).endsWith(digitos)) : [];\n      if (candidatos.length === 1) {\n        filas.push({ ...r, numero_interno: candidatos[0].numero_interno, porChapeta: true });\n      } else {\n        const texto = candidatos.length ? `la chapeta ${r.chapeta} coincide con ${candidatos.length} animales del censo` : `la chapeta ${r.chapeta} no está en el censo`;\n        resultado.dudosos.push({ ...r, motivos: [{ regla: candidatos.length ? 'V2' : 'V1', texto }] });\n      }\n    } else {\n      filas.push({ ...r });\n    }\n  }\n\n  // V6: cuántas veces aparece cada animal en este reporte. Ciclo 1: en sanidad, un mismo animal\n  // puede tener eventos distintos el mismo día (purga y tratamiento); solo se repite si es el mismo evento.\n  const claveDuplicado = (f) => borrador.tipo_reporte === 'sanidad'\n    ? `${f.numero_interno}|${f.evento_sanitario?.tipo}|${normal(f.evento_sanitario?.descripcion)}`\n    : f.numero_interno;\n  const veces = new Map();\n  for (const f of filas) veces.set(claveDuplicado(f), (veces.get(claveDuplicado(f)) ?? 0) + 1);\n\n  for (const f of filas) {\n    const motivos = [];\n    const animal = porNumero.get(f.numero_interno);\n    const fecha = borrador.fecha_reporte;\n\n    if (!animal || animal.estado !== 'activo') motivos.push({ regla: 'V1', texto: `la ${f.numero_interno} no está en el censo de animales activos` });\n    if (animal && f.chapeta && soloDigitos(f.chapeta) && !soloDigitos(animal.chapeta_ica).endsWith(soloDigitos(f.chapeta))) {\n      motivos.push({ regla: 'V2', texto: `la chapeta ${f.chapeta} no coincide con la del censo (${animal.chapeta_ica})` });\n    }\n    if (fechaMensaje && fecha > fechaMensaje) motivos.push({ regla: 'V3', texto: `la fecha ${fecha} es posterior al mensaje (${fechaMensaje})` });\n    if (animal && fecha < animal.fecha_ingreso) motivos.push({ regla: 'V4', texto: `la fecha ${fecha} es anterior al ingreso del animal (${animal.fecha_ingreso})` });\n    if (veces.get(claveDuplicado(f)) > 1) motivos.push({ regla: 'V6', texto: `la ${f.numero_interno} aparece ${veces.get(claveDuplicado(f))} veces en el reporte` });\n    const idLeido = f.porChapeta ? soloDigitos(f.chapeta) : f.numero_interno;\n    if (!f.expandido && !apareceEnTexto(idLeido, f.texto_original)) motivos.push({ regla: 'V8', texto: `el ${f.porChapeta ? 'número de chapeta' : 'número interno'} no aparece en el texto leído` });\n\n    if (borrador.tipo_reporte === 'pesaje') {\n      const peso = Number(f.peso_kg);\n      if (!Number.isFinite(peso) || peso < PESO_MIN_KG || peso > PESO_MAX_KG) {\n        motivos.push({ regla: 'V7', texto: `peso fuera de rango (${f.peso_kg} kg)` });\n      } else {\n        const anterior = animal?.ultimo_pesaje?.peso_kg;\n        if (anterior && Math.abs(peso - anterior) / anterior > UMBRAL_VARIACION) {\n          const cambio = Math.round(((peso - anterior) / anterior) * 100);\n          motivos.push({ regla: 'V5', texto: `cambió ${cambio > 0 ? '+' : ''}${cambio} % frente al último pesaje (${anterior} kg el ${animal.ultimo_pesaje.fecha})` });\n        }\n        if (!apareceEnTexto(f.peso_kg, f.texto_original)) motivos.push({ regla: 'V8', texto: 'el peso no aparece en el texto leído' });\n      }\n      if (f.confianza === 'baja') motivos.push({ regla: 'V8', texto: 'el extractor no está seguro de la lectura (confianza baja)' });\n    } else if (borrador.tipo_reporte === 'sanidad') {\n      const ev = f.evento_sanitario;\n      if (!ev || !TIPOS_SANIDAD.includes(ev.tipo) || !String(ev.descripcion ?? '').trim()) motivos.push({ regla: 'V9', texto: 'evento sanitario incompleto (tipo o descripción)' });\n    }\n\n    const registro = {\n      numero_interno: f.numero_interno,\n      chapeta: animal?.chapeta_ica ?? f.chapeta ?? null,\n      fecha,\n      peso_kg: borrador.tipo_reporte === 'pesaje' ? Number(f.peso_kg) : null,\n      evento_sanitario: borrador.tipo_reporte === 'sanidad' ? f.evento_sanitario : null,\n      texto_original: f.texto_original,\n      confianza: f.confianza,\n    };\n    if (motivos.length) resultado.dudosos.push({ ...registro, motivos });\n    else resultado.validos.push(registro);\n  }\n  return conResumen(resultado);\n}\n\nfunction conResumen(r) {\n  r.resumen = { validos: r.validos.length, dudosos: r.dudosos.length, ilegibles: r.ilegibles.length };\n  r.estado = r.dudosos.length || r.ilegibles.length ? 'requiere_revision' : 'listo_para_confirmar';\n  return r;\n}\n\nconst resp = $input.first().json;\nconst r = $('Preparar reporte').first().json;\nconst censo = $('Supabase: censo').first().json.censo;\nlet texto_modelo = '';\nlet extraccion = null;\nlet errores = [];\nif (resp.stop_reason === 'refusal') errores = ['el modelo rechazó la petición'];\nelse {\n  texto_modelo = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\n  try { extraccion = JSON.parse(texto_modelo.replace(/^```(json)?|```$/g, '')); } catch { errores = ['la salida no es JSON válido']; }\n  if (!errores.length) errores = revisarFormato(extraccion);\n}\nconst ok = errores.length === 0;\nconst resultado = ok ? validarBorrador(extraccion, censo, { fechaMensaje: r.fecha_mensaje }) : null;\nreturn [{ json: { ok, intento: 3, errores, texto_modelo, extraccion, resultado } }];"
+      }
+    },
+    {
+      "id": "n18",
+      "name": "¿Formato válido? 3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c17",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n19",
+      "name": "Bitácora: a revisión humana",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        440
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.bitacora_jornadas (tipo, telegram_user_id, detalle) values ('formato_invalido_revision_humana', $1, $2::jsonb)",
+        "options": {
+          "queryReplacement": "={{ [$('Preparar reporte').first().json.user_id, JSON.stringify({ errores: $json.errores, intentos: 3 })] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n20",
+      "name": "Telegram: no pude leerlo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        440
+      ],
+      "parameters": {
+        "chatId": "={{ $('Preparar reporte').first().json.chat_id }}",
+        "text": "No pude convertir este reporte en registros después de 3 intentos. Lo revisa una persona. Si puedes, manda una foto más clara o escribe las filas como \"número – peso\".",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CAMBIAR",
+          "name": "Telegram Santa Rita"
+        }
+      }
+    },
+    {
+      "id": "n21",
+      "name": "Borrador validado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Toma la salida del intento que pasó el formato.\nconst ultimo = ['Validar 1', 'Validar 2', 'Validar 3'].map((n) => { try { return $(n).first().json; } catch { return null; } }).filter((v) => v && v.ok).pop();\nconst r = ultimo.resultado;\nreturn [{ json: { ...ultimo, necesita_revisor: r.dudosos.length + r.ilegibles.length > 0 } }];"
+      }
+    },
+    {
+      "id": "n22",
+      "name": "¿Hay dudosos o ilegibles?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        440
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c21",
+              "leftValue": "={{ $json.necesita_revisor }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n23",
+      "name": "Petición revisor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const SYSTEM = \"Eres el revisor de borradores de Finca Santa Rita. Eres distinto del extractor: compara su lectura con el reporte original. Trabaja solo sobre dudosos e ilegibles; no cambies datos. Responde solo JSON: {\\\"preguntas\\\":[{\\\"numero_interno\\\":\\\"0303 o null\\\",\\\"pregunta\\\":\\\"...\\\"}],\\\"alertas\\\":[{\\\"numero_interno\\\":\\\"...\\\",\\\"detalle\\\":\\\"...\\\"}],\\\"mensaje_telegram\\\":\\\"resumen de 2 a 4 líneas\\\"}\\n\\n---\\n\\n# Skill: explicar-dudoso\\n# Explicar un dudoso\\n\\n## Cuándo se usa\\nDespués del validador, cuando el borrador tiene registros `dudosos` o `ilegibles`. Lo usa el\\n**revisor**, nunca el extractor.\\n\\n## Pasos\\n1. Lee el motivo que puso el validador (V1 a V10, ver `contexto/reglas.md`). No lo cambies ni\\n   lo discutas: es una regla fija.\\n2. Escribe **una sola frase** con el dato y el motivo, sin siglas:\\n   - V5: \\\"La 0303 pesó 232 kg y hace un mes pesó 187 kg: subió 24 %. ¿Está bien el peso?\\\"\\n   - V1: \\\"La 0209 no está en el censo. ¿Es un animal nuevo o el número está mal escrito?\\\"\\n   - V6: \\\"La 0302 aparece dos veces (199 y 204 kg). ¿Cuál es el peso correcto?\\\"\\n   - Ilegible: \\\"No se lee la fila 7 (\\\\\\\"1?6 – 35?\\\\\\\"). ¿Qué animal y qué peso eran?\\\"\\n3. Si el validador sugiere un animal parecido, menciónalo como pregunta, nunca como\\n   corrección hecha.\\n4. Si una lectura borrosa tiene dos opciones (por ejemplo, 128 o 126), dilo y pide que\\n   confirmen. **No elijas tú.**\\n5. Tono: de tú, corto, sin tecnicismos. Máximo una pregunta por registro.\\n\\n\\n---\\n\\n# Reglas que revisa el arnés\\n\\nVienen de las reglas de negocio de la app (`docs/insumos-capitulos-6-a-8.md`) y del esquema de\\nla base de datos. **El extractor no las aplica: las aplica el validador con código** (regla de\\ndiseño del taller: lo que se puede verificar con una regla fija, se verifica con una regla fija).\\n\\n| ID | Regla | Origen en la app | Qué pasa si no se cumple |\\n|---|---|---|---|\\n| V1 | El número interno existe en el censo y el animal está activo. Si la fila solo trae chapeta, el validador busca el animal por chapeta (ciclo 2) | `animales.numero_interno` único | Dudoso: \\\"no está en el censo\\\" |\\n| V2 | Si el reporte trae chapeta, coincide con la del censo y con un solo animal | `animales.chapeta_ica` único (RN-15) | Dudoso: \\\"la chapeta no coincide\\\" |\\n| V3 | La fecha no es futura (frente a la fecha del mensaje) | RN-14, disparadores de fecha | Dudoso: \\\"fecha futura\\\" |\\n| V4 | La fecha no es anterior al ingreso del animal | RN-14 | Dudoso: \\\"fecha anterior al ingreso\\\" |\\n| V5 | El peso no cambia más de 15 % frente al último pesaje | RN-01 (`variacionSospechosa`) | Dudoso: \\\"cambio de más del 15 %\\\" |\\n| V6 | En un pesaje, un animal aparece una sola vez. En sanidad, el mismo evento (tipo y descripción) no se repite para un animal; dos eventos distintos sí pueden ir juntos (ciclo 1) | RN-15 y el índice `pesajes_uno_por_jornada` | Todas sus filas a dudosos: \\\"repetido en la jornada\\\" |\\n| V7 | El peso está en un rango razonable para un novillo (80 a 800 kg) | `pesajes.peso_kg` entre 0 y 1500 | Dudoso: \\\"peso fuera de rango\\\" |\\n| V8 | Nada inventado: el peso y el número aparecen en el `texto_original` de la fila | Criterio de terminado 5 | Dudoso: \\\"el valor no aparece en el texto leído\\\" |\\n| V9 | El tipo sanitario es `vacuna`, `tratamiento` o `desparasitacion`, con descripción | `eventos_sanitarios.tipo` | Dudoso: \\\"evento sanitario incompleto\\\" |\\n| V10 | Un evento \\\"para todo el lote\\\" se expande con el censo, no con la memoria del modelo | Diseño del arnés | El validador arma la lista de animales del lote |\\n\";\nconst r = $('Preparar reporte').first().json;\nconst b = $json;\nconst contenido = [];\nif (r.imagen_b64) contenido.push({ type: 'image', source: { type: 'base64', media_type: r.media_type, data: r.imagen_b64 } });\ncontenido.push({ type: 'text', text: 'Reporte original: ' + (r.texto || '(foto)') + '\\nBorrador validado: ' + JSON.stringify(b.resultado) });\nreturn [{ json: { peticion: { model: 'claude-opus-5-5', max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'medium' }, system: SYSTEM, messages: [{ role: 'user', content: contenido }] } } }];"
+      }
+    },
+    {
+      "id": "n24",
+      "name": "Claude: revisor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2026-10-21"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.peticion) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CAMBIAR",
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "id": "n25",
+      "name": "Leer revisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const resp = $input.first().json;\nconst texto = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();\nlet revision = null;\ntry { revision = JSON.parse(texto.replace(/^```(json)?|```$/g, '')); } catch { revision = { preguntas: [], alertas: [], mensaje_telegram: 'Hay registros en duda. Revisa el borrador.' }; }\nreturn [{ json: { ...$('Borrador validado').first().json, revision } }];"
+      }
+    },
+    {
+      "id": "n26",
+      "name": "Sin revisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: { ...$input.first().json, revision: null } }];"
+      }
+    },
+    {
+      "id": "n27",
+      "name": "Supabase: guardar borrador",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        440
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.borradores_campo (telegram_chat_id, telegram_user_id, telegram_message_id, fecha_mensaje, tipo_reporte, extraccion, resultado, revision, intentos)\nvalues ($1, $2, $3, $4::date, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9) returning id",
+        "options": {
+          "queryReplacement": "={{ (() => { const r = $('Preparar reporte').first().json; return [r.chat_id, r.user_id, r.message_id, r.fecha_mensaje, $json.extraccion.tipo_reporte, JSON.stringify($json.extraccion), JSON.stringify($json.resultado), JSON.stringify($json.revision), $json.intento]; })() }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n28",
+      "name": "Bitácora: borrador creado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        660
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.bitacora_jornadas (tipo, borrador_id, telegram_user_id, detalle) values ('borrador_creado', $1::uuid, $2, $3::jsonb)",
+        "options": {
+          "queryReplacement": "={{ (() => { const v = $('Supabase: guardar borrador').first().json; const b = $('Borrador validado').first().json; return [v.id, $('Preparar reporte').first().json.user_id, JSON.stringify({ validos: b.resultado.validos.length, dudosos: b.resultado.dudosos.length, ilegibles: b.resultado.ilegibles.length, intentos: b.intento })]; })() }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    },
+    {
+      "id": "n29",
+      "name": "Armar resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        660
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const id = $('Supabase: guardar borrador').first().json.id;\nconst b = $('Supabase: guardar borrador').first().json;\nconst v = (() => { try { return $('Leer revisión').first().json; } catch { return $('Sin revisión').first().json; } })();\nconst r = v.resultado;\nconst tipo = r.tipo_reporte === 'pesaje' ? 'Pesaje' : 'Sanidad';\nlet texto = tipo + ' del ' + r.fecha_reporte + (r.lote ? ' (' + r.lote + ')' : '') + ':\\n' + r.validos.length + ' listos para cargar, ' + r.dudosos.length + ' en duda, ' + r.ilegibles.length + ' ilegibles.';\nif (v.revision?.mensaje_telegram) texto += '\\n\\n' + v.revision.mensaje_telegram;\ntexto += '\\n\\nNada se guarda en la app hasta que una persona autorizada lo confirme.';\nreturn [{ json: { id, texto, chat_id: $('Preparar reporte').first().json.chat_id } }];"
+      }
+    },
+    {
+      "id": "n30",
+      "name": "Telegram: borrador con botones",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        660
+      ],
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.texto }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Confirmar",
+                    "additionalFields": {
+                      "callback_data": "={{ 'c:' + $json.id }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🗑️ Confirmar sin los dudosos",
+                    "additionalFields": {
+                      "callback_data": "={{ 'd:' + $json.id }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "❌ Rechazar",
+                    "additionalFields": {
+                      "callback_data": "={{ 'r:' + $json.id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CAMBIAR",
+          "name": "Telegram Santa Rita"
+        }
+      }
+    },
+    {
+      "id": "n31",
+      "name": "Bitácora: preguntas enviadas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        720,
+        660
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into campo.bitacora_jornadas (tipo, borrador_id, detalle) values ('borrador_enviado_a_telegram', $1::uuid, '{}')",
+        "options": {
+          "queryReplacement": "={{ [$('Armar resumen').first().json.id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CAMBIAR",
+          "name": "Supabase arnes_campo"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram: mensaje": {
+      "main": [
+        [
+          {
+            "node": "Preparar reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar reporte": {
+      "main": [
+        [
+          {
+            "node": "Supabase: ¿puede enviar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: ¿puede enviar?": {
+      "main": [
+        [
+          {
+            "node": "¿Remitente autorizado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Remitente autorizado?": {
+      "main": [
+        [
+          {
+            "node": "Supabase: censo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bitácora: mensaje ignorado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: censo": {
+      "main": [
+        [
+          {
+            "node": "Petición extractor 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Petición extractor 1": {
+      "main": [
+        [
+          {
+            "node": "Claude: extractor 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: extractor 1": {
+      "main": [
+        [
+          {
+            "node": "Validar 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar 1": {
+      "main": [
+        [
+          {
+            "node": "¿Formato válido? 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Formato válido? 1": {
+      "main": [
+        [
+          {
+            "node": "Borrador validado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Petición extractor 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Petición extractor 2": {
+      "main": [
+        [
+          {
+            "node": "Claude: extractor 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: extractor 2": {
+      "main": [
+        [
+          {
+            "node": "Validar 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar 2": {
+      "main": [
+        [
+          {
+            "node": "¿Formato válido? 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Formato válido? 2": {
+      "main": [
+        [
+          {
+            "node": "Borrador validado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Petición extractor 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Petición extractor 3": {
+      "main": [
+        [
+          {
+            "node": "Claude: extractor 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: extractor 3": {
+      "main": [
+        [
+          {
+            "node": "Validar 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar 3": {
+      "main": [
+        [
+          {
+            "node": "¿Formato válido? 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Formato válido? 3": {
+      "main": [
+        [
+          {
+            "node": "Borrador validado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bitácora: a revisión humana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitácora: a revisión humana": {
+      "main": [
+        [
+          {
+            "node": "Telegram: no pude leerlo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrador validado": {
+      "main": [
+        [
+          {
+            "node": "¿Hay dudosos o ilegibles?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay dudosos o ilegibles?": {
+      "main": [
+        [
+          {
+            "node": "Petición revisor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin revisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Petición revisor": {
+      "main": [
+        [
+          {
+            "node": "Claude: revisor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: revisor": {
+      "main": [
+        [
+          {
+            "node": "Leer revisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer revisión": {
+      "main": [
+        [
+          {
+            "node": "Supabase: guardar borrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sin revisión": {
+      "main": [
+        [
+          {
+            "node": "Supabase: guardar borrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: guardar borrador": {
+      "main": [
+        [
+          {
+            "node": "Bitácora: borrador creado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitácora: borrador creado": {
+      "main": [
+        [
+          {
+            "node": "Armar resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar resumen": {
+      "main": [
+        [
+          {
+            "node": "Telegram: borrador con botones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: borrador con botones": {
+      "main": [
+        [
+          {
+            "node": "Bitácora: preguntas enviadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -1,0 +1,132 @@
+{
+  "id": "caso-5-mvv3jygg",
+  "caso": "caso-5",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-29",
+  "creado": "2026-10-30T14:58:03.952Z",
+  "estado": "cargado",
+  "estado_validacion": "listo_para_confirmar",
+  "extraccion": {
+    "tipo_reporte": "sanidad",
+    "fecha_reporte": "2026-10-28",
+    "lote": "LOTE-2026-B",
+    "registros": [
+      {
+        "numero_interno": null,
+        "chapeta": null,
+        "alcance_lote": "LOTE-2026-B",
+        "peso_kg": null,
+        "evento_sanitario": {
+          "tipo": "vacuna",
+          "descripcion": "Aftosa"
+        },
+        "confianza": "alta",
+        "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien."
+      }
+    ],
+    "ilegibles": []
+  },
+  "tipo_reporte": "sanidad",
+  "fecha_reporte": "2026-10-28",
+  "lote": "LOTE-2026-B",
+  "validos": [
+    {
+      "numero_interno": "0301",
+      "chapeta": "COL-CES-279559",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0302",
+      "chapeta": "COL-CES-283520",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0303",
+      "chapeta": "COL-CES-299990",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0304",
+      "chapeta": "COL-CES-290859",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0305",
+      "chapeta": "COL-CES-292039",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0306",
+      "chapeta": "COL-CES-211907",
+      "fecha": "2026-10-28",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "vacuna",
+        "descripcion": "Aftosa"
+      },
+      "texto_original": "Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "confianza": "alta"
+    }
+  ],
+  "dudosos": [],
+  "ilegibles": [],
+  "resumen": {
+    "validos": 6,
+    "dudosos": 0,
+    "ilegibles": 0
+  },
+  "revision": null,
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:03.953Z",
+      "estado": "borrador"
+    },
+    {
+      "momento": "2026-10-30T14:58:08.890Z",
+      "estado": "confirmado",
+      "por": "miguel",
+      "correcciones": 0
+    },
+    {
+      "momento": "2026-10-30T14:58:09.206Z",
+      "estado": "cargado"
+    }
+  ],
+  "confirmado_por": "miguel",
+  "correcciones": []
+}

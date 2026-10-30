@@ -1,0 +1,180 @@
+{
+  "id": "caso-8-mvv3jz01",
+  "caso": "caso-8",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-29",
+  "creado": "2026-10-30T14:58:04.657Z",
+  "estado": "cargado",
+  "estado_validacion": "listo_para_confirmar",
+  "extraccion": {
+    "tipo_reporte": "sanidad",
+    "fecha_reporte": "2026-10-26",
+    "lote": "LOTE-2026-A",
+    "registros": [
+      {
+        "numero_interno": null,
+        "chapeta": null,
+        "alcance_lote": "LOTE-2026-A",
+        "peso_kg": null,
+        "evento_sanitario": {
+          "tipo": "desparasitacion",
+          "descripcion": "Ivermectina"
+        },
+        "confianza": "alta",
+        "texto_original": "El lunes purgamos con ivermectina a los de El Mango"
+      },
+      {
+        "numero_interno": "0204",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": null,
+        "evento_sanitario": {
+          "tipo": "tratamiento",
+          "descripcion": "Oxitetraciclina (cojera)"
+        },
+        "confianza": "alta",
+        "texto_original": "a la 204 le pusimos oxitetraciclina porque está cojeando"
+      }
+    ],
+    "ilegibles": []
+  },
+  "tipo_reporte": "sanidad",
+  "fecha_reporte": "2026-10-26",
+  "lote": "LOTE-2026-A",
+  "validos": [
+    {
+      "numero_interno": "0201",
+      "chapeta": "COL-CES-297501",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0202",
+      "chapeta": "COL-CES-288250",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0203",
+      "chapeta": "COL-CES-293907",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0204",
+      "chapeta": "COL-CES-212229",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0205",
+      "chapeta": "COL-CES-204514",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0206",
+      "chapeta": "COL-CES-227937",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0207",
+      "chapeta": "COL-CES-218183",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0208",
+      "chapeta": "COL-CES-224200",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "desparasitacion",
+        "descripcion": "Ivermectina"
+      },
+      "texto_original": "El lunes purgamos con ivermectina a los de El Mango",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0204",
+      "chapeta": "COL-CES-212229",
+      "fecha": "2026-10-26",
+      "peso_kg": null,
+      "evento_sanitario": {
+        "tipo": "tratamiento",
+        "descripcion": "Oxitetraciclina (cojera)"
+      },
+      "texto_original": "a la 204 le pusimos oxitetraciclina porque está cojeando",
+      "confianza": "alta"
+    }
+  ],
+  "dudosos": [],
+  "ilegibles": [],
+  "resumen": {
+    "validos": 9,
+    "dudosos": 0,
+    "ilegibles": 0
+  },
+  "revision": null,
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:04.658Z",
+      "estado": "borrador"
+    },
+    {
+      "momento": "2026-10-30T14:58:09.524Z",
+      "estado": "confirmado",
+      "por": "miguel",
+      "correcciones": 0
+    },
+    {
+      "momento": "2026-10-30T14:58:09.835Z",
+      "estado": "cargado"
+    }
+  ],
+  "confirmado_por": "miguel",
+  "correcciones": []
+}

@@ -1,0 +1,114 @@
+{
+  "id": "caso-7-mvv3jyth",
+  "caso": "caso-7",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-28",
+  "creado": "2026-10-30T14:58:04.421Z",
+  "estado": "rechazado",
+  "estado_validacion": "requiere_revision",
+  "extraccion": {
+    "tipo_reporte": "pesaje",
+    "fecha_reporte": "2026-11-27",
+    "lote": "LOTE-2026-A",
+    "registros": [
+      {
+        "numero_interno": "0201",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 262,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "201 262"
+      },
+      {
+        "numero_interno": "0202",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 258,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "202 258"
+      },
+      {
+        "numero_interno": "0203",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 296,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "203 296"
+      }
+    ],
+    "ilegibles": []
+  },
+  "tipo_reporte": "pesaje",
+  "fecha_reporte": "2026-11-27",
+  "lote": "LOTE-2026-A",
+  "validos": [],
+  "dudosos": [
+    {
+      "numero_interno": "0201",
+      "chapeta": "COL-CES-297501",
+      "fecha": "2026-11-27",
+      "peso_kg": 262,
+      "evento_sanitario": null,
+      "texto_original": "201 262",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V3",
+          "texto": "la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+        }
+      ]
+    },
+    {
+      "numero_interno": "0202",
+      "chapeta": "COL-CES-288250",
+      "fecha": "2026-11-27",
+      "peso_kg": 258,
+      "evento_sanitario": null,
+      "texto_original": "202 258",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V3",
+          "texto": "la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+        }
+      ]
+    },
+    {
+      "numero_interno": "0203",
+      "chapeta": "COL-CES-293907",
+      "fecha": "2026-11-27",
+      "peso_kg": 296,
+      "evento_sanitario": null,
+      "texto_original": "203 296",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V3",
+          "texto": "la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+        }
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "resumen": {
+    "validos": 0,
+    "dudosos": 3,
+    "ilegibles": 0
+  },
+  "revision": null,
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:04.422Z",
+      "estado": "borrador"
+    },
+    {
+      "momento": "2026-10-30T14:58:10.446Z",
+      "estado": "rechazado",
+      "por": "miguel",
+      "motivo": "fecha futura; el administrador reenvía la planilla con 27/10"
+    }
+  ]
+}

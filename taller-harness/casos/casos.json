@@ -1,0 +1,150 @@
+{
+  "nota": "Casos de prueba con la respuesta correcta conocida. Datos ficticios del censo de demostración. Las imágenes se generan con scripts/generar-planillas.py a partir de este archivo.",
+  "casos": [
+    {
+      "id": "caso-1",
+      "titulo": "Planilla nítida, 10 pesos válidos",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2025-B", "fecha": "27/10/2026", "estilo": "nitida",
+        "filas": [["101", "361"], ["102", "370"], ["103", "374"], ["104", "366"], ["105", "377"], ["106", "381"], ["107", "378"], ["108", "349"], ["109", "372"], ["110", "362"]]
+      },
+      "esperado": {
+        "fecha": "2026-10-27",
+        "validos": ["0101", "0102", "0103", "0104", "0105", "0106", "0107", "0108", "0109", "0110"],
+        "dudosos": {},
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-2",
+      "titulo": "Un número interno que no está en el censo",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2026-A", "fecha": "27/10/2026", "estilo": "nitida",
+        "filas": [["201", "262"], ["202", "258"], ["203", "296"], ["204", "291"], ["205", "289"], ["206", "251"], ["207", "288"], ["209", "268"]]
+      },
+      "esperado": {
+        "fecha": "2026-10-27",
+        "validos": ["0201", "0202", "0203", "0204", "0205", "0206", "0207"],
+        "dudosos": { "0209": "V1" },
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-3",
+      "titulo": "Un peso que salta más del 15 %",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2026-B", "fecha": "27/10/2026", "estilo": "nitida",
+        "filas": [["301", "209"], ["302", "218"], ["303", "232"], ["304", "213"], ["305", "222"], ["306", "203"]]
+      },
+      "esperado": {
+        "fecha": "2026-10-27",
+        "validos": ["0301", "0302", "0304", "0305", "0306"],
+        "dudosos": { "0303": "V5" },
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-4",
+      "titulo": "Foto borrosa: una fila no se lee",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-14",
+      "planilla": {
+        "lote": "LOTE-2025-B", "fecha": "13/10/2026", "estilo": "borrosa", "fila_borrosa": 5,
+        "filas": [["101", "350"], ["102", "362"], ["103", "363"], ["104", "355"], ["105", "366"], ["106", "368"], ["107", "367"], ["108", "337"]]
+      },
+      "esperado": {
+        "fecha": "2026-10-13",
+        "validos": ["0101", "0102", "0103", "0104", "0105", "0107", "0108"],
+        "dudosos": {},
+        "ilegibles": 1,
+        "prohibido": ["0106"]
+      }
+    },
+    {
+      "id": "caso-5",
+      "titulo": "Mensaje de vacunación de todo un lote",
+      "entrada": "texto",
+      "fecha_mensaje": "2026-10-29",
+      "texto": "Buenas don Miguel. Ayer vacunamos todo el lote 2026-B contra aftosa, los 6 quedaron bien.",
+      "esperado": {
+        "fecha": "2026-10-28",
+        "tipo": "sanidad",
+        "evento": { "tipo": "vacuna", "descripcion_contiene": "aftosa" },
+        "validos": ["0301", "0302", "0303", "0304", "0305", "0306"],
+        "dudosos": {},
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-6",
+      "titulo": "El mismo animal dos veces en la jornada",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2026-B", "fecha": "27/10/2026", "estilo": "nitida",
+        "filas": [["301", "209"], ["302", "218"], ["303", "205"], ["304", "213"], ["302", "221"], ["305", "222"], ["306", "203"]]
+      },
+      "esperado": {
+        "fecha": "2026-10-27",
+        "validos": ["0301", "0303", "0304", "0305", "0306"],
+        "dudosos": { "0302": "V6" },
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-7",
+      "titulo": "Extra: fecha futura escrita por error",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2026-A", "fecha": "27/11/2026", "estilo": "nitida",
+        "filas": [["201", "262"], ["202", "258"], ["203", "296"]]
+      },
+      "esperado": {
+        "fecha": "2026-11-27",
+        "validos": [],
+        "dudosos": { "0201": "V3", "0202": "V3", "0203": "V3" },
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-8",
+      "titulo": "Exploratorio: purga de un lote y tratamiento de un animal en el mismo mensaje",
+      "entrada": "texto",
+      "fecha_mensaje": "2026-10-29",
+      "texto": "El lunes purgamos con ivermectina a los de El Mango, y a la 204 le pusimos oxitetraciclina porque está cojeando.",
+      "esperado": {
+        "fecha": "2026-10-26",
+        "tipo": "sanidad",
+        "lote_esperado": "LOTE-2026-A",
+        "validos": ["0201", "0202", "0203", "0204", "0205", "0206", "0207", "0208"],
+        "eventos_esperados": 9,
+        "dudosos": {},
+        "ilegibles": 0
+      }
+    },
+    {
+      "id": "caso-9",
+      "titulo": "Exploratorio: planilla anotada por chapeta, sin número interno",
+      "entrada": "imagen",
+      "fecha_mensaje": "2026-10-28",
+      "planilla": {
+        "lote": "LOTE-2025-B", "fecha": "27/10/2026", "estilo": "nitida", "columna_id": "Chapeta",
+        "filas": [["215576", "361"], ["222078", "370"], ["211646", "374"], ["222949", "366"], ["265741", "377"]]
+      },
+      "ids_censo": ["0101", "0102", "0103", "0104", "0105"],
+      "esperado": {
+        "fecha": "2026-10-27",
+        "validos": ["0101", "0102", "0103", "0104", "0105"],
+        "dudosos": {},
+        "ilegibles": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "caso-3-mvv39tje",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 5,
+    "dudosos": 1,
+    "ilegibles": 0
+  },
+  "dudosos": [
+    {
+      "numero": "0303",
+      "peso": 232,
+      "motivos": [
+        "V5: cambió +24 % frente al último pesaje (187 kg el 2026-09-28)"
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

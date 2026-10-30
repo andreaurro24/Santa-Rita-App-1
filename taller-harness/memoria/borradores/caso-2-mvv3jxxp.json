@@ -1,0 +1,196 @@
+{
+  "id": "caso-2-mvv3jxxp",
+  "caso": "caso-2",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-28",
+  "creado": "2026-10-30T14:58:03.277Z",
+  "estado": "borrador",
+  "estado_validacion": "requiere_revision",
+  "extraccion": {
+    "tipo_reporte": "pesaje",
+    "fecha_reporte": "2026-10-27",
+    "lote": "LOTE-2026-A",
+    "registros": [
+      {
+        "numero_interno": "0201",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 262,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "201 262"
+      },
+      {
+        "numero_interno": "0202",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 258,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "202 258"
+      },
+      {
+        "numero_interno": "0203",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 296,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "203 296"
+      },
+      {
+        "numero_interno": "0204",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 291,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "204 291"
+      },
+      {
+        "numero_interno": "0205",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 289,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "205 289"
+      },
+      {
+        "numero_interno": "0206",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 251,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "206 251"
+      },
+      {
+        "numero_interno": "0207",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 288,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "207 288"
+      },
+      {
+        "numero_interno": "0209",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 268,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "209 268"
+      }
+    ],
+    "ilegibles": []
+  },
+  "tipo_reporte": "pesaje",
+  "fecha_reporte": "2026-10-27",
+  "lote": "LOTE-2026-A",
+  "validos": [
+    {
+      "numero_interno": "0201",
+      "chapeta": "COL-CES-297501",
+      "fecha": "2026-10-27",
+      "peso_kg": 262,
+      "evento_sanitario": null,
+      "texto_original": "201 262",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0202",
+      "chapeta": "COL-CES-288250",
+      "fecha": "2026-10-27",
+      "peso_kg": 258,
+      "evento_sanitario": null,
+      "texto_original": "202 258",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0203",
+      "chapeta": "COL-CES-293907",
+      "fecha": "2026-10-27",
+      "peso_kg": 296,
+      "evento_sanitario": null,
+      "texto_original": "203 296",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0204",
+      "chapeta": "COL-CES-212229",
+      "fecha": "2026-10-27",
+      "peso_kg": 291,
+      "evento_sanitario": null,
+      "texto_original": "204 291",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0205",
+      "chapeta": "COL-CES-204514",
+      "fecha": "2026-10-27",
+      "peso_kg": 289,
+      "evento_sanitario": null,
+      "texto_original": "205 289",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0206",
+      "chapeta": "COL-CES-227937",
+      "fecha": "2026-10-27",
+      "peso_kg": 251,
+      "evento_sanitario": null,
+      "texto_original": "206 251",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0207",
+      "chapeta": "COL-CES-218183",
+      "fecha": "2026-10-27",
+      "peso_kg": 288,
+      "evento_sanitario": null,
+      "texto_original": "207 288",
+      "confianza": "alta"
+    }
+  ],
+  "dudosos": [
+    {
+      "numero_interno": "0209",
+      "chapeta": null,
+      "fecha": "2026-10-27",
+      "peso_kg": 268,
+      "evento_sanitario": null,
+      "texto_original": "209 268",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V1",
+          "texto": "la 0209 no está en el censo de animales activos"
+        }
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "resumen": {
+    "validos": 7,
+    "dudosos": 1,
+    "ilegibles": 0
+  },
+  "revision": {
+    "preguntas": [
+      {
+        "numero_interno": "0209",
+        "pregunta": "La 0209 (268 kg) no está en el censo de animales activos. En la planilla se lee claro \"209\". ¿Es un animal nuevo o el número está mal escrito?"
+      }
+    ],
+    "alertas": [],
+    "mensaje_telegram": "Pesaje del LOTE-2026-A del 27/10: 7 de 8 pesos están listos para cargar.\nHay 1 duda: la 0209 (268 kg) no está en el censo. ¿Es un animal nuevo o el número está mal escrito?"
+  },
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:03.278Z",
+      "estado": "borrador"
+    }
+  ]
+}

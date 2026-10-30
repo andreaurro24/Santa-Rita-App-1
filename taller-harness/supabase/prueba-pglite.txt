@@ -1,0 +1,15 @@
+OK   el SQL del arnés se aplica sin errores
+OK   censo_arnes: 3 animales, último peso 190.0
+OK   lotes_arnes: LOTE-2026-B en Los Cocos
+OK   el flujo escribe directo en pesajes → bloqueado: permission denied for table pesajes
+OK   el flujo lee la tabla animales → bloqueado: permission denied for table animales
+OK   el flujo inserta un borrador ya confirmado → bloqueado: new row violates row-level security policy for table "borradores_campo"
+OK   el flujo crea el borrador 3357d567
+OK   el flujo se cambia el estado a confirmado → bloqueado: permission denied for table borradores_campo
+OK   cargar sin confirmar → bloqueado: Bloqueado: solo se carga un borrador confirmado por una persona autorizada
+OK   confirma alguien sin permiso (el administrador) → bloqueado: El usuario 222 no puede confirmar borradores
+OK   Miguel confirma con un dudoso pendiente → bloqueado: Quedan 1 dudosos sin resolver: corrígelos con un mensaje nuevo o descártalos
+OK   Miguel confirma sin los dudosos: se cargan 2 pesajes
+OK   cargar dos veces → bloqueado: Bloqueado: solo se carga un borrador confirmado por una persona autorizada
+OK   Miguel confirma un reporte que él mismo envió → bloqueado: Quien envió el reporte no puede confirmarlo; lo confirma otra persona autorizada
+OK   pesajes nuevos en la app: 2; bitácora: borrador_confirmado, borrador_cargado

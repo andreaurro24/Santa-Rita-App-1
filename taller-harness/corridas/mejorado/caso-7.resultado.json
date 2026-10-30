@@ -1,0 +1,39 @@
+{
+  "id": "caso-7-mvv3ewt5",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 0,
+    "dudosos": 3,
+    "ilegibles": 0
+  },
+  "dudosos": [
+    {
+      "numero": "0201",
+      "peso": 262,
+      "motivos": [
+        "V3: la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+      ]
+    },
+    {
+      "numero": "0202",
+      "peso": 258,
+      "motivos": [
+        "V3: la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+      ]
+    },
+    {
+      "numero": "0203",
+      "peso": 296,
+      "motivos": [
+        "V3: la fecha 2026-11-27 es posterior al mensaje (2026-10-28)"
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

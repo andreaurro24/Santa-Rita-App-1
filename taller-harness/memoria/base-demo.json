@@ -1,0 +1,238 @@
+{
+  "pesajes": [
+    {
+      "numero_interno": "0101",
+      "fecha": "2026-10-27",
+      "peso_kg": 361,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0102",
+      "fecha": "2026-10-27",
+      "peso_kg": 370,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0103",
+      "fecha": "2026-10-27",
+      "peso_kg": 374,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0104",
+      "fecha": "2026-10-27",
+      "peso_kg": 366,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0105",
+      "fecha": "2026-10-27",
+      "peso_kg": 377,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0106",
+      "fecha": "2026-10-27",
+      "peso_kg": 381,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0107",
+      "fecha": "2026-10-27",
+      "peso_kg": 378,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0108",
+      "fecha": "2026-10-27",
+      "peso_kg": 349,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0109",
+      "fecha": "2026-10-27",
+      "peso_kg": 372,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0110",
+      "fecha": "2026-10-27",
+      "peso_kg": 362,
+      "notas": "Telegram/arnés caso-1-mvv3jxr7",
+      "borrador": "caso-1-mvv3jxr7"
+    },
+    {
+      "numero_interno": "0301",
+      "fecha": "2026-10-27",
+      "peso_kg": 209,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    },
+    {
+      "numero_interno": "0302",
+      "fecha": "2026-10-27",
+      "peso_kg": 218,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    },
+    {
+      "numero_interno": "0304",
+      "fecha": "2026-10-27",
+      "peso_kg": 213,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    },
+    {
+      "numero_interno": "0305",
+      "fecha": "2026-10-27",
+      "peso_kg": 222,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    },
+    {
+      "numero_interno": "0306",
+      "fecha": "2026-10-27",
+      "peso_kg": 203,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    },
+    {
+      "numero_interno": "0303",
+      "fecha": "2026-10-27",
+      "peso_kg": 215,
+      "notas": "Telegram/arnés caso-3-mvv3jy3v",
+      "borrador": "caso-3-mvv3jy3v"
+    }
+  ],
+  "eventos_sanitarios": [
+    {
+      "numero_interno": "0301",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0302",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0303",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0304",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0305",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0306",
+      "tipo": "vacuna",
+      "descripcion": "Aftosa",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-28",
+      "borrador": "caso-5-mvv3jygg"
+    },
+    {
+      "numero_interno": "0201",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0202",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0203",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0204",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0205",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0206",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0207",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0208",
+      "tipo": "desparasitacion",
+      "descripcion": "Ivermectina",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    },
+    {
+      "numero_interno": "0204",
+      "tipo": "tratamiento",
+      "descripcion": "Oxitetraciclina (cojera)",
+      "estado": "aplicado",
+      "fecha_aplicada": "2026-10-26",
+      "borrador": "caso-8-mvv3jz01"
+    }
+  ]
+}

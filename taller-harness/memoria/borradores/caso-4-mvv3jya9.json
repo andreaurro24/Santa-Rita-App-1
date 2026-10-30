@@ -1,0 +1,181 @@
+{
+  "id": "caso-4-mvv3jya9",
+  "caso": "caso-4",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-14",
+  "creado": "2026-10-30T14:58:03.729Z",
+  "estado": "borrador",
+  "estado_validacion": "requiere_revision",
+  "extraccion": {
+    "tipo_reporte": "pesaje",
+    "fecha_reporte": "2026-10-13",
+    "lote": "LOTE-2025-B",
+    "registros": [
+      {
+        "numero_interno": "0101",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 350,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "101 350"
+      },
+      {
+        "numero_interno": "0102",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 362,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "102 362"
+      },
+      {
+        "numero_interno": "0103",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 363,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "103 363"
+      },
+      {
+        "numero_interno": "0104",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 355,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "104 355"
+      },
+      {
+        "numero_interno": "0105",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 366,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "105 366"
+      },
+      {
+        "numero_interno": "0107",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 367,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "107 367"
+      },
+      {
+        "numero_interno": "0108",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 337,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "108 337"
+      }
+    ],
+    "ilegibles": [
+      {
+        "texto_original": "[fila 6, entre 105 y 107: borrosa y tapada por una mancha]",
+        "motivo": "la fila está borrosa y tapada: no se lee con seguridad ni el número ni el peso"
+      }
+    ]
+  },
+  "tipo_reporte": "pesaje",
+  "fecha_reporte": "2026-10-13",
+  "lote": "LOTE-2025-B",
+  "validos": [
+    {
+      "numero_interno": "0101",
+      "chapeta": "COL-CES-215576",
+      "fecha": "2026-10-13",
+      "peso_kg": 350,
+      "evento_sanitario": null,
+      "texto_original": "101 350",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0102",
+      "chapeta": "COL-CES-222078",
+      "fecha": "2026-10-13",
+      "peso_kg": 362,
+      "evento_sanitario": null,
+      "texto_original": "102 362",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0103",
+      "chapeta": "COL-CES-211646",
+      "fecha": "2026-10-13",
+      "peso_kg": 363,
+      "evento_sanitario": null,
+      "texto_original": "103 363",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0104",
+      "chapeta": "COL-CES-222949",
+      "fecha": "2026-10-13",
+      "peso_kg": 355,
+      "evento_sanitario": null,
+      "texto_original": "104 355",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0105",
+      "chapeta": "COL-CES-265741",
+      "fecha": "2026-10-13",
+      "peso_kg": 366,
+      "evento_sanitario": null,
+      "texto_original": "105 366",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0107",
+      "chapeta": "COL-CES-207654",
+      "fecha": "2026-10-13",
+      "peso_kg": 367,
+      "evento_sanitario": null,
+      "texto_original": "107 367",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0108",
+      "chapeta": "COL-CES-248463",
+      "fecha": "2026-10-13",
+      "peso_kg": 337,
+      "evento_sanitario": null,
+      "texto_original": "108 337",
+      "confianza": "alta"
+    }
+  ],
+  "dudosos": [],
+  "ilegibles": [
+    {
+      "texto_original": "[fila 6, entre 105 y 107: borrosa y tapada por una mancha]",
+      "motivo": "la fila está borrosa y tapada: no se lee con seguridad ni el número ni el peso"
+    }
+  ],
+  "resumen": {
+    "validos": 7,
+    "dudosos": 0,
+    "ilegibles": 1
+  },
+  "revision": {
+    "preguntas": [
+      {
+        "numero_interno": null,
+        "pregunta": "No se lee la fila entre la 105 y la 107: está borrosa y tapada por una franja gris (\"10? – 3??\"). Por el orden podría ser la 106, pero no se distingue, y el peso tampoco (podría ser 348 o 368). ¿Qué animal y qué peso eran?"
+      }
+    ],
+    "alertas": [],
+    "mensaje_telegram": "Pesaje del LOTE-2025-B del 13/10: 7 pesos están listos para cargar.\nUna fila no se lee (entre la 105 y la 107, tapada por una franja gris). ¿Qué animal y qué peso eran? Si puedes, manda otra foto."
+  },
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:03.730Z",
+      "estado": "borrador"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "caso-4-mvv3evum",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 7,
+    "dudosos": 0,
+    "ilegibles": 1
+  },
+  "dudosos": [],
+  "ilegibles": [
+    {
+      "texto_original": "[fila 6, entre 105 y 107: borrosa y tapada por una mancha]",
+      "motivo": "la fila está borrosa y tapada: no se lee con seguridad ni el número ni el peso"
+    }
+  ],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

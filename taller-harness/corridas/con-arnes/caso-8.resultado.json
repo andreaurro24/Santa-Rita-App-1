@@ -1,0 +1,10 @@
+{
+  "nota": "Resultado del validador v1 (antes del ciclo 1). La primera calificación automática reportó 'errores graves' por un bug del calificador, que tenía fijo el lote 2026-B; se corrigió y esta es la calificación correcta.",
+  "estado": "requiere_revision",
+  "resumen": { "validos": 7, "dudosos": 2, "ilegibles": 0 },
+  "dudosos": [
+    { "numero": "0204", "evento": "desparasitacion Ivermectina", "motivos": ["V6: la 0204 aparece 2 veces en el reporte"] },
+    { "numero": "0204", "evento": "tratamiento Oxitetraciclina (cojera)", "motivos": ["V6: la 0204 aparece 2 veces en el reporte"] }
+  ],
+  "calificacion": { "correcto": false, "correcciones": 1, "erroresGraves": 0, "detalle": ["faltó 0204 en válidos: dos eventos distintos tomados por duplicado"] }
+}

@@ -1,0 +1,9 @@
+{
+  "nota": "Resultado del validador v1 (antes del ciclo 2). El validador rechazó la salida por formato en los 3 intentos: el extractor dejó numero_interno en null porque la planilla solo traía chapetas, y con razón no inventó números. Ver memoria (eventos formato_invalido).",
+  "intentos": [
+    { "intento": 1, "codigo_salida": 2, "errores": ["registro 1 a 5 sin numero_interno ni alcance_lote"] },
+    { "intento": 2, "codigo_salida": 2, "errores": ["registro 1 a 5 sin numero_interno ni alcance_lote"] },
+    { "intento": 3, "codigo_salida": 4, "errores": ["registro 1 a 5 sin numero_interno ni alcance_lote"], "decision": "pasa a revisión humana" }
+  ],
+  "calificacion": { "correcto": false, "correcciones": 1, "erroresGraves": 0, "detalle": ["una persona tendría que digitar a mano los 5 pesos"] }
+}

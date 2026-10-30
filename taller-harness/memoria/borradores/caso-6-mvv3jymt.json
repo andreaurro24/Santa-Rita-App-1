@@ -1,0 +1,184 @@
+{
+  "id": "caso-6-mvv3jymt",
+  "caso": "caso-6",
+  "de": "administrador",
+  "fecha_mensaje": "2026-10-28",
+  "creado": "2026-10-30T14:58:04.181Z",
+  "estado": "borrador",
+  "estado_validacion": "requiere_revision",
+  "extraccion": {
+    "tipo_reporte": "pesaje",
+    "fecha_reporte": "2026-10-27",
+    "lote": "LOTE-2026-B",
+    "registros": [
+      {
+        "numero_interno": "0301",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 209,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "301 209"
+      },
+      {
+        "numero_interno": "0302",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 218,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "302 218"
+      },
+      {
+        "numero_interno": "0303",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 205,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "303 205"
+      },
+      {
+        "numero_interno": "0304",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 213,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "304 213"
+      },
+      {
+        "numero_interno": "0302",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 221,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "302 221"
+      },
+      {
+        "numero_interno": "0305",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 222,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "305 222"
+      },
+      {
+        "numero_interno": "0306",
+        "chapeta": null,
+        "alcance_lote": null,
+        "peso_kg": 203,
+        "evento_sanitario": null,
+        "confianza": "alta",
+        "texto_original": "306 203"
+      }
+    ],
+    "ilegibles": []
+  },
+  "tipo_reporte": "pesaje",
+  "fecha_reporte": "2026-10-27",
+  "lote": "LOTE-2026-B",
+  "validos": [
+    {
+      "numero_interno": "0301",
+      "chapeta": "COL-CES-279559",
+      "fecha": "2026-10-27",
+      "peso_kg": 209,
+      "evento_sanitario": null,
+      "texto_original": "301 209",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0303",
+      "chapeta": "COL-CES-299990",
+      "fecha": "2026-10-27",
+      "peso_kg": 205,
+      "evento_sanitario": null,
+      "texto_original": "303 205",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0304",
+      "chapeta": "COL-CES-290859",
+      "fecha": "2026-10-27",
+      "peso_kg": 213,
+      "evento_sanitario": null,
+      "texto_original": "304 213",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0305",
+      "chapeta": "COL-CES-292039",
+      "fecha": "2026-10-27",
+      "peso_kg": 222,
+      "evento_sanitario": null,
+      "texto_original": "305 222",
+      "confianza": "alta"
+    },
+    {
+      "numero_interno": "0306",
+      "chapeta": "COL-CES-211907",
+      "fecha": "2026-10-27",
+      "peso_kg": 203,
+      "evento_sanitario": null,
+      "texto_original": "306 203",
+      "confianza": "alta"
+    }
+  ],
+  "dudosos": [
+    {
+      "numero_interno": "0302",
+      "chapeta": "COL-CES-283520",
+      "fecha": "2026-10-27",
+      "peso_kg": 218,
+      "evento_sanitario": null,
+      "texto_original": "302 218",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V6",
+          "texto": "la 0302 aparece 2 veces en el reporte"
+        }
+      ]
+    },
+    {
+      "numero_interno": "0302",
+      "chapeta": "COL-CES-283520",
+      "fecha": "2026-10-27",
+      "peso_kg": 221,
+      "evento_sanitario": null,
+      "texto_original": "302 221",
+      "confianza": "alta",
+      "motivos": [
+        {
+          "regla": "V6",
+          "texto": "la 0302 aparece 2 veces en el reporte"
+        }
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "resumen": {
+    "validos": 5,
+    "dudosos": 2,
+    "ilegibles": 0
+  },
+  "revision": {
+    "preguntas": [
+      {
+        "numero_interno": "0302",
+        "pregunta": "La 0302 aparece dos veces en la planilla (218 kg en la fila 2 y 221 kg en la fila 5). ¿Cuál es el peso correcto, o la segunda era otro animal?"
+      }
+    ],
+    "alertas": [],
+    "mensaje_telegram": "Pesaje del LOTE-2026-B del 27/10: 5 pesos están listos para cargar.\nHay 1 duda: la 0302 aparece dos veces (218 y 221 kg). ¿Cuál es el peso correcto?"
+  },
+  "historial": [
+    {
+      "momento": "2026-10-30T14:58:04.183Z",
+      "estado": "borrador"
+    }
+  ]
+}

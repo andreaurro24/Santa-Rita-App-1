@@ -1,0 +1,24 @@
+{"momento":"2026-10-30T14:58:03.045Z","tipo":"borrador_creado","id":"caso-1-mvv3jxr7","caso":"caso-1","de":"administrador","validos":10,"dudosos":0,"ilegibles":0}
+{"momento":"2026-10-30T14:58:03.279Z","tipo":"borrador_creado","id":"caso-2-mvv3jxxp","caso":"caso-2","de":"administrador","validos":7,"dudosos":1,"ilegibles":0}
+{"momento":"2026-10-30T14:58:03.502Z","tipo":"borrador_creado","id":"caso-3-mvv3jy3v","caso":"caso-3","de":"administrador","validos":5,"dudosos":1,"ilegibles":0}
+{"momento":"2026-10-30T14:58:03.731Z","tipo":"borrador_creado","id":"caso-4-mvv3jya9","caso":"caso-4","de":"administrador","validos":7,"dudosos":0,"ilegibles":1}
+{"momento":"2026-10-30T14:58:03.954Z","tipo":"borrador_creado","id":"caso-5-mvv3jygg","caso":"caso-5","de":"administrador","validos":6,"dudosos":0,"ilegibles":0}
+{"momento":"2026-10-30T14:58:04.184Z","tipo":"borrador_creado","id":"caso-6-mvv3jymt","caso":"caso-6","de":"administrador","validos":5,"dudosos":2,"ilegibles":0}
+{"momento":"2026-10-30T14:58:04.422Z","tipo":"borrador_creado","id":"caso-7-mvv3jyth","caso":"caso-7","de":"administrador","validos":0,"dudosos":3,"ilegibles":0}
+{"momento":"2026-10-30T14:58:04.658Z","tipo":"borrador_creado","id":"caso-8-mvv3jz01","caso":"caso-8","de":"administrador","validos":9,"dudosos":0,"ilegibles":0}
+{"momento":"2026-10-30T14:58:04.894Z","tipo":"borrador_creado","id":"caso-9-mvv3jz6k","caso":"caso-9","de":"administrador","validos":5,"dudosos":0,"ilegibles":0}
+{"momento":"2026-10-30T14:58:05.321Z","tipo":"revision_agregada","id":"caso-2-mvv3jxxp","preguntas":1}
+{"momento":"2026-10-30T14:58:05.740Z","tipo":"revision_agregada","id":"caso-3-mvv3jy3v","preguntas":1}
+{"momento":"2026-10-30T14:58:06.198Z","tipo":"revision_agregada","id":"caso-4-mvv3jya9","preguntas":1}
+{"momento":"2026-10-30T14:58:06.659Z","tipo":"revision_agregada","id":"caso-6-mvv3jymt","preguntas":1}
+{"momento":"2026-10-30T14:58:06.982Z","tipo":"confirmacion_rechazada","id":"caso-5-mvv3jygg","por":"administrador","motivo":"quien envió no puede confirmar su propio reporte"}
+{"momento":"2026-10-30T14:58:07.612Z","tipo":"borrador_confirmado","id":"caso-1-mvv3jxr7","por":"miguel","correcciones":[]}
+{"momento":"2026-10-30T14:58:07.956Z","tipo":"borrador_cargado","id":"caso-1-mvv3jxr7","registros":10}
+{"momento":"2026-10-30T14:58:08.268Z","tipo":"borrador_confirmado","id":"caso-3-mvv3jy3v","por":"miguel","correcciones":[{"numero":"0303","de":232,"a":215,"regla":"V5","motivo":"el administrador releyó la báscula por Telegram: era 215, no 232 (demostración)"}]}
+{"momento":"2026-10-30T14:58:08.583Z","tipo":"borrador_cargado","id":"caso-3-mvv3jy3v","registros":6}
+{"momento":"2026-10-30T14:58:08.892Z","tipo":"borrador_confirmado","id":"caso-5-mvv3jygg","por":"miguel","correcciones":[]}
+{"momento":"2026-10-30T14:58:09.208Z","tipo":"borrador_cargado","id":"caso-5-mvv3jygg","registros":6}
+{"momento":"2026-10-30T14:58:09.526Z","tipo":"borrador_confirmado","id":"caso-8-mvv3jz01","por":"miguel","correcciones":[]}
+{"momento":"2026-10-30T14:58:09.837Z","tipo":"borrador_cargado","id":"caso-8-mvv3jz01","registros":9}
+{"momento":"2026-10-30T14:58:10.140Z","tipo":"borrador_rechazado","id":"caso-9-mvv3jz6k","por":"miguel","motivo":"duplicado del caso 1: misma jornada anotada por chapeta"}
+{"momento":"2026-10-30T14:58:10.448Z","tipo":"borrador_rechazado","id":"caso-7-mvv3jyth","por":"miguel","motivo":"fecha futura; el administrador reenvía la planilla con 27/10"}

@@ -1,0 +1,17 @@
+{
+  "id": "caso-5-mvv3ew6m",
+  "estado": "listo_para_confirmar",
+  "resumen": {
+    "validos": 6,
+    "dudosos": 0,
+    "ilegibles": 0
+  },
+  "dudosos": [],
+  "ilegibles": [],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}

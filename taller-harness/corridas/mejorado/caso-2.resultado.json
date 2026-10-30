@@ -1,0 +1,25 @@
+{
+  "id": "caso-2-mvv3ev74",
+  "estado": "requiere_revision",
+  "resumen": {
+    "validos": 7,
+    "dudosos": 1,
+    "ilegibles": 0
+  },
+  "dudosos": [
+    {
+      "numero": "0209",
+      "peso": 268,
+      "motivos": [
+        "V1: la 0209 no está en el censo de animales activos"
+      ]
+    }
+  ],
+  "ilegibles": [],
+  "calificacion": {
+    "correcto": true,
+    "correcciones": 0,
+    "erroresGraves": 0,
+    "detalle": []
+  }
+}
