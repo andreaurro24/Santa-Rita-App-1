@@ -231,7 +231,7 @@ const r = $input.first().json;
 let texto;
 // n8n entrega el error de Postgres como texto o como objeto, según la versión: se busca el mensaje.
 const e = r.error;
-const motivo = typeof e === 'string' ? e : (e?.message || e?.description || e?.error?.message || e?.cause?.message || JSON.stringify(e));
+const motivo = typeof e === 'string' ? e : (r.message || e?.message || e?.description || e?.error?.message || e?.cause?.message || JSON.stringify(e));
 if (e) texto = 'No se cargó nada: ' + String(motivo).replace(/^.*?error: /i, '');
 else if (b.accion === 'r') texto = 'Borrador rechazado. No se cargó nada.';
 else texto = 'Listo: se cargaron ' + r.resultado + ' registros en la app.';

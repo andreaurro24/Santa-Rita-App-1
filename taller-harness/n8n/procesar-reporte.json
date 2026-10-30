@@ -852,7 +852,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const b = $('Leer botón').first().json;\nconst r = $input.first().json;\nlet texto;\n// n8n entrega el error de Postgres como texto o como objeto, según la versión: se busca el mensaje.\nconst e = r.error;\nconst motivo = typeof e === 'string' ? e : (e?.message || e?.description || e?.error?.message || e?.cause?.message || JSON.stringify(e));\nif (e) texto = 'No se cargó nada: ' + String(motivo).replace(/^.*?error: /i, '');\nelse if (b.accion === 'r') texto = 'Borrador rechazado. No se cargó nada.';\nelse texto = 'Listo: se cargaron ' + r.resultado + ' registros en la app.';\nreturn [{ json: { ...b, texto, ok: !r.error } }];"
+        "jsCode": "const b = $('Leer botón').first().json;\nconst r = $input.first().json;\nlet texto;\n// n8n entrega el error de Postgres como texto o como objeto, según la versión: se busca el mensaje.\nconst e = r.error;\nconst motivo = typeof e === 'string' ? e : (r.message || e?.message || e?.description || e?.error?.message || e?.cause?.message || JSON.stringify(e));\nif (e) texto = 'No se cargó nada: ' + String(motivo).replace(/^.*?error: /i, '');\nelse if (b.accion === 'r') texto = 'Borrador rechazado. No se cargó nada.';\nelse texto = 'Listo: se cargaron ' + r.resultado + ' registros en la app.';\nreturn [{ json: { ...b, texto, ok: !r.error } }];"
       }
     },
     {
