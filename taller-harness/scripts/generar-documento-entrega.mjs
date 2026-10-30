@@ -82,7 +82,7 @@ function tabla(filas) {
 
 // ---------- markdown sencillo del repo → bloques de Word (los títulos se numeran solos)
 let listaNum = 0;
-function markdown(md, { nivelBase = 2, saltarTitulo = true } = {}) {
+function markdown(md, { nivelBase = 2, saltarTitulo = true, omitir = [] } = {}) {
   md = md.replace(/^---\n[\s\S]*?\n---\n/, '');
   const lineas = md.split('\n');
   const out = [];
@@ -92,10 +92,14 @@ function markdown(md, { nivelBase = 2, saltarTitulo = true } = {}) {
     parrafo = [];
   };
   let primerTitulo = true;
+  let saltando = 0; // nivel del subtema omitido, 0 si no se omite nada
   for (let i = 0; i < lineas.length; i++) {
     const l = lineas[i];
-    if (!l.trim()) { cerrarParrafo(); continue; }
     const h = l.match(/^(#{1,4})\s+(.*)/);
+    if (saltando && !(h && h[1].length <= saltando)) continue;
+    saltando = 0;
+    if (h && omitir.some((o) => h[2].replace(/^\d+\.\s*/, '').startsWith(o))) { cerrarParrafo(); saltando = h[1].length; continue; }
+    if (!l.trim()) { cerrarParrafo(); continue; }
     if (h) {
       cerrarParrafo();
       if (saltarTitulo && primerTitulo && h[1].length === 1) { primerTitulo = false; continue; }
@@ -215,7 +219,7 @@ bloques.push(
 );
 
 // 2. Canvas
-bloques.push(titulo(1, 'Canvas del arnés con justificación', { pageBreakBefore: true }), ...markdown(leer('entrega/canvas.md'), { nivelBase: 2 }));
+bloques.push(titulo(1, 'Canvas del arnés con justificación'), ...markdown(leer('entrega/canvas.md'), { nivelBase: 2, omitir: ['Plataforma elegida'] }));
 
 // 3. Versión funcional
 const cap = (f) => `entrega/capturas/${f}`;
@@ -224,44 +228,48 @@ bloques.push(
   titulo(1, 'Versión funcional', { pageBreakBefore: true }),
   p('La versión funcional corre en **Telegram + n8n + Supabase**, con el mismo arnés que se probó en Claude Code. Usa datos simulados: 24 novillos en 3 lotes, nunca datos reales de la finca.'),
   titulo(2, 'Cómo probarla'),
-  vineta('Abrir el bot [@santarita_campo_prueba_bot](https://t.me/santarita_campo_prueba_bot) en Telegram y pulsar **Iniciar**.'),
-  vineta('El bot **solo responde a personas autorizadas**. Si alguien sin permiso le escribe, no contesta y el intento queda en la bitácora: es uno de los guardarraíles. Para probarlo, escríbale "hola", envíenos su nombre y lo registramos en un minuto.'),
-  vineta('Mandar una foto de planilla. En el repositorio hay 9 casos de prueba en `taller-harness/casos/` (por ejemplo `caso-2/planilla.jpg`, que trae un animal que no existe).'),
-  vineta('El bot responde con un resumen y tres botones: **Confirmar**, **Confirmar sin los dudosos** y **Rechazar**. Quien envió no puede confirmar: debe hacerlo otra persona autorizada, por eso la prueba completa se hace en un grupo.'),
+  vineta('Abrir [@santarita_campo_prueba_bot](https://t.me/santarita_campo_prueba_bot) en Telegram y escribirle "hola". El bot **solo responde a personas autorizadas**: el intento queda en la bitácora y lo registramos en un minuto.'),
+  vineta('Mandar una foto de planilla; hay 9 casos en `taller-harness/casos/` (por ejemplo `caso-2/planilla.jpg`, que trae un animal que no existe).'),
+  vineta('El bot responde con un resumen y los botones **Confirmar**, **Confirmar sin los dudosos** y **Rechazar**. Confirma otra persona autorizada, por eso la prueba completa se hace en un grupo.'),
   titulo(2, 'Arquitectura'),
   ...markdown(`| Pieza | Herramienta | Qué hace |
 |---|---|---|
 | Canal | Telegram | Recibe la foto o el mensaje y muestra el resumen con los botones |
-| Orquestación | n8n Cloud | Un solo flujo de 38 nodos: reparte mensajes y botones, llama a Claude, corre el validador y escribe en la base |
-| Extractor y revisor | Claude (API de Anthropic) | Lee la planilla con las instrucciones y skills del arnés; el revisor redacta las preguntas de los dudosos |
-| Validador | Código JavaScript | Las reglas V1 a V10, el mismo código de \`arnes/validador.mjs\` (24 pruebas automáticas) |
-| Base y guardarraíles | Supabase (Postgres) | Rol \`arnes_campo\` sin permiso sobre los pesajes; funciones que exigen confirmación de otra persona, sin dudosos y sin duplicados |`, { saltarTitulo: false }),
+| Orquestación | n8n Cloud | Un flujo de 38 nodos: reparte mensajes y botones, llama a Claude, corre el validador y escribe en la base |
+| Extractor y revisor | Claude (API de Anthropic) | Lee la planilla con las instrucciones y skills; el revisor redacta las preguntas de los dudosos |
+| Validador | Código JavaScript | Reglas V1 a V10, el mismo código de \`arnes/validador.mjs\` (24 pruebas automáticas) |
+| Base y guardarraíles | Supabase (Postgres) | Rol sin permiso sobre los pesajes; solo carga lo confirmado por otra persona, sin dudosos ni duplicados |`, { saltarTitulo: false }),
   titulo(2, 'Capturas'),
-  ...imagen(cap('n8n-flujo.jpg'), 'Flujo en n8n: un disparador de Telegram recibe fotos y botones.'),
-  ...imagen(cap('n8n-nodo-armar-respuesta.png'), 'Nodo "Armar respuesta" en n8n, corregido durante la prueba en vivo para mostrar el motivo real de cada bloqueo.'),
-  ...imagen(img('planilla-caso2.jpg'), 'Planilla del caso 2 enviada al grupo. La fila 209 no existe en el censo.', 300),
-  pendiente('chat de Telegram con el resumen del bot y los botones (caso 2).'),
-  pendiente('los mensajes de bloqueo: "Quien envió el reporte no puede confirmarlo" y "Quedan 1 dudosos sin resolver".'),
-  pendiente('el mensaje "Listo: se cargaron 7 registros en la app".'),
-  p('Mientras se agregan, estas imágenes recrean el chat con los mensajes exactos que respondió el bot, tomados de la bitácora de la base:', { run: { italics: true } }),
-  ...imagen(img('demo-respuesta.png'), 'Recreación: resumen del bot con la pregunta por la 0209 y los botones.', 300),
-  ...imagen(img('demo-bloqueos.png'), 'Recreación: los dos intentos bloqueados por la base de datos.', 300),
-  ...imagen(img('demo-cargado.png'), 'Recreación: otra persona confirma sin los dudosos y se cargan 7 pesajes.', 300),
-  ...imagen(cap('evidencia-base.png'), 'Evidencia en Supabase: borradores, bitácora y los 17 pesajes cargados, cada uno con su borrador de origen.', 520),
-  pendiente('la app de la finca mostrando el pesaje del 27/10 de un animal (por ejemplo la 0201).'),
+  ...imagen(cap('n8n-flujo.jpg'), 'Flujo en n8n: un disparador de Telegram recibe fotos y botones.', 520),
+  ...imagen(img('planilla-caso2.jpg'), 'Planilla del caso 2 enviada al grupo. La fila 209 no existe en el censo.', 220),
+  ...imagen(cap('evidencia-base.png'), 'Evidencia en Supabase: borradores, bitácora y los 17 pesajes cargados, cada uno con su borrador de origen.', 430),
+  pendiente('chat de Telegram con el resumen y los botones; los dos bloqueos ("Quien envió el reporte no puede confirmarlo" y "Quedan 1 dudosos sin resolver"); el mensaje "Listo: se cargaron 7 registros en la app"; y la app con el pesaje del 27/10.'),
   titulo(2, 'Instrucciones del agente'),
-  p('Archivo `contexto/instrucciones.md`. Es la guía principal del extractor y cabe en una página.'),
-  ...markdown(leer('contexto/instrucciones.md'), { nivelBase: 3 }),
+  p('El extractor recibe la foto o el mensaje, la fecha, el censo y el glosario, y entrega **solo un borrador en JSON**: no guarda nada. Sus reglas de oro (`contexto/instrucciones.md`):'),
+  ...[
+    '**No inventar:** lo que no se lee con seguridad va a ilegibles, con su motivo.',
+    '**Copiar lo que ve:** cada registro guarda el texto original de la planilla.',
+    '**Número interno de 4 dígitos**, sin cambiarlo por uno parecido del censo; si la planilla usa chapeta, la copia y el validador busca el animal.',
+    '**La fecha es la del pesaje**, no la del mensaje.',
+    '**Marcar la confianza** de cada fila: alta, media o baja.',
+    '**Un evento para todo un lote** se escribe una vez; el validador saca los animales del censo.',
+    '**No revisar reglas:** variación de peso, duplicados y fechas los revisa el validador.',
+  ].map((t, k) => new Paragraph({ numbering: { reference: 'numeros', level: 0, instance: 900 }, spacing: { after: 60 }, children: enLinea(t) })),
+  p('Nunca borra ni edita registros, ni habla de ventas, precios o contratos "Al partir".', { par: { spacing: { before: 120 } } }),
   titulo(2, 'Skills'),
-  ...['leer-jornada-pesaje', 'leer-evento-sanidad', 'explicar-dudoso'].flatMap((s) => [titulo(3, `Skill ${s}`), ...markdown(leer(`skills/${s}/SKILL.md`), { nivelBase: 4 })]),
+  ...markdown(`| Skill | Cuándo se usa | Qué hace |
+|---|---|---|
+| \`leer-jornada-pesaje\` | El reporte es una foto de planilla o filas "número – peso" | Encabezado (lote y fecha), una fila por animal con su confianza, ilegibles aparte |
+| \`leer-evento-sanidad\` | El mensaje habla de vacunar, purgar, bañar o tratar | Tipo, producto y fecha de cada evento; un lote completo se escribe una sola vez |
+| \`explicar-dudoso\` | En el revisor, solo para dudosos e ilegibles | Explica en lenguaje simple por qué quedó en duda y qué debe responder el administrador |`, { saltarTitulo: false }),
   titulo(2, 'Verificaciones'),
-  p('Lo que se puede comprobar con una regla fija lo comprueba código, no el modelo. Estas reglas las aplica `arnes/validador.mjs` (24 pruebas con `node --test`), el mismo código que corre dentro de n8n.'),
-  ...markdown(leer('contexto/reglas.md'), { nivelBase: 3 }),
-  p('Además, la base de datos aplica guardias que el modelo no puede saltarse: el rol del flujo no tiene permiso sobre las tablas de la app, y la única puerta es una función que exige un borrador confirmado por otra persona autorizada, sin dudosos pendientes y sin pesajes repetidos. Antes de aplicarlas en Supabase se probaron en un Postgres embebido: 9 de 9 bloqueos.'),
+  p('Lo que se puede comprobar con una regla fija lo comprueba código, no el modelo: `arnes/validador.mjs`, con 24 pruebas automáticas, el mismo código que corre en n8n.'),
+  ...markdown(leer('contexto/reglas.md'), { nivelBase: 3 }).slice(1),
+  p('La base de datos agrega guardias que el modelo no puede saltarse: el rol del flujo no puede escribir en las tablas de la app y la única puerta exige un borrador confirmado por otra persona, sin dudosos ni pesajes repetidos (9 de 9 bloqueos probados).'),
 );
 
 // 4. Bitácora y 5. Reflexión
-bloques.push(titulo(1, 'Bitácora de pruebas', { pageBreakBefore: true }), ...markdown(leer('entrega/bitacora-pruebas.md'), { nivelBase: 2 }));
+bloques.push(titulo(1, 'Bitácora de pruebas', { pageBreakBefore: true }), ...markdown(leer('entrega/bitacora-pruebas.md'), { nivelBase: 2, omitir: ['Cómo se corrió cada etapa', 'Otros hallazgos', 'Métricas de la corrida'] }));
 bloques.push(titulo(1, 'Reflexión', { pageBreakBefore: true }), ...markdown(leer('entrega/reflexion.md'), { nivelBase: 2 }));
 
 // ---------- documento
